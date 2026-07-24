@@ -1,0 +1,22 @@
+<Project>
+
+  <!--
+    Common build settings for all Tameru projects.
+    Honors CLAUDE.md non-negotiable #1 (.NET 8) and CODING_STANDARDS.md
+    (nullable on, warnings-as-errors). A newer SDK may be installed; projects
+    still target net8.0.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <Deterministic>true</Deterministic>
+    <Company>Tameru</Company>
+    <Product>Tameru</Product>
+    <Authors>Yovan Alvianto</Authors>
+  </PropertyGroup>
+
+</Project>

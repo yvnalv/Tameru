@@ -1,0 +1,24 @@
+# Development stack: PostgreSQL for local work. Run the API from the IDE / `dotnet run`
+# against this database. See docs/DEPLOYMENT.md.
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: tameru-db-dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-tameru}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-tameru_dev}
+      POSTGRES_DB: ${POSTGRES_DB:-tameru}
+    ports:
+      # Loopback-only publish (never expose the DB publicly — docs/SECURITY.md).
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - tameru_pgdata_dev:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-tameru} -d ${POSTGRES_DB:-tameru}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  tameru_pgdata_dev:

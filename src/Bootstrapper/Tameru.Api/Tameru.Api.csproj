@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\BuildingBlocks\Tameru.Web.Common\Tameru.Web.Common.csproj" />
+    <ProjectReference Include="..\..\BuildingBlocks\Tameru.Infrastructure.Common\Tameru.Infrastructure.Common.csproj" />
+    <ProjectReference Include="..\..\BuildingBlocks\Tameru.Application.Abstractions\Tameru.Application.Abstractions.csproj" />
+    <ProjectReference Include="..\..\BuildingBlocks\Tameru.SharedKernel\Tameru.SharedKernel.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.9.0" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+</Project>

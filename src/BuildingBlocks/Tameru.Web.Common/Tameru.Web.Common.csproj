@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Web.Common: response envelope + exception-handling middleware shared by the API host.
+    References ASP.NET Core via a FrameworkReference (no ASP.NET types leak into modules'
+    Domain/Application). Common build settings come from Directory.Build.props.
+  -->
+  <PropertyGroup>
+    <RootNamespace>Tameru.Web.Common</RootNamespace>
+    <AssemblyName>Tameru.Web.Common</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Tameru.SharedKernel\Tameru.SharedKernel.csproj" />
+  </ItemGroup>
+
+</Project>
