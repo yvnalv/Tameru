@@ -4,7 +4,7 @@
 
 ## Phase
 
-**Foundation.** M0 (scaffold) and M1 (Identity / single-user auth) complete; M2 (Accounts) next.
+**Core money.** M0 (scaffold), M1 (Identity), and M2 (Accounts) complete; M3 (Ledger) next.
 See the milestone plan in [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md).
 
 ## Done
@@ -23,7 +23,11 @@ See the milestone plan in [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md).
 - ✅ **M1** — Identity: `users` + `refresh_tokens`, PBKDF2 hashing, JWT access + rotating refresh,
   `/auth/login|refresh|logout|me`, owner seed, EF migration (snake_case), 21 unit tests. Verified
   end-to-end against the dev Postgres.
-- **M2 (active)** — Accounts (groups, accounts, derived balances).
+- ✅ **M2** — Accounts: `account_groups` + `accounts`, derived balances (`opening + net movement`
+  via the `ILedgerAccountQuery` seam; NoOp until M3), CRUD + deactivate guard, group roll-ups,
+  `/accounts` + `/account-groups`, seeded groups, EF migration, 13 unit + 2 architecture tests.
+  Introduced `Modules.Contracts` (`IAccountDirectory`, `ILedgerAccountQuery`). Verified end-to-end.
+- **M3 (active)** — Ledger (Income/Expense/Transfer + real derived balances).
 - **M3** — Ledger (the core: Income/Expense/Transfer + derived balances).
 - **M4** — Budgeting (Categories, Budget, Master Plan).
 - **M5** — Reporting.

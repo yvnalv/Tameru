@@ -81,6 +81,15 @@ Compilable skeleton, no features.
 - Spreadsheet/CSV import (accounts/categories/ledgers) validated against derived balances vs the
   workbook; i18n completeness check; density toggle; empty/error/loading states; CSV/PDF export.
 
+## Cross-module contracts (introduced in M2)
+
+`src/Modules.Contracts` holds interface-only cross-module contracts so no module references another
+module's projects directly:
+- `IAccountDirectory` — provided by Accounts (exists/active, currency) for Ledger to validate.
+- `ILedgerAccountQuery` — provided by Ledger (net movement per account, has-transactions) for
+  Accounts to derive balances and guard deactivation. A `NoOp` default is used until M3; Ledger
+  replaces it via DI.
+
 ## Current position
 
-See [STATUS.md](STATUS.md). Active milestone: **M0**.
+See [STATUS.md](STATUS.md). Completed: **M0, M1, M2**. Active milestone: **M3 — Ledger**.

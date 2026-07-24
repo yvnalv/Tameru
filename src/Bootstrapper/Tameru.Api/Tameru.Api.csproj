@@ -6,6 +6,7 @@
     <ProjectReference Include="..\..\BuildingBlocks\Tameru.Application.Abstractions\Tameru.Application.Abstractions.csproj" />
     <ProjectReference Include="..\..\BuildingBlocks\Tameru.SharedKernel\Tameru.SharedKernel.csproj" />
     <ProjectReference Include="..\..\Modules\Identity\Tameru.Identity.Api\Tameru.Identity.Api.csproj" />
+    <ProjectReference Include="..\..\Modules\Accounts\Tameru.Accounts.Api\Tameru.Accounts.Api.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -4,6 +4,10 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Tameru.Accounts.Api;
+using Tameru.Accounts.Infrastructure;
+using Tameru.Accounts.Infrastructure.Persistence;
+using Tameru.Accounts.Infrastructure.Seeding;
 using Tameru.Api.Infrastructure;
 using Tameru.Application.Abstractions;
 using Tameru.Identity.Api;
@@ -31,6 +35,7 @@ builder.Services.AddScoped<ICurrentUser, HttpCurrentUser>();
 
 // Modules.
 builder.Services.AddIdentityModule(config);
+builder.Services.AddAccountsModule(config);
 
 // Authentication / authorization.
 var jwt = config.GetSection(JwtOptions.SectionName).Get<JwtOptions>() ?? new JwtOptions();
@@ -84,6 +89,7 @@ app.MapGet("/health", () => ApiResponse<object>.Ok(new
 }));
 
 app.MapIdentityEndpoints();
+app.MapAccountsEndpoints();
 
 app.Run();
 return;
@@ -113,11 +119,13 @@ static async Task MigrateAndSeedAsync(WebApplication app)
     if (config.GetValue("Database:AutoMigrate", false))
     {
         await services.GetRequiredService<IdentityDbContext>().Database.MigrateAsync();
+        await services.GetRequiredService<AccountsDbContext>().Database.MigrateAsync();
     }
 
     if (config.GetValue("Seed:Enabled", false))
     {
         await services.GetRequiredService<IdentitySeeder>().SeedAsync();
+        await services.GetRequiredService<AccountsSeeder>().SeedAsync();
     }
 }
 

@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\BuildingBlocks\Tameru.SharedKernel\Tameru.SharedKernel.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\Tameru.Application.Abstractions\Tameru.Application.Abstractions.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\Tameru.Infrastructure.Common\Tameru.Infrastructure.Common.csproj" />
+    <ProjectReference Include="..\Tameru.Accounts.Application\Tameru.Accounts.Application.csproj" />
+    <ProjectReference Include="..\Tameru.Accounts.Domain\Tameru.Accounts.Domain.csproj" />
+    <ProjectReference Include="..\..\..\Modules.Contracts\Tameru.Modules.Contracts.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="EFCore.NamingConventions" Version="8.0.3" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.11" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>
