@@ -4,7 +4,7 @@ WORKDIR /src
 
 # Restore (leverage layer caching on the project/solution files first).
 COPY Directory.Build.props ./
-COPY Tameru.sln ./
+COPY Tameru.slnx ./
 COPY src/ ./src/
 RUN dotnet restore src/Bootstrapper/Tameru.Api/Tameru.Api.csproj
 

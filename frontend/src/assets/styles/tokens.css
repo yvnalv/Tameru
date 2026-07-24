@@ -1,0 +1,42 @@
+/*
+ * Design tokens — the single source of truth for color/radius, mirrored from
+ * docs/frontend/DESIGN_LANGUAGE.md (🟢 LOCKED v1). Dark-first; one solid green accent; no gradients.
+ * Tailwind (tailwind.config.ts) maps utilities to these variables.
+ */
+:root {
+  color-scheme: dark;
+
+  /* Accent — solid green, used sparingly */
+  --accent: #35d07a;
+  --accent-hover: #2fbb6d;
+  --accent-active: #29a561;
+  --accent-soft: rgba(53, 208, 122, 0.14);
+  --accent-contrast: #0b0f0c;
+
+  /* Neutrals (dark) */
+  --bg: #131415;
+  --surface: #1c1d1f;
+  --surface-2: #26282b;
+  --sidebar: #0f1011;
+  --border: #2b2e31;
+  --text: #f4f5f6;
+  --text-muted: #8a9097;
+
+  /* Semantic — distinct from the accent */
+  --positive: #35d07a;
+  --negative: #ff5b60;
+  --warning: #ffb020;
+  --info: #4c9aff;
+
+  /* Category spectrum (segmented spend bar / donut) */
+  --cat-1: #35d07a;
+  --cat-2: #9be15d;
+  --cat-3: #ffc531;
+  --cat-4: #ff8a34;
+  --cat-5: #ff5b60;
+  --cat-6: #4c9aff;
+  --cat-7: #b06bff;
+
+  /* Focus ring */
+  --ring: var(--accent);
+}

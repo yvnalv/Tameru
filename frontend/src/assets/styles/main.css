@@ -1,0 +1,49 @@
+@import './tokens.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html,
+  body,
+  #app {
+    height: 100%;
+  }
+
+  body {
+    @apply bg-bg text-text antialiased;
+    font-family:
+      Inter, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  /* Tabular figures on every number (money/qty). Apply via the .tnum class. */
+  .tnum {
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+
+  /* Visible green focus ring (accessibility, AA). */
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background: var(--accent-soft);
+  }
+}
+
+@layer utilities {
+  /* Thin, unobtrusive scrollbars on dark surfaces. */
+  .scroll-slim {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,0 +1,73 @@
+// Bahasa Indonesia dictionary. Structurally identical to en.ts (must stay in lockstep).
+export default {
+  app: {
+    name: 'Tameru',
+    tagline: 'Menabung, dengan sengaja.',
+  },
+  nav: {
+    dashboard: 'Dasbor',
+    transactions: 'Transaksi',
+    accounts: 'Akun',
+    budget: 'Anggaran',
+    masterPlan: 'Rencana Induk',
+    categories: 'Kategori',
+  },
+  common: {
+    loading: 'Memuat…',
+    retry: 'Coba lagi',
+    signOut: 'Keluar',
+    total: 'Total',
+    all: 'Semua',
+    search: 'Cari',
+    comingSoon: 'Segera hadir',
+    language: 'Bahasa',
+  },
+  login: {
+    title: 'Masuk',
+    subtitle: 'Masuk ke akun Tameru Anda.',
+    email: 'Email',
+    emailPlaceholder: 'anda@contoh.com',
+    password: 'Kata sandi',
+    passwordPlaceholder: 'Kata sandi Anda',
+    submit: 'Masuk',
+    submitting: 'Sedang masuk…',
+  },
+  dashboard: {
+    title: 'Dasbor',
+    netWorth: 'Kekayaan bersih',
+    acrossAccounts: 'dari {count} akun',
+    monthIncome: 'Pemasukan bulan ini',
+    monthExpense: 'Pengeluaran bulan ini',
+    monthNet: 'Bersih bulan ini',
+    accounts: 'Akun',
+    noAccounts: 'Belum ada akun. Tambahkan satu untuk melihat saldo Anda di sini.',
+    placeholderNote: 'Dasbor lengkap segera hadir. Angka-angka ini langsung dari buku besar Anda.',
+  },
+  enums: {
+    accountType: {
+      Cash: 'Tunai',
+      Bank: 'Bank',
+      EWallet: 'Dompet digital',
+      Investment: 'Investasi',
+      Blocked: 'Diblokir',
+    },
+    transactionType: {
+      Income: 'Pemasukan',
+      Expense: 'Pengeluaran',
+      Transfer: 'Transfer',
+    },
+    transactionStatus: {
+      Cleared: 'Lunas',
+      Uncleared: 'Belum lunas',
+    },
+  },
+  errors: {
+    invalid_credentials: 'Email atau kata sandi salah.',
+    unauthenticated: 'Sesi Anda telah berakhir. Silakan masuk kembali.',
+    network_error: 'Tidak dapat menghubungi server. Periksa koneksi Anda.',
+    validation_error: 'Silakan periksa kolom yang ditandai.',
+    not_found: 'Tidak ditemukan.',
+    internal_error: 'Terjadi kesalahan. Silakan coba lagi.',
+    generic: 'Terjadi kesalahan.',
+  },
+} as const;

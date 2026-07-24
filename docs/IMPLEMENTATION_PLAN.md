@@ -66,13 +66,17 @@ Compilable skeleton, no features.
 - **Tests:** net worth over active accounts (BR-023), cashflow aggregation + trend, overview/tracker
   pivots, validation (month range, granularity, date range). 10 unit + 2 architecture boundary.
 
-## M6 — Frontend scaffold + shell + login (`CHG-0008`)
+## M6 — Frontend scaffold + shell + login (`CHG-0009`) ✅
 
 - Vite + Vue 3 + TS + Tailwind; `tokens.css` (dark, `#35D07A`, no gradients); `format.ts` (id-ID);
-  axios envelope client; Pinia auth/theme/ui; vue-i18n `en`+`id`.
-- `AppShell` (desktop sidebar + topbar; mobile bottom-nav pill), Login, Dashboard placeholder,
-  UI kit (Button/Card/BalanceCard/StatTile/StatusChip/TransactionRow/SpendBar/Money).
-- **Tests (Vitest):** `formatMoney`, auth guard.
+  axios envelope client (401→refresh); Pinia auth/theme/ui; vue-i18n `en`+`id`.
+- `AppShell` (desktop sidebar + topbar; mobile bottom-nav pill), Login, live Dashboard (net worth +
+  cashflow from M5), UI kit (Button/Card/BalanceCard/StatTile/StatusChip/TransactionRow/SpendBar/Money).
+- Docker `web` service (Nginx + SPA, `/api` proxy) so the whole app runs on Docker.
+- **Tests (Vitest):** `formatMoney`/formatters, auth guard. `vue-tsc` + build green.
+
+> Note: CHG-0008 was used for the local Docker stack (API + Postgres); the frontend milestone is
+> recorded as CHG-0009.
 
 ## M7 — Frontend MVP screens (`CHG-0009…`)
 
@@ -95,5 +99,5 @@ module's projects directly:
 
 ## Current position
 
-See [STATUS.md](STATUS.md). Completed: **M0, M1, M2, M3, M4, M5** (backend MVP done). Active
-milestone: **M6 — Frontend scaffold + shell + login**.
+See [STATUS.md](STATUS.md). Completed: **M0, M1, M2, M3, M4, M5** (backend MVP) and **M6** (frontend
+scaffold + shell + login). Active milestone: **M7 — Frontend MVP screens**.

@@ -1,0 +1,61 @@
+# Local full-stack run for hands-on testing (docs/DEPLOYMENT.md).
+# web (Nginx + Vue SPA) → api (.NET) → db (Postgres). The API reaches Postgres over the internal
+# compose network, so the database port is NOT published to the host (avoids clashing with a local
+# Postgres on 5433). The SPA calls same-origin /api, which Nginx proxies to the API (no CORS).
+#
+#   docker compose up -d --build      # start
+#   # → App at http://localhost:${WEB_PORT:-8091}
+#   # → API at http://localhost:${API_PORT:-8090}  (Swagger at /swagger)
+#   docker compose down               # stop (add -v to also drop the data volume)
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: tameru-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-tameru}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-tameru_dev}
+      POSTGRES_DB: ${POSTGRES_DB:-tameru}
+    volumes:
+      - tameru_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-tameru} -d ${POSTGRES_DB:-tameru}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: tameru-api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # The container listens on 8080 (Dockerfile). On startup it auto-migrates and seeds the owner.
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
+      ConnectionStrings__Postgres: "Host=db;Port=5432;Database=${POSTGRES_DB:-tameru};Username=${POSTGRES_USER:-tameru};Password=${POSTGRES_PASSWORD:-tameru_dev}"
+      Jwt__SigningKey: ${Jwt__SigningKey:-tameru-local-docker-signing-key-change-me-please-0123456789}
+      Jwt__Issuer: tameru
+      Jwt__Audience: tameru
+      Database__AutoMigrate: "true"
+      Seed__Enabled: "true"
+      Cors__AllowedOrigins__0: ${CORS_ORIGIN:-http://localhost:5173}
+    ports:
+      - "${API_PORT:-8090}:8080"
+
+  web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: tameru-web
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "${WEB_PORT:-8091}:80"
+
+volumes:
+  tameru_pgdata:
