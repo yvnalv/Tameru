@@ -16,7 +16,7 @@ async function signOut(): Promise<void> {
 
 <template>
   <header
-    class="flex h-16 items-center justify-between border-b border-border bg-bg/80 px-4 backdrop-blur md:px-6"
+    class="flex h-16 items-center justify-between border-b border-border bg-bg/80 px-4 backdrop-blur md:px-8"
   >
     <h1 class="text-base font-semibold">
       {{ $t(`nav.${(router.currentRoute.value.name as string) || 'dashboard'}`) }}

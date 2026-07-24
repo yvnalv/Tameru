@@ -40,6 +40,12 @@ export function formatMoney(
   return value < 0 ? `(${body})` : body;
 }
 
+/** Short date like `24 Jul` in the given locale, from an ISO `YYYY-MM-DD` string. */
+export function formatShortDate(iso: string, locale = 'id'): string {
+  const d = new Date(`${iso}T00:00:00`);
+  return d.toLocaleDateString(locale, { day: '2-digit', month: 'short' });
+}
+
 /** Signed money for ledger rows: `+Rp 1.000` / `−Rp 1.000` (true minus sign, not a hyphen). */
 export function formatSignedMoney(value: number, currencyCode = 'IDR'): string {
   const body = formatMoney(Math.abs(value), currencyCode);
