@@ -3,6 +3,23 @@
 This file is Tameru's immutable historical record. A task is not complete until this file has been
 updated. Newest entries at the top. See `CLAUDE.md` → **CHANGELOG Rules** for the full procedure.
 
+## [2026-07-24 16:31:40 UTC]
+
+CHG-0011 — Fix: navigable sidebar + aligned shell layout
+
+- Sidebar/mobile-nav items other than Dashboard had no routes, so they rendered as dead placeholders.
+  Every menu item (Transactions, Accounts, Budget, Master Plan, Categories) is now a real route that
+  shows a navigable "coming soon" stub (`PlaceholderView`) until M7 builds the screen; active-nav
+  highlighting works throughout. Placeholder items show a small "Soon" badge in the sidebar.
+- Fixed the shell layout: `main` was centered (`mx-auto max-w-[1200px]`) while the topbar was not,
+  producing a large empty left gutter and title/content misalignment. `main` is now left-aligned
+  (`max-w-[1400px]`) with the same horizontal padding as the topbar, so the page title and content
+  align under the sidebar.
+- Added `common.soon` / `common.comingSoonNote` to both locales. Frontend suite green (15 tests);
+  rebuilt the Docker `web` image.
+
+---
+
 ## [2026-07-24 16:22:00 UTC]
 
 CHG-0010 — Fix: login email field vanished in production (vue-i18n '@' escaping)

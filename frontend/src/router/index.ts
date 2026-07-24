@@ -23,6 +23,12 @@ const routes: RouteRecordRaw[] = [
         name: 'dashboard',
         component: () => import('@/views/DashboardView.vue'),
       },
+      // Navigable placeholders until M7 builds the real screens.
+      { path: 'transactions', name: 'transactions', component: () => import('@/views/PlaceholderView.vue') },
+      { path: 'accounts', name: 'accounts', component: () => import('@/views/PlaceholderView.vue') },
+      { path: 'budget', name: 'budget', component: () => import('@/views/PlaceholderView.vue') },
+      { path: 'master-plan', name: 'masterPlan', component: () => import('@/views/PlaceholderView.vue') },
+      { path: 'categories', name: 'categories', component: () => import('@/views/PlaceholderView.vue') },
     ],
   },
   { path: '/:pathMatch(.*)*', redirect: { name: 'dashboard' } },

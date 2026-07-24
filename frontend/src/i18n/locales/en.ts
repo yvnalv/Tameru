@@ -20,6 +20,8 @@ export default {
     all: 'All',
     search: 'Search',
     comingSoon: 'Coming soon',
+    soon: 'Soon',
+    comingSoonNote: 'This screen is coming soon.',
     language: 'Language',
   },
   login: {

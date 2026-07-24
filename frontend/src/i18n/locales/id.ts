@@ -20,6 +20,8 @@ export default {
     all: 'Semua',
     search: 'Cari',
     comingSoon: 'Segera hadir',
+    soon: 'Segera',
+    comingSoonNote: 'Layar ini segera hadir.',
     language: 'Bahasa',
   },
   login: {
