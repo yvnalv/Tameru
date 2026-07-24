@@ -28,11 +28,14 @@ integration events. See [ARCHITECTURE.md](ARCHITECTURE.md).
 - **Provides (contract):** `ILedgerAccountQuery` (net movement per account, has-transactions — for
   Accounts), and `ITransactionQuery` (sums per category / per period — for Budgeting/Reporting).
   Publishes `TransactionPosted`, `TransactionUpdated`, `TransactionVoided`.
-- **Consumes:** Accounts (validate account exists/active), Budgeting (validate category exists).
-- **Rules:** transfer must have distinct `AccountId` and `ToAccountId`; amount > 0; a posted
-  transaction is editable while Draft/Uncleared, and voided rather than hard-deleted. See
-  [BUSINESS_RULES.md](BUSINESS_RULES.md).
+- **Consumes:** Accounts (`IAccountDirectory`, validate account exists/active). Category validation
+  (BR-005/006) is added when the Budgeting/Categories module ships (M4); until then category ids are
+  accepted as opaque, optional values.
+- **Rules:** transfer must have distinct `AccountId` and `ToAccountId`; amount > 0; voided rather than
+  hard-deleted (soft-delete). See [BUSINESS_RULES.md](BUSINESS_RULES.md).
 - **Source sheets:** `Income`, `Expenses`, `Account Transfer`, `Expenses (Sample)`.
+- **Status:** ✅ implemented (M3) — Income/Expense/Transfer CRUD, clear/unclear, void, filtered list;
+  `BalanceCalculator` + the real `ILedgerAccountQuery` make Accounts balances live.
 
 ### Budgeting
 - **Purpose:** categories, monthly budgets, and the allocation Master Plan.

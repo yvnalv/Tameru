@@ -15,6 +15,9 @@ using Tameru.Identity.Infrastructure;
 using Tameru.Identity.Infrastructure.Authentication;
 using Tameru.Identity.Infrastructure.Persistence;
 using Tameru.Identity.Infrastructure.Seeding;
+using Tameru.Ledger.Api;
+using Tameru.Ledger.Infrastructure;
+using Tameru.Ledger.Infrastructure.Persistence;
 using Tameru.SharedKernel.Time;
 using Tameru.Web.Common.Contracts;
 using Tameru.Web.Common.Middleware;
@@ -33,9 +36,10 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddSingleton<IClock, SystemClock>();
 builder.Services.AddScoped<ICurrentUser, HttpCurrentUser>();
 
-// Modules.
+// Modules. Order matters: Ledger's ILedgerAccountQuery replaces the Accounts no-op default.
 builder.Services.AddIdentityModule(config);
 builder.Services.AddAccountsModule(config);
+builder.Services.AddLedgerModule(config);
 
 // Authentication / authorization.
 var jwt = config.GetSection(JwtOptions.SectionName).Get<JwtOptions>() ?? new JwtOptions();
@@ -90,6 +94,7 @@ app.MapGet("/health", () => ApiResponse<object>.Ok(new
 
 app.MapIdentityEndpoints();
 app.MapAccountsEndpoints();
+app.MapLedgerEndpoints();
 
 app.Run();
 return;
@@ -120,6 +125,7 @@ static async Task MigrateAndSeedAsync(WebApplication app)
     {
         await services.GetRequiredService<IdentityDbContext>().Database.MigrateAsync();
         await services.GetRequiredService<AccountsDbContext>().Database.MigrateAsync();
+        await services.GetRequiredService<LedgerDbContext>().Database.MigrateAsync();
     }
 
     if (config.GetValue("Seed:Enabled", false))

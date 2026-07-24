@@ -4,8 +4,9 @@
 
 ## Phase
 
-**Core money.** M0 (scaffold), M1 (Identity), and M2 (Accounts) complete; M3 (Ledger) next.
-See the milestone plan in [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md).
+**Core money.** M0–M3 complete (scaffold, Identity, Accounts, Ledger); M4 (Budgeting) next.
+The ledger is live: transactions drive real account balances. See
+[IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md).
 
 ## Done
 
@@ -27,9 +28,12 @@ See the milestone plan in [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md).
   via the `ILedgerAccountQuery` seam; NoOp until M3), CRUD + deactivate guard, group roll-ups,
   `/accounts` + `/account-groups`, seeded groups, EF migration, 13 unit + 2 architecture tests.
   Introduced `Modules.Contracts` (`IAccountDirectory`, `ILedgerAccountQuery`). Verified end-to-end.
-- **M3 (active)** — Ledger (Income/Expense/Transfer + real derived balances).
-- **M3** — Ledger (the core: Income/Expense/Transfer + derived balances).
-- **M4** — Budgeting (Categories, Budget, Master Plan).
+- ✅ **M3** — Ledger: `ledger.transactions` (Income/Expense/Transfer), money rules (amount > 0,
+  transfer distinct accounts, void = soft-delete), clear/unclear, filtered list; `BalanceCalculator`
+  + real `ILedgerAccountQuery` (replaces the Accounts no-op) so balances derive live from the ledger;
+  account validation via `IAccountDirectory`; `/api/v1/transactions`; 25 unit + 2 architecture tests.
+  Verified end-to-end (income + transfer + expense → correct balances; void recomputes; in-use guard).
+- **M4 (active)** — Budgeting (Categories, Budget, Master Plan).
 - **M5** — Reporting.
 - **M6** — Frontend scaffold + shell + login.
 - **M7** — Frontend MVP screens.

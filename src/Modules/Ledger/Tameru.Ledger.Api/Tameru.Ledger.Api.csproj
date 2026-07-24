@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Tameru.Ledger.Api</RootNamespace>
+    <AssemblyName>Tameru.Ledger.Api</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\BuildingBlocks\Tameru.SharedKernel\Tameru.SharedKernel.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\Tameru.Web.Common\Tameru.Web.Common.csproj" />
+    <ProjectReference Include="..\..\..\Modules.Contracts\Tameru.Modules.Contracts.csproj" />
+    <ProjectReference Include="..\Tameru.Ledger.Application\Tameru.Ledger.Application.csproj" />
+    <ProjectReference Include="..\Tameru.Ledger.Infrastructure\Tameru.Ledger.Infrastructure.csproj" />
+    <ProjectReference Include="..\Tameru.Ledger.Domain\Tameru.Ledger.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

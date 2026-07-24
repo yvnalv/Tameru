@@ -3,6 +3,37 @@
 This file is Tameru's immutable historical record. A task is not complete until this file has been
 updated. Newest entries at the top. See `CLAUDE.md` → **CHANGELOG Rules** for the full procedure.
 
+## [2026-07-24 11:00:00 UTC]
+
+CHG-0005 — M3: Ledger (Income / Expense / Transfer — the cashflow core)
+
+- Added the Ledger module (Domain / Application / Infrastructure / Api):
+  - Domain: `Transaction` (single-entry Income/Expense/Transfer) with money rules — amount > 0
+    (BR-001), transfer has a distinct target account (BR-002/003), title required; clear/unclear;
+    void = soft-delete (BR-007). Pure `BalanceCalculator` (net movement / balance, `asOf` cutoff).
+  - Application: `LedgerService` (create/update/clear/unclear/void/list with filters) returning
+    `Result`s; validates referenced accounts via the Accounts `IAccountDirectory` contract;
+    `LedgerErrors`.
+  - Infrastructure: `LedgerDbContext` (schema `ledger`, snake_case), `Transaction` config + indexes,
+    repository, and the real `LedgerAccountQuery` implementing `ILedgerAccountQuery` in SQL —
+    replacing the Accounts no-op so balances derive live from the ledger (ADR-0006). DI + design-time
+    factory.
+  - Api: `/api/v1/transactions` (list/filter, get, create, update, clear, unclear, void).
+- Bootstrapper: `AddLedgerModule` registered after Accounts (its `ILedgerAccountQuery` overrides the
+  no-op); Ledger added to startup migrate and endpoint mapping.
+- Fixed the `Result → HTTP` mapper: `account_in_use` (and `category_is_system`, `already_voided`)
+  now map to 409 Conflict per ERROR_HANDLING.md.
+- EF migration `Ledger_Initial`; applied to the dev Postgres.
+- Tests: 25 Ledger unit tests (balance derivation priority + transaction rules + service) and 2
+  Ledger architecture-boundary rules. Full suite green (67 tests).
+- Verified end-to-end on Docker: income + transfer + expense produce correct account balances
+  (A = 8,700,000; B = 7,150,000); void recomputes (B → 7,300,000); deactivating an in-use account is
+  blocked (409); type/account/amount validation paths return the right envelopes.
+- Docs: MODULES (Ledger status + contracts), ERROR_HANDLING (account_not_found), STATUS,
+  IMPLEMENTATION_PLAN updated.
+
+---
+
 ## [2026-07-24 10:30:00 UTC]
 
 CHG-0004 — M2: Accounts (accounts, groups, derived balances)

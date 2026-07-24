@@ -44,6 +44,7 @@ Business-rule failures (see [BUSINESS_RULES.md](BUSINESS_RULES.md)) map to `422 
 | Amount ≤ 0 | `amount_not_positive` | 400 |
 | Category flow mismatch | `category_flow_mismatch` | 422 |
 | Deactivate account referenced by a transaction | `account_in_use` | 409 |
+| Transaction references a missing/inactive account | `account_not_found` | 422 |
 | Delete system category | `category_is_system` | 409 |
 | Void an already-voided transaction | `already_voided` | 409 |
 

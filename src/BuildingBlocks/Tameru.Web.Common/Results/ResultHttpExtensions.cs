@@ -32,7 +32,8 @@ public static class ResultHttpExtensions
             => StatusCodes.Status401Unauthorized,
         "forbidden" => StatusCodes.Status403Forbidden,
         "not_found" => StatusCodes.Status404NotFound,
-        "conflict" => StatusCodes.Status409Conflict,
+        "conflict" or "account_in_use" or "category_is_system" or "already_voided"
+            => StatusCodes.Status409Conflict,
         _ => StatusCodes.Status422UnprocessableEntity,
     };
 }
