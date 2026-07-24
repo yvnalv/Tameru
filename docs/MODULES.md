@@ -14,17 +14,20 @@ integration events. See [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ### Accounts
 - **Purpose:** money containers and their grouping; expose derived balances.
-- **Owns:** `Accounts`, `AccountGroups`.
-- **Provides (contract):** `IAccountBalanceQuery` (current + monthly balance for an account, computed
-  from Ledger), account existence/active checks.
-- **Depends on:** Ledger (via contract) for balance computation; BuildingBlocks.
+- **Owns:** `accounts.accounts`, `accounts.account_groups`.
+- **Provides (contract):** `IAccountDirectory` (exists/active, currency) for other modules.
+- **Consumes (contract):** `ILedgerAccountQuery` (net movement per account, has-transactions) to
+  derive current balances (`opening + movement`) and guard deactivation. A `NoOp` implementation is
+  used until the Ledger module (M3) provides the real one.
 - **Source sheets:** `Account`.
+- **Status:** ✅ implemented (M2) — CRUD, deactivate guard (BR-021), group roll-ups, seeded groups.
 
 ### Ledger
 - **Purpose:** the cashflow core. Income / Expense / Transfer transactions.
 - **Owns:** `Transactions`.
-- **Provides (contract):** `ITransactionQuery` (sums per account / per category / per period),
-  `IBalanceProjection`. Publishes `TransactionPosted`, `TransactionUpdated`, `TransactionVoided`.
+- **Provides (contract):** `ILedgerAccountQuery` (net movement per account, has-transactions — for
+  Accounts), and `ITransactionQuery` (sums per category / per period — for Budgeting/Reporting).
+  Publishes `TransactionPosted`, `TransactionUpdated`, `TransactionVoided`.
 - **Consumes:** Accounts (validate account exists/active), Budgeting (validate category exists).
 - **Rules:** transfer must have distinct `AccountId` and `ToAccountId`; amount > 0; a posted
   transaction is editable while Draft/Uncleared, and voided rather than hard-deleted. See

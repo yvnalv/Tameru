@@ -3,6 +3,33 @@
 This file is Tameru's immutable historical record. A task is not complete until this file has been
 updated. Newest entries at the top. See `CLAUDE.md` → **CHANGELOG Rules** for the full procedure.
 
+## [2026-07-24 10:30:00 UTC]
+
+CHG-0004 — M2: Accounts (accounts, groups, derived balances)
+
+- Added the Accounts module (Domain / Application / Infrastructure / Api):
+  - Domain: `Account` (type, opening balance, currency, active, sort order) and `AccountGroup`;
+    `BalanceWith(netMovement) = opening + movement` (ADR-0006, BR-022).
+  - Application: `AccountService` (list/get/create/update, deactivate with in-use guard BR-021,
+    group roll-ups) returning `Result`s; repository + unit-of-work ports; `AccountErrors`.
+  - Infrastructure: `AccountsDbContext` (schema `accounts`, snake_case), EF configs, repositories,
+    `AccountDirectory` (provides `IAccountDirectory`), `NoOpLedgerAccountQuery` (default
+    `ILedgerAccountQuery` until Ledger ships), groups seeder, DI, design-time factory.
+  - Api: `/api/v1/accounts` (list/get/create/update/deactivate) and `/api/v1/account-groups`
+    (list/create/update), owner-authorized.
+- Introduced `src/Modules.Contracts` for interface-only cross-module contracts:
+  `IAccountDirectory` (provided by Accounts) and `ILedgerAccountQuery` (provided by Ledger later;
+  NoOp for now), so no module references another module's projects directly.
+- Bootstrapper: registered the module, mapped endpoints, added Accounts to startup migrate + seed.
+- EF migration `Accounts_Initial`; applied to the dev Postgres; default account groups seeded.
+- Tests: 13 Accounts unit tests (domain + service incl. balance derivation, deactivate guard,
+  group roll-up) and 2 Accounts architecture-boundary rules. Full suite green (40 tests).
+- Verified end-to-end on Docker: login → create/list accounts (balance = opening via NoOp ledger)
+  → invalid type 400 → deactivate 200 → unauth 401.
+- Docs: MODULES, STATUS, IMPLEMENTATION_PLAN updated.
+
+---
+
 ## [2026-07-24 10:00:00 UTC]
 
 CHG-0003 — M1: Identity (single-user auth)
