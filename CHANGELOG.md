@@ -3,6 +3,24 @@
 This file is Tameru's immutable historical record. A task is not complete until this file has been
 updated. Newest entries at the top. See `CLAUDE.md` → **CHANGELOG Rules** for the full procedure.
 
+## [2026-07-24 15:53:15 UTC]
+
+CHG-0008 — Local Docker stack (API + Postgres) for hands-on testing
+
+- Added `docker-compose.yml`: builds the API image and runs it against a Postgres 16 container. The
+  API reaches the DB over the internal compose network, so the database port is not published to the
+  host (avoids clashing with a local Postgres on 5433). API is published on `${API_PORT:-8090}` and
+  auto-migrates + seeds the owner on startup. The `web` (Nginx + SPA) service is deferred until the
+  frontend lands (M6+).
+- Fixed `Dockerfile.api`: it copied `Tameru.sln`, but the repo uses `Tameru.slnx` — the image build
+  would have failed. Now copies `Tameru.slnx`.
+- Added `.dockerignore` (excludes `bin`/`obj`, `.vs`, `tests`, `frontend/node_modules`, `.git`, …) so
+  the image builds cleanly and reproducibly from a minimal context.
+- Verified: `docker compose up -d --build` → `/health` 200; owner login; the M5 report endpoints
+  respond (net worth, cashflow with a 12-point trend); seed taxonomy present.
+
+---
+
 ## [2026-07-24 15:45:54 UTC]
 
 CHG-0007 — M5: Reporting (dashboard analytics, compute-on-read)
