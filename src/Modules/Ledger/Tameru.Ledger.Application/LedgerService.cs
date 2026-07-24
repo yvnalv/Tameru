@@ -2,6 +2,7 @@ using Tameru.Ledger.Application.Abstractions;
 using Tameru.Ledger.Application.Contracts;
 using Tameru.Ledger.Domain;
 using Tameru.Modules.Contracts.Accounts;
+using Tameru.Modules.Contracts.Budgeting;
 using Tameru.SharedKernel.Results;
 
 namespace Tameru.Ledger.Application;
@@ -9,20 +10,26 @@ namespace Tameru.Ledger.Application;
 /// <summary>
 /// Use cases for the cashflow ledger: create/update Income, Expense, Transfer; clear/unclear; void
 /// (soft-delete); and list. Referenced accounts are validated through the Accounts module's
-/// <see cref="IAccountDirectory"/> contract (docs/ARCHITECTURE.md). Money rules live in the domain
-/// (BR-001..003) and surface as <c>DomainRuleException</c>s mapped to 422.
+/// <see cref="IAccountDirectory"/> contract, and categories through Budgeting's
+/// <see cref="ICategoryDirectory"/> (BR-005/006). Money rules live in the domain (BR-001..003) and
+/// surface as <c>DomainRuleException</c>s mapped to 422.
 /// </summary>
 public sealed class LedgerService
 {
     private readonly ITransactionRepository _transactions;
     private readonly IAccountDirectory _accounts;
+    private readonly ICategoryDirectory _categories;
     private readonly ILedgerUnitOfWork _unitOfWork;
 
     public LedgerService(
-        ITransactionRepository transactions, IAccountDirectory accounts, ILedgerUnitOfWork unitOfWork)
+        ITransactionRepository transactions,
+        IAccountDirectory accounts,
+        ICategoryDirectory categories,
+        ILedgerUnitOfWork unitOfWork)
     {
         _transactions = transactions;
         _accounts = accounts;
+        _categories = categories;
         _unitOfWork = unitOfWork;
     }
 
@@ -56,6 +63,13 @@ public sealed class LedgerService
         if (accountsOk.IsFailure)
         {
             return accountsOk.Error;
+        }
+
+        var categoriesOk = await ValidateCategoriesAsync(
+            type, request.BudgetCategoryId, request.CategoryId, request.SubCategoryId, ct);
+        if (categoriesOk.IsFailure)
+        {
+            return categoriesOk.Error;
         }
 
         var transaction = type switch
@@ -96,6 +110,16 @@ public sealed class LedgerService
         if (accountsOk.IsFailure)
         {
             return accountsOk.Error;
+        }
+
+        if (transaction.Type != TransactionType.Transfer)
+        {
+            var categoriesOk = await ValidateCategoriesAsync(
+                transaction.Type, request.BudgetCategoryId, request.CategoryId, request.SubCategoryId, ct);
+            if (categoriesOk.IsFailure)
+            {
+                return categoriesOk.Error;
+            }
         }
 
         transaction.UpdateCommon(request.Date, request.Title, request.Amount, status, request.Description);
@@ -167,6 +191,34 @@ public sealed class LedgerService
             if (toAccountId is not { } target || !await _accounts.ExistsAndActiveAsync(target, ct))
             {
                 return LedgerErrors.AccountNotFound;
+            }
+        }
+
+        return Result.Success();
+    }
+
+    private async Task<Result> ValidateCategoriesAsync(
+        TransactionType type, Guid? budgetCategoryId, Guid? categoryId, Guid? subCategoryId, CancellationToken ct)
+    {
+        // The flow a category must accept for this transaction (BR-005). Transfers carry no category.
+        var expected = type == TransactionType.Income ? "Income" : "Expense";
+
+        foreach (var id in new[] { budgetCategoryId, categoryId, subCategoryId })
+        {
+            if (id is not { } categoryRef)
+            {
+                continue;
+            }
+
+            var category = await _categories.GetAsync(categoryRef, ct);
+            if (category is null || !category.IsActive)
+            {
+                return LedgerErrors.CategoryNotFound;
+            }
+
+            if (category.Flow is not "Any" && category.Flow != expected)
+            {
+                return LedgerErrors.CategoryFlowMismatch;
             }
         }
 

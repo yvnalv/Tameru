@@ -1,9 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Tameru.Ledger.Application;
 using Tameru.Ledger.Application.Abstractions;
 using Tameru.Ledger.Infrastructure.Persistence;
+using Tameru.Modules.Contracts.Budgeting;
 using Tameru.Modules.Contracts.Ledger;
 
 namespace Tameru.Ledger.Infrastructure;
@@ -26,8 +28,12 @@ public static class LedgerInfrastructureModule
         services.AddScoped<ILedgerUnitOfWork>(sp => sp.GetRequiredService<LedgerDbContext>());
         services.AddScoped<ITransactionRepository, TransactionRepository>();
 
-        // Provided cross-module contract — replaces the Accounts no-op default.
+        // Provided cross-module contracts — replace the Accounts no-op default; expose spend totals.
         services.AddScoped<ILedgerAccountQuery, LedgerAccountQuery>();
+        services.AddScoped<ICategorySpendQuery, CategorySpendQuery>();
+
+        // Consumed contract: permissive default until the Budgeting module replaces it (M4).
+        services.TryAddScoped<ICategoryDirectory, NoOpCategoryDirectory>();
 
         services.AddScoped<LedgerService>();
 

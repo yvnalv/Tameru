@@ -3,6 +3,39 @@
 This file is Tameru's immutable historical record. A task is not complete until this file has been
 updated. Newest entries at the top. See `CLAUDE.md` → **CHANGELOG Rules** for the full procedure.
 
+## [2026-07-24 11:30:00 UTC]
+
+CHG-0006 — M4: Budgeting (Categories, Budget, Master Plan)
+
+- Added the Budgeting module (Domain / Application / Infrastructure / Api):
+  - Domain: `Category` (self-referencing Budget→Category→Sub, flow, system flag, BR-040/041/005),
+    `BudgetPeriod`/`BudgetLine` (BR-060/061), `MasterPlanSection`/`MasterPlanItem`
+    (`TotalBudget = Price × Frequency`, target %, BR-080/081).
+  - Application: `CategoryService` (tree CRUD, system + child guards), `BudgetService` (periods +
+    lines; Actual/Leftover derived from the ledger via `ICategorySpendQuery`, BR-062),
+    `MasterPlanService` (sections/items + roll-ups); `BudgetingErrors`.
+  - Infrastructure: `BudgetingDbContext` (schema `budgeting`, snake_case) + configs, repositories,
+    `CategoryDirectory` (provides `ICategoryDirectory`), starter-taxonomy + 40/50/10 section seeder,
+    DI, design-time factory.
+  - Api: `/api/v1/categories`, `/api/v1/budget-periods`, `/api/v1/master-plan`.
+- Cross-module contracts: added `ICategoryDirectory` (provided by Budgeting) and `ICategorySpendQuery`
+  (provided by Ledger).
+- **Ledger extended:** implements `ICategorySpendQuery` (monthly expense totals per category) and now
+  validates a transaction's category (exists / active / flow) via `ICategoryDirectory` — closing
+  BR-005/006. A permissive no-op directory is used when Budgeting is absent; the bootstrapper
+  registers Budgeting last so its real directory wins.
+- Bootstrapper: `AddBudgetingModule`, plus Budgeting migrate + seed on startup and endpoint mapping.
+- EF migration `Budgeting_Initial`; applied to the dev Postgres; taxonomy + sections seeded.
+- Tests: 18 Budgeting unit tests (domain rules; category/budget/master-plan services incl.
+  actual-from-ledger) and 2 architecture-boundary rules; updated Ledger tests for the new dependency.
+  Full suite green (87 tests).
+- Verified end-to-end on Docker: seeded categories + 40/50/10 sections; an Expense with an Income-flow
+  category is rejected (`category_flow_mismatch`, 422); a budget's Actual (500,000) derives from a real
+  ledger expense against Plan (770,000) → Leftover 270,000.
+- Docs: MODULES (Budgeting + Ledger), ERROR_HANDLING (category codes), STATUS, IMPLEMENTATION_PLAN.
+
+---
+
 ## [2026-07-24 11:00:00 UTC]
 
 CHG-0005 — M3: Ledger (Income / Expense / Transfer — the cashflow core)
