@@ -8,6 +8,7 @@
     <ProjectReference Include="..\..\Modules\Identity\Tameru.Identity.Api\Tameru.Identity.Api.csproj" />
     <ProjectReference Include="..\..\Modules\Accounts\Tameru.Accounts.Api\Tameru.Accounts.Api.csproj" />
     <ProjectReference Include="..\..\Modules\Ledger\Tameru.Ledger.Api\Tameru.Ledger.Api.csproj" />
+    <ProjectReference Include="..\..\Modules\Budgeting\Tameru.Budgeting.Api\Tameru.Budgeting.Api.csproj" />
   </ItemGroup>
 
   <ItemGroup>

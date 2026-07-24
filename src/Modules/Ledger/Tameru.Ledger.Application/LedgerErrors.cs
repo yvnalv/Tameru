@@ -15,4 +15,10 @@ public static class LedgerErrors
 
     public static readonly Error AccountNotFound =
         new("account_not_found", "A referenced account does not exist or is inactive.");
+
+    public static readonly Error CategoryNotFound =
+        new("category_not_found", "A referenced category does not exist or is inactive.");
+
+    public static readonly Error CategoryFlowMismatch =
+        new("category_flow_mismatch", "The category does not apply to this transaction type.");
 }

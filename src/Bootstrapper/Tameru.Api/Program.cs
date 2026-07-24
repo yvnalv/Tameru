@@ -10,6 +10,10 @@ using Tameru.Accounts.Infrastructure.Persistence;
 using Tameru.Accounts.Infrastructure.Seeding;
 using Tameru.Api.Infrastructure;
 using Tameru.Application.Abstractions;
+using Tameru.Budgeting.Api;
+using Tameru.Budgeting.Infrastructure;
+using Tameru.Budgeting.Infrastructure.Persistence;
+using Tameru.Budgeting.Infrastructure.Seeding;
 using Tameru.Identity.Api;
 using Tameru.Identity.Infrastructure;
 using Tameru.Identity.Infrastructure.Authentication;
@@ -36,10 +40,13 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddSingleton<IClock, SystemClock>();
 builder.Services.AddScoped<ICurrentUser, HttpCurrentUser>();
 
-// Modules. Order matters: Ledger's ILedgerAccountQuery replaces the Accounts no-op default.
+// Modules. Order matters for cross-module contract overrides:
+//   Ledger's ILedgerAccountQuery replaces the Accounts no-op;
+//   Budgeting's ICategoryDirectory replaces the Ledger no-op.
 builder.Services.AddIdentityModule(config);
 builder.Services.AddAccountsModule(config);
 builder.Services.AddLedgerModule(config);
+builder.Services.AddBudgetingModule(config);
 
 // Authentication / authorization.
 var jwt = config.GetSection(JwtOptions.SectionName).Get<JwtOptions>() ?? new JwtOptions();
@@ -95,6 +102,7 @@ app.MapGet("/health", () => ApiResponse<object>.Ok(new
 app.MapIdentityEndpoints();
 app.MapAccountsEndpoints();
 app.MapLedgerEndpoints();
+app.MapBudgetingEndpoints();
 
 app.Run();
 return;
@@ -126,12 +134,14 @@ static async Task MigrateAndSeedAsync(WebApplication app)
         await services.GetRequiredService<IdentityDbContext>().Database.MigrateAsync();
         await services.GetRequiredService<AccountsDbContext>().Database.MigrateAsync();
         await services.GetRequiredService<LedgerDbContext>().Database.MigrateAsync();
+        await services.GetRequiredService<BudgetingDbContext>().Database.MigrateAsync();
     }
 
     if (config.GetValue("Seed:Enabled", false))
     {
         await services.GetRequiredService<IdentitySeeder>().SeedAsync();
         await services.GetRequiredService<AccountsSeeder>().SeedAsync();
+        await services.GetRequiredService<BudgetingSeeder>().SeedAsync();
     }
 }
 

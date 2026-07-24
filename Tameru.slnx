@@ -19,6 +19,12 @@
     <Project Path="src/Modules/Accounts/Tameru.Accounts.Domain/Tameru.Accounts.Domain.csproj" />
     <Project Path="src/Modules/Accounts/Tameru.Accounts.Infrastructure/Tameru.Accounts.Infrastructure.csproj" />
   </Folder>
+  <Folder Name="/src/Modules/Budgeting/">
+    <Project Path="src/Modules/Budgeting/Tameru.Budgeting.Api/Tameru.Budgeting.Api.csproj" />
+    <Project Path="src/Modules/Budgeting/Tameru.Budgeting.Application/Tameru.Budgeting.Application.csproj" />
+    <Project Path="src/Modules/Budgeting/Tameru.Budgeting.Domain/Tameru.Budgeting.Domain.csproj" />
+    <Project Path="src/Modules/Budgeting/Tameru.Budgeting.Infrastructure/Tameru.Budgeting.Infrastructure.csproj" />
+  </Folder>
   <Folder Name="/src/Modules/Identity/">
     <Project Path="src/Modules/Identity/Tameru.Identity.Api/Tameru.Identity.Api.csproj" />
     <Project Path="src/Modules/Identity/Tameru.Identity.Application/Tameru.Identity.Application.csproj" />
@@ -34,6 +40,7 @@
   <Folder Name="/tests/">
     <Project Path="tests/Tameru.Accounts.UnitTests/Tameru.Accounts.UnitTests.csproj" />
     <Project Path="tests/Tameru.ArchitectureTests/Tameru.ArchitectureTests.csproj" />
+    <Project Path="tests/Tameru.Budgeting.UnitTests/Tameru.Budgeting.UnitTests.csproj" />
     <Project Path="tests/Tameru.Identity.UnitTests/Tameru.Identity.UnitTests.csproj" />
     <Project Path="tests/Tameru.Ledger.UnitTests/Tameru.Ledger.UnitTests.csproj" />
   </Folder>

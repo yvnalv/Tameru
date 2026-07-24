@@ -2,9 +2,26 @@ using Tameru.Ledger.Application.Abstractions;
 using Tameru.Ledger.Application.Contracts;
 using Tameru.Ledger.Domain;
 using Tameru.Modules.Contracts.Accounts;
+using Tameru.Modules.Contracts.Budgeting;
 using Tameru.SharedKernel.Results;
 
 namespace Tameru.Ledger.UnitTests;
+
+/// <summary>Category directory stub. Accepts all categories with a configurable flow (default Any).</summary>
+internal sealed class FakeCategoryDirectory : ICategoryDirectory
+{
+    private readonly string _flow;
+    private readonly bool _active;
+
+    public FakeCategoryDirectory(string flow = "Any", bool active = true)
+    {
+        _flow = flow;
+        _active = active;
+    }
+
+    public Task<CategoryRef?> GetAsync(Guid categoryId, CancellationToken cancellationToken = default) =>
+        Task.FromResult<CategoryRef?>(new CategoryRef(categoryId, "Category", _flow, _active));
+}
 
 internal sealed class FakeTransactionRepository : ITransactionRepository
 {

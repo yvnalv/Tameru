@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Tameru.Budgeting.Api</RootNamespace>
+    <AssemblyName>Tameru.Budgeting.Api</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\BuildingBlocks\Tameru.SharedKernel\Tameru.SharedKernel.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\Tameru.Web.Common\Tameru.Web.Common.csproj" />
+    <ProjectReference Include="..\..\..\Modules.Contracts\Tameru.Modules.Contracts.csproj" />
+    <ProjectReference Include="..\Tameru.Budgeting.Application\Tameru.Budgeting.Application.csproj" />
+    <ProjectReference Include="..\Tameru.Budgeting.Infrastructure\Tameru.Budgeting.Infrastructure.csproj" />
+    <ProjectReference Include="..\Tameru.Budgeting.Domain\Tameru.Budgeting.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

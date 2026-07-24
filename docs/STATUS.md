@@ -4,9 +4,9 @@
 
 ## Phase
 
-**Core money.** M0–M3 complete (scaffold, Identity, Accounts, Ledger); M4 (Budgeting) next.
-The ledger is live: transactions drive real account balances. See
-[IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md).
+**Core money.** M0–M4 complete (scaffold, Identity, Accounts, Ledger, Budgeting); M5 (Reporting)
+next. The ledger is live end-to-end: transactions drive real account balances **and** budget actuals.
+See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md).
 
 ## Done
 
@@ -33,8 +33,13 @@ The ledger is live: transactions drive real account balances. See
   + real `ILedgerAccountQuery` (replaces the Accounts no-op) so balances derive live from the ledger;
   account validation via `IAccountDirectory`; `/api/v1/transactions`; 25 unit + 2 architecture tests.
   Verified end-to-end (income + transfer + expense → correct balances; void recomputes; in-use guard).
-- **M4 (active)** — Budgeting (Categories, Budget, Master Plan).
-- **M5** — Reporting.
+- ✅ **M4** — Budgeting: `categories` (Budget→Category→Sub tree) with system/child guards; monthly
+  `budget_periods`/`budget_lines` (Plan stored, Actual/Leftover derived from the ledger via
+  `ICategorySpendQuery`); Master Plan `sections`/`items` (40/50/10, `Price × Frequency`); seeded
+  taxonomy + sections; `/categories`, `/budget-periods`, `/master-plan`. Also closed BR-005/006 —
+  Ledger now validates category existence/flow via Budgeting's `ICategoryDirectory`. 18 unit + 2
+  architecture tests. Verified end-to-end (budget actual = ledger spend; flow mismatch → 422).
+- **M5 (active)** — Reporting.
 - **M6** — Frontend scaffold + shell + login.
 - **M7** — Frontend MVP screens.
 

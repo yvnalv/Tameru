@@ -19,7 +19,7 @@ public class LedgerServiceTests
 
     public LedgerServiceTests()
     {
-        _sut = new LedgerService(_repo, new FakeAccountDirectory(A, B), _uow);
+        _sut = new LedgerService(_repo, new FakeAccountDirectory(A, B), new FakeCategoryDirectory(), _uow);
     }
 
     private static CreateTransactionRequest Income(decimal amount, Guid account) =>
