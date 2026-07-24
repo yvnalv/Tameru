@@ -3,6 +3,31 @@
 This file is Tameru's immutable historical record. A task is not complete until this file has been
 updated. Newest entries at the top. See `CLAUDE.md` → **CHANGELOG Rules** for the full procedure.
 
+## [2026-07-24 10:00:00 UTC]
+
+CHG-0003 — M1: Identity (single-user auth)
+
+- Added the Identity module (Domain / Application / Infrastructure / Api) for the single owner:
+  - Domain: `User` (normalized email, locale en/id) and `RefreshToken` (hash-only, rotation-aware).
+  - Application: `AuthService` (login, refresh-rotation, logout, get/update profile) returning
+    `Result`s; ports `IPasswordHasher`, `ITokenService`, repositories, module unit of work.
+  - Infrastructure: `IdentityDbContext` (schema `identity`), EF configs, repositories,
+    PBKDF2 `PasswordHasherAdapter`, HMAC-SHA256 `JwtTokenService`, owner seeder, DI, design-time
+    factory; snake_case columns via `EFCore.NamingConventions` (ADR-0007).
+  - Api: `/api/v1/auth/login|refresh|logout|me` (minimal APIs) using the response envelope; a
+    reusable `Result → HTTP` mapper in Web.Common.
+- Bootstrapper: JWT bearer authentication, `HttpCurrentUser` (claims → audit), module registration,
+  Swagger bearer button, and startup auto-migrate + seed.
+- Initial EF migration `Identity_Initial`; applied to the dev Postgres. Verified end-to-end:
+  login → `/me` → refresh rotation, plus 401/invalid-credentials paths.
+- Tests: 21 Identity unit tests (domain + AuthService incl. rotation/reuse) and 2 new Identity
+  architecture-boundary rules. Full suite green (25 tests).
+- Dev infra: `docker-compose.dev.yml` now maps Postgres to host port 5433 (5432 was reserved);
+  `appsettings.Development.json` wired for the dev DB, JWT, and owner seed.
+- Docs: ADR-0007; DATABASE (naming convention), DEPLOYMENT (local run + dev creds), STATUS updated.
+
+---
+
 ## [2026-07-24 09:30:00 UTC]
 
 CHG-0002 — M0: solution & BuildingBlocks scaffold

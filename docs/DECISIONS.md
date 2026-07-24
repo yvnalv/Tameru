@@ -6,6 +6,30 @@ change direction with a new ADR that supersedes it.
 
 ---
 
+## ADR-0007 — Single-user auth: JWT access + rotating refresh, PBKDF2 hashing, snake_case columns
+**Status:** Accepted · 2026-07-24 (implemented in M1)
+
+**Context.** The owner needs to log in and stay logged in without a heavy identity stack. We also need
+a database naming convention that matches the documented snake_case schema.
+
+**Decision.**
+- **Passwords** are hashed with ASP.NET Core's `PasswordHasher` (PBKDF2) behind an `IPasswordHasher`
+  port. Raw passwords are never stored or logged.
+- **Access tokens** are short-lived HMAC-SHA256 JWTs (claims: `sub`, `email`, `name`, `locale`).
+  Default inbound claim mapping is disabled so `sub` stays `sub`.
+- **Refresh tokens** are opaque random values; only a SHA-256 hash is stored. Refreshing **rotates**:
+  the presented token is revoked and a new pair issued. Reuse of a rotated token is rejected.
+- **Column naming** uses `EFCore.NamingConventions` (`UseSnakeCaseNamingConvention`) so EF columns are
+  snake_case, matching [DATABASE.md](DATABASE.md). Each module context keeps its EF migrations-history
+  table in its own schema.
+- No roles/RBAC (ADR-0001). Every non-`/auth` endpoint just requires a valid owner token.
+
+**Consequences.** Simple, secure-by-default auth. Access-token revocation is time-based (short expiry)
+rather than a server-side denylist — acceptable for a single-user app. Rotating refresh tokens give
+basic replay protection.
+
+---
+
 ## ADR-0006 — Derived balances (ledger is the single source of truth)
 **Status:** Accepted · 2026-07-24
 

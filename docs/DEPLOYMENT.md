@@ -17,18 +17,25 @@ variables. **Secrets only via environment variables / user-secrets** — never c
 ## Local run
 
 ```bash
-# Backend (from repo root)
-cd src/Bootstrapper/Tameru.Api
-ASPNETCORE_ENVIRONMENT=Development Database__Initialize=true Database__AutoMigrate=true Seed__Enabled=true dotnet run
-# → http://localhost:5080  (Swagger at /swagger)
+# 1) Dev database (Postgres in Docker, loopback-only on host port 5433)
+docker compose -f docker-compose.dev.yml up -d
 
-# Frontend
+# 2) Backend (from repo root)
+cd src/Bootstrapper/Tameru.Api
+dotnet run        # ASPNETCORE_ENVIRONMENT=Development via launchSettings
+# → http://localhost:5080  (Swagger at /swagger). On startup it auto-migrates and seeds the owner.
+
+# 3) Frontend (later milestone)
 cd frontend
 npm install
 npm run dev        # http://localhost:5173  (proxies /api → http://localhost:5080)
 ```
 
-Dev owner login is created by the seed (email/password from configuration; change immediately).
+`appsettings.Development.json` points at the dev DB (`Host=localhost;Port=5433;…`), enables
+`Database:AutoMigrate` and `Seed:Enabled`, and carries a dev-only `Jwt:SigningKey`.
+
+**Dev owner login (seeded, change for anything real):** `owner@tameru.local` / `ChangeMe!123`.
+Configure via the `Seed:Owner` section or environment variables.
 
 ## Docker
 
