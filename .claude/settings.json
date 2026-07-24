@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls -la \"d:/yvnalvworks/Projects/AccounTrack\" 2>/dev/null)",
+      "Read(//d/yvnalvworks/Projects/AccounTrack/**)",
+      "Bash(pip show *)",
+      "Bash(python3 -)"
+    ]
+  }
+}

@@ -1,0 +1,46 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+[Dd]ebug/
+[Rr]elease/
+artifacts/
+.vs/
+*.dll
+*.pdb
+
+# EF Core
+*.db
+*.db-shm
+*.db-wal
+
+# Node / frontend
+node_modules/
+frontend/dist/
+frontend/.vite/
+*.local
+
+# Environment & secrets
+.env
+.env.*
+!.env.example
+appsettings.*.local.json
+*.pfx
+*.key
+
+# Editors / OS
+.idea/
+.vscode/*
+!.vscode/extensions.json
+.DS_Store
+Thumbs.db
+
+# Logs & coverage
+*.log
+coverage/
+TestResults/
+.coverage/
+
+# References (local working copy of the source workbook; not committed)
+References/
