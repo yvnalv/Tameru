@@ -54,7 +54,10 @@ See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md).
   (Button/Card/BalanceCard/StatTile/StatusChip/TransactionRow/SpendBar/Money/…). 14 Vitest tests
   (formatters + auth guard); `vue-tsc` typecheck + build green. Added a Docker `web` service (Nginx +
   SPA) — full app runs on Docker at `:8091`, Nginx proxying `/api` to the API. Verified end-to-end.
-- **M7 (active)** — Frontend MVP screens (Transactions, Accounts, Budget, Master Plan, Categories).
+- **M7 (active)** — Frontend MVP screens. Done: full Dashboard, **Accounts** (list + create/edit +
+  deactivate) and **Transactions** (filtered/paginated list + create for Income/Expense/Transfer +
+  clear/unclear/void), with typed `lib/*` modules, `AppSelect`/`AppModal`, and EN/ID strings.
+  Remaining: Categories, Budget, Master Plan.
 
 ## Deferred (post-MVP)
 

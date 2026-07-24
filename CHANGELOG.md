@@ -3,6 +3,27 @@
 This file is Tameru's immutable historical record. A task is not complete until this file has been
 updated. Newest entries at the top. See `CLAUDE.md` → **CHANGELOG Rules** for the full procedure.
 
+## [2026-07-24 16:55:39 UTC]
+
+CHG-0013 — M7 (part 1): Accounts & Transactions screens + demo seed
+
+- Typed API modules `lib/accounts.ts`, `lib/transactions.ts`, `lib/categories.ts` (+ `Paged<T>`,
+  Account/Transaction/Category types) and an `errorMessage` helper mapping backend error codes to
+  localized text. Shared UI: `AppSelect`, `AppModal` (teleported, Esc/backdrop close).
+- **Accounts screen** (`/accounts`): total net worth, account list (type/group/balance, inactive
+  dimmed), create/edit modal (name, type, group, opening balance, currency) and deactivate with the
+  in-use guard surfaced (`account_in_use`).
+- **Transactions screen** (`/transactions`): filtered (type/account/status/search/date range),
+  paginated list with signed colored amounts, transfer "A → B" rows, status chips; create modal with
+  an Income/Expense/Transfer type toggle and flow-aware budget/category pickers; clear/unclear and
+  void row actions. Both wired to the real routes (replacing their placeholders).
+- Extended EN/ID dictionaries (accounts, transactions, form/common, error codes) — kept structurally
+  identical. `vue-tsc` + build green; 15 Vitest tests green; Docker `web` rebuilt.
+- Added `scripts/seed_demo.py` (dev-only): seeds 5 accounts + hundreds of transactions across ~10
+  months. Seeded the local stack — net worth Rp 118,429,000 across 5 accounts, 411 transactions.
+
+---
+
 ## [2026-07-24 16:41:09 UTC]
 
 CHG-0012 — Dashboard redesign (full, richer layout)

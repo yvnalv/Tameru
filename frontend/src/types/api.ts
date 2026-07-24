@@ -22,6 +22,76 @@ export interface ApiFailure {
 
 export type ApiResponse<T> = ApiSuccess<T> | ApiFailure;
 
+export interface Paged<T> {
+  items: T[];
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
+}
+
+// --- Accounts ---------------------------------------------------------------
+
+export type AccountType = 'Cash' | 'Bank' | 'EWallet' | 'Investment' | 'Blocked';
+
+export interface Account {
+  id: string;
+  name: string;
+  groupId: string | null;
+  groupName: string | null;
+  type: string;
+  openingBalance: number;
+  balance: number;
+  currencyCode: string;
+  isActive: boolean;
+  sortOrder: number;
+}
+
+export interface AccountGroup {
+  id: string;
+  name: string;
+  sortOrder: number;
+  accountCount: number;
+  totalBalance: number;
+}
+
+// --- Ledger -----------------------------------------------------------------
+
+export type TransactionType = 'Income' | 'Expense' | 'Transfer';
+export type TransactionStatus = 'Cleared' | 'Uncleared';
+
+export interface Transaction {
+  id: string;
+  type: string;
+  date: string;
+  title: string;
+  amount: number;
+  currencyCode: string;
+  accountId: string;
+  toAccountId: string | null;
+  budgetCategoryId: string | null;
+  categoryId: string | null;
+  subCategoryId: string | null;
+  status: string;
+  description: string | null;
+}
+
+// --- Categories -------------------------------------------------------------
+
+export type CategoryLevel = 'Budget' | 'Category' | 'Sub';
+export type CategoryFlow = 'Income' | 'Expense' | 'Transfer' | 'Any';
+
+export interface Category {
+  id: string;
+  name: string;
+  level: string;
+  parentId: string | null;
+  flow: string;
+  isSystem: boolean;
+  isActive: boolean;
+  sortOrder: number;
+}
+
 // --- Identity ---------------------------------------------------------------
 
 export interface AuthUser {
