@@ -92,4 +92,4 @@ module's projects directly:
 
 ## Current position
 
-See [STATUS.md](STATUS.md). Completed: **M0, M1, M2**. Active milestone: **M3 — Ledger**.
+See [STATUS.md](STATUS.md). Completed: **M0, M1, M2, M3**. Active milestone: **M4 — Budgeting**.
