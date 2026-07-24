@@ -57,11 +57,14 @@ Compilable skeleton, no features.
   Master Plan totals + 40/50/10 targets; seed taxonomy + sections.
 - **Tests:** tree rules, system-category delete guard, actual/leftover, master-plan totals.
 
-## M5 — Reporting (`CHG-0007`)
+## M5 — Reporting (`CHG-0007`) ✅
 
-- Read models (rebuildable from Ledger events): net worth, monthly cashflow, category tracker
-  (daily/monthly), yearly overview. Endpoints `/reports/*`.
-- **Tests:** net worth over active accounts, cashflow aggregation, tracker pivots.
+- **Compute-on-read** (no tables, no cache): net worth, monthly cashflow + trend, category tracker
+  (daily/monthly), yearly overview. Endpoints `/api/v1/reports/*`.
+- New contracts: `IAccountBalanceDirectory` (Accounts → derived balances) and `ILedgerReportingQuery`
+  (Ledger → monthly cashflow, expense totals per category per period).
+- **Tests:** net worth over active accounts (BR-023), cashflow aggregation + trend, overview/tracker
+  pivots, validation (month range, granularity, date range). 10 unit + 2 architecture boundary.
 
 ## M6 — Frontend scaffold + shell + login (`CHG-0008`)
 
@@ -92,4 +95,5 @@ module's projects directly:
 
 ## Current position
 
-See [STATUS.md](STATUS.md). Completed: **M0, M1, M2, M3, M4**. Active milestone: **M5 — Reporting**.
+See [STATUS.md](STATUS.md). Completed: **M0, M1, M2, M3, M4, M5** (backend MVP done). Active
+milestone: **M6 — Frontend scaffold + shell + login**.

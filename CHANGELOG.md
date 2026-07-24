@@ -3,6 +3,40 @@
 This file is Tameru's immutable historical record. A task is not complete until this file has been
 updated. Newest entries at the top. See `CLAUDE.md` → **CHANGELOG Rules** for the full procedure.
 
+## [2026-07-24 15:45:54 UTC]
+
+CHG-0007 — M5: Reporting (dashboard analytics, compute-on-read)
+
+- Added the Reporting module (Application / Infrastructure / Api). It owns **no data**: no tables, no
+  `DbContext`, no migration — every figure is computed on read from other modules' contracts, so
+  reports can never drift from the ledger, the single source of truth (ADR-0006). A materialized
+  cache is deliberately deferred until data volume would justify it.
+  - Application: `ReportingService` with four read use cases returning `Result`s —
+    net worth (sum of derived balances over **active** accounts, BR-023, + per-account breakdown),
+    monthly cashflow (income vs expense for a month + the 12-month trend), yearly overview (category ×
+    month spend matrix), and a category-tracker pivot (daily/monthly over a date range). Query-param
+    validation (`ReportingErrors`): month 1..12, known granularity, `from ≤ to`.
+  - Infrastructure: `AddReportingModule` (registers the service; no persistence).
+  - Api: `/api/v1/reports/{net-worth,cashflow,overview,category-tracker}`, owner-authorized.
+- Cross-module contracts: added `IAccountBalanceDirectory` (provided by Accounts — per-account derived
+  balances, reusing `AccountService` so the `opening + net movement` formula stays in one place) and
+  `ILedgerReportingQuery` (provided by Ledger — monthly income/expense totals and expense totals per
+  level-2 category per period bucket). Reporting consumes both; it references no other module directly.
+- Bootstrapper: `AddReportingModule` + `MapReportingEndpoints` wired into the host.
+- Tests: 10 Reporting unit tests (net-worth active-only, cashflow month + trend, overview/tracker
+  pivots ordered by total, granularity/month/date-range validation) and 2 architecture-boundary rules
+  (Reporting.Application depends on no Infrastructure/Web and on no other module's internals). Full
+  suite green (99 tests).
+- Verified end-to-end on Postgres: seeded owner + taxonomy; created an account (opening 5,000,000), a
+  3,000,000 income and 500,000 (Jul) + 250,000 (Jun) expenses under Food → net worth 7,250,000; Jul
+  cashflow net 2,500,000 with a correct 12-month trend; overview and monthly/daily tracker pivots
+  aggregate correctly; invalid month / granularity / inverted range → 400, unauthenticated → 401. An
+  Income tagged with an Expense-flow budget envelope is still rejected (`category_flow_mismatch`).
+- Docs: MODULES (Reporting implemented; Accounts/Ledger provide the new contracts), ERROR_HANDLING
+  (reporting param validation), STATUS, IMPLEMENTATION_PLAN.
+
+---
+
 ## [2026-07-24 11:30:00 UTC]
 
 CHG-0006 — M4: Budgeting (Categories, Budget, Master Plan)

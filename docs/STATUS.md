@@ -4,8 +4,9 @@
 
 ## Phase
 
-**Core money.** M0–M4 complete (scaffold, Identity, Accounts, Ledger, Budgeting); M5 (Reporting)
-next. The ledger is live end-to-end: transactions drive real account balances **and** budget actuals.
+**Core money.** M0–M5 complete (scaffold, Identity, Accounts, Ledger, Budgeting, Reporting); the
+whole backend MVP slice is done. M6 (Frontend scaffold + shell + login) next. The ledger is live
+end-to-end: transactions drive real account balances, budget actuals, **and** the dashboard reports.
 See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md).
 
 ## Done
@@ -39,8 +40,14 @@ See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md).
   taxonomy + sections; `/categories`, `/budget-periods`, `/master-plan`. Also closed BR-005/006 —
   Ledger now validates category existence/flow via Budgeting's `ICategoryDirectory`. 18 unit + 2
   architecture tests. Verified end-to-end (budget actual = ledger spend; flow mismatch → 422).
-- **M5 (active)** — Reporting.
-- **M6** — Frontend scaffold + shell + login.
+- ✅ **M5** — Reporting: read-only dashboard analytics computed on read from the Accounts + Ledger
+  contracts (no tables, no cache — the ledger is the source of truth). Net worth (active accounts,
+  BR-023), monthly cashflow + 12-month trend, yearly category × month overview, and a daily/monthly
+  category-tracker pivot; `/api/v1/reports/{net-worth,cashflow,overview,category-tracker}`. Added the
+  `IAccountBalanceDirectory` (Accounts) and `ILedgerReportingQuery` (Ledger) contracts. 10 unit + 2
+  architecture tests. Verified end-to-end (net worth 7,250,000; Jul cashflow net 2,500,000; overview
+  and tracker pivots correct; validation/auth paths return the right envelopes).
+- **M6 (active)** — Frontend scaffold + shell + login.
 - **M7** — Frontend MVP screens.
 
 ## Deferred (post-MVP)

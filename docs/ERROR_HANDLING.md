@@ -51,6 +51,10 @@ Business-rule failures (see [BUSINESS_RULES.md](BUSINESS_RULES.md)) map to `422 
 | Duplicate budget period (year+month) | `conflict` | 409 |
 | Void an already-voided transaction | `already_voided` | 409 |
 
+Reporting query parameters are plain input validation, not domain rules: an out-of-range month, an
+unknown `granularity`, or an inverted `from`/`to` range all return the generic `validation_error`
+(400).
+
 ## Handling strategy
 
 - A single ASP.NET Core exception-handling middleware maps exceptions → the failure envelope.
