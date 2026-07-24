@@ -3,6 +3,39 @@
 This file is Tameru's immutable historical record. A task is not complete until this file has been
 updated. Newest entries at the top. See `CLAUDE.md` → **CHANGELOG Rules** for the full procedure.
 
+## [2026-07-24 16:12:09 UTC]
+
+CHG-0009 — M6: Frontend scaffold + shell + login
+
+- New `frontend/` project: Vite + Vue 3 (`<script setup>`) + TypeScript (strict) + Tailwind, Pinia,
+  Vue Router, vue-i18n, axios, Lucide. Structure per docs/frontend/FRONTEND_ARCHITECTURE.md.
+- Design system: `assets/styles/tokens.css` mirrors the LOCKED design language (dark canvas, single
+  solid green `#35D07A`, semantic finance colors, category spectrum, radii) and Tailwind maps
+  utilities to those CSS variables — no hardcoded hex, no gradients. Placeholder brand mark + lockup
+  SVGs (accumulating bars).
+- lib: `format.ts` (id-ID money/number, negatives in parentheses, signed money), `api.ts` (axios at
+  `/api/v1`, bearer attach, `{success,data}` unwrap, one-shot 401→refresh rotation, typed
+  `ApiClientError`), `session.ts` (token/user storage), and typed API modules `auth.ts`, `reports.ts`.
+- State/i18n: Pinia `auth` (login/logout/refresh, persisted session), `ui` (locale + density toggle),
+  `theme` (dark v1, ready for a light flip); structurally-identical EN + ID dictionaries; live
+  language switching; enum labels (account type, transaction type/status) translated via maps.
+- Routing: Vue Router with a tested auth guard (unauthenticated → `/login?redirect=`; authenticated
+  away from `/login`).
+- UI: responsive `AppShell` — desktop sidebar + top bar (language + sign-out), mobile rounded
+  bottom-nav pill; UI kit `AppButton`, `AppCard`, `BalanceCard`, `StatTile`, `StatusChip`,
+  `TransactionRow`, `SpendBar`, `Money`, `AvatarChip`, `AppInput`, `FormField`.
+- Views: `LoginView` (owner sign-in, localized error mapping) and a live `DashboardView` that renders
+  net worth + this month's cashflow from the M5 reports (loading / error+retry / empty states).
+- Tooling: `vue-tsc` typecheck + `vite build` green; 14 Vitest tests (formatters + auth guard).
+- Docker: added the `web` service (frontend `Dockerfile` multi-stage build → Nginx serving the SPA
+  with history fallback and a same-origin `/api` proxy to the API) and `frontend/nginx.conf` +
+  `.dockerignore`. `docker-compose.yml` now runs web → api → db; app at `:8091`.
+- Verified end-to-end on Docker: SPA served (200), history deep-link fallback, owner login through the
+  Nginx→API proxy succeeds, dashboard reads live figures.
+- Docs: STATUS, IMPLEMENTATION_PLAN, `frontend/README.md`.
+
+---
+
 ## [2026-07-24 15:53:15 UTC]
 
 CHG-0008 — Local Docker stack (API + Postgres) for hands-on testing

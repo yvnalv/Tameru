@@ -1,0 +1,73 @@
+// English dictionary. Structurally identical to id.ts (docs/frontend/FRONTEND_ARCHITECTURE.md → i18n).
+export default {
+  app: {
+    name: 'Tameru',
+    tagline: 'Save up, on purpose.',
+  },
+  nav: {
+    dashboard: 'Dashboard',
+    transactions: 'Transactions',
+    accounts: 'Accounts',
+    budget: 'Budget',
+    masterPlan: 'Master Plan',
+    categories: 'Categories',
+  },
+  common: {
+    loading: 'Loading…',
+    retry: 'Retry',
+    signOut: 'Sign out',
+    total: 'Total',
+    all: 'All',
+    search: 'Search',
+    comingSoon: 'Coming soon',
+    language: 'Language',
+  },
+  login: {
+    title: 'Sign in',
+    subtitle: 'Sign in to your Tameru account.',
+    email: 'Email',
+    emailPlaceholder: 'you@example.com',
+    password: 'Password',
+    passwordPlaceholder: 'Your password',
+    submit: 'Sign in',
+    submitting: 'Signing in…',
+  },
+  dashboard: {
+    title: 'Dashboard',
+    netWorth: 'Net worth',
+    acrossAccounts: 'across {count} accounts',
+    monthIncome: 'Income this month',
+    monthExpense: 'Expenses this month',
+    monthNet: 'Net this month',
+    accounts: 'Accounts',
+    noAccounts: 'No accounts yet. Add one to see your balances here.',
+    placeholderNote: 'The full dashboard arrives next. These figures are live from your ledger.',
+  },
+  enums: {
+    accountType: {
+      Cash: 'Cash',
+      Bank: 'Bank',
+      EWallet: 'E-wallet',
+      Investment: 'Investment',
+      Blocked: 'Blocked',
+    },
+    transactionType: {
+      Income: 'Income',
+      Expense: 'Expense',
+      Transfer: 'Transfer',
+    },
+    transactionStatus: {
+      Cleared: 'Cleared',
+      Uncleared: 'Uncleared',
+    },
+  },
+  errors: {
+    invalid_credentials: 'Incorrect email or password.',
+    unauthenticated: 'Your session has expired. Please sign in again.',
+    network_error: 'Cannot reach the server. Check your connection.',
+    validation_error: 'Please check the highlighted fields.',
+    not_found: 'Not found.',
+    internal_error: 'Something went wrong. Please try again.',
+    generic: 'Something went wrong.',
+  },
+} as const;

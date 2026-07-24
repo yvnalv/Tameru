@@ -4,9 +4,9 @@
 
 ## Phase
 
-**Core money.** M0–M5 complete (scaffold, Identity, Accounts, Ledger, Budgeting, Reporting); the
-whole backend MVP slice is done. M6 (Frontend scaffold + shell + login) next. The ledger is live
-end-to-end: transactions drive real account balances, budget actuals, **and** the dashboard reports.
+**Core money + first UI.** M0–M5 (backend MVP) complete; M6 (frontend scaffold + shell + login)
+complete. M7 (frontend MVP screens) next. The ledger is live end-to-end and now a real Vue client
+signs in and renders a live dashboard (net worth + monthly cashflow) from the API.
 See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md).
 
 ## Done
@@ -47,8 +47,14 @@ See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md).
   `IAccountBalanceDirectory` (Accounts) and `ILedgerReportingQuery` (Ledger) contracts. 10 unit + 2
   architecture tests. Verified end-to-end (net worth 7,250,000; Jul cashflow net 2,500,000; overview
   and tracker pivots correct; validation/auth paths return the right envelopes).
-- **M6 (active)** — Frontend scaffold + shell + login.
-- **M7** — Frontend MVP screens.
+- ✅ **M6** — Frontend scaffold + shell + login: Vite + Vue 3 + TS + Tailwind, design tokens
+  (dark, `#35D07A`, no gradients), id-ID formatters, axios envelope client with 401→refresh, Pinia
+  (auth/theme/ui), vue-i18n EN+ID; responsive `AppShell` (desktop sidebar + topbar, mobile bottom-nav
+  pill), Login, and a live Dashboard (net worth + monthly cashflow from the M5 reports); UI kit
+  (Button/Card/BalanceCard/StatTile/StatusChip/TransactionRow/SpendBar/Money/…). 14 Vitest tests
+  (formatters + auth guard); `vue-tsc` typecheck + build green. Added a Docker `web` service (Nginx +
+  SPA) — full app runs on Docker at `:8091`, Nginx proxying `/api` to the API. Verified end-to-end.
+- **M7 (active)** — Frontend MVP screens (Transactions, Accounts, Budget, Master Plan, Categories).
 
 ## Deferred (post-MVP)
 

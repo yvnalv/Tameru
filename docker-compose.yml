@@ -1,9 +1,10 @@
 # Local full-stack run for hands-on testing (docs/DEPLOYMENT.md).
-# Backend + database only for now; the `web` (Nginx + Vue SPA) service is added once the
-# frontend lands (M6+). The API reaches Postgres over the internal compose network, so the
-# database port is NOT published to the host (avoids clashing with a local Postgres on 5433).
+# web (Nginx + Vue SPA) → api (.NET) → db (Postgres). The API reaches Postgres over the internal
+# compose network, so the database port is NOT published to the host (avoids clashing with a local
+# Postgres on 5433). The SPA calls same-origin /api, which Nginx proxies to the API (no CORS).
 #
 #   docker compose up -d --build      # start
+#   # → App at http://localhost:${WEB_PORT:-8091}
 #   # → API at http://localhost:${API_PORT:-8090}  (Swagger at /swagger)
 #   docker compose down               # stop (add -v to also drop the data volume)
 services:
@@ -44,6 +45,17 @@ services:
       Cors__AllowedOrigins__0: ${CORS_ORIGIN:-http://localhost:5173}
     ports:
       - "${API_PORT:-8090}:8080"
+
+  web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: tameru-web
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "${WEB_PORT:-8091}:80"
 
 volumes:
   tameru_pgdata:
