@@ -4,26 +4,29 @@
 
 ## Phase
 
-**Architecture & design.** Documentation baseline complete; no application code yet.
+**Foundation.** M0 (solution + BuildingBlocks scaffold) complete; M1 (Identity) next. See the
+milestone plan in [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md).
 
 ## Done
 
-- ✅ Founding decisions locked (ADR-0001…ADR-0004): single-user, single-entry cashflow, MVP scope,
-  dark-first green-accent UI.
+- ✅ Founding decisions locked (ADR-0001…ADR-0006): single-user, single-entry cashflow, MVP scope,
+  dark-first green-accent UI, modular monolith, derived balances.
 - ✅ Source workbook analyzed; 35 sheets mapped to modules/tables
   ([DATA_MODEL_FROM_EXCEL.md](DATA_MODEL_FROM_EXCEL.md)).
 - ✅ Documentation set authored (`CLAUDE.md`, `README.md`, `docs/`).
+- ✅ Milestone build plan authored ([IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md)).
 
-## Next (in order)
+## Next (milestones)
 
-1. **Backend scaffold** — solution, `BuildingBlocks`, module skeletons, EF Core `DbContext`,
-   first migration, seed data (accounts, category taxonomy, master-plan sections).
-2. **Accounts module** — CRUD + derived balances + tests.
-3. **Ledger module** — Income / Expense / Transfer transactions + balance derivation + tests.
-4. **Budgeting module** — Categories, Budget periods (Plan/Actual/Leftover), Master Plan + tests.
-5. **Reporting module** — Overview, Summary, Category trackers (read models) + tests.
-6. **Frontend scaffold** — Vite + Vue 3 + design tokens + app shell (dark, green accent) + login.
-7. **Frontend MVP screens** — Dashboard, Transactions, Accounts, Budget, Master Plan, Categories.
+- ✅ **M0** — Solution + BuildingBlocks scaffold, `Tameru.Api` host, `/health`, architecture test,
+  docker-compose. `dotnet build`/`test` green.
+- **M1 (active)** — Identity (single-user auth).
+- **M2** — Accounts.
+- **M3** — Ledger (the core: Income/Expense/Transfer + derived balances).
+- **M4** — Budgeting (Categories, Budget, Master Plan).
+- **M5** — Reporting.
+- **M6** — Frontend scaffold + shell + login.
+- **M7** — Frontend MVP screens.
 
 ## Deferred (post-MVP)
 

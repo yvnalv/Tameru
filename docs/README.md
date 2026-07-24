@@ -16,6 +16,7 @@
 - [STATUS.md](STATUS.md) — **start here**: milestones, where we are, what's next.
 - [PRD.md](PRD.md) — product requirements and MVP scope.
 - [ROADMAP.md](ROADMAP.md) — phased delivery plan.
+- [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) — milestone-by-milestone build breakdown.
 
 ### Architecture
 - [ARCHITECTURE.md](ARCHITECTURE.md) — modular monolith, clean architecture, boundaries, pipeline.

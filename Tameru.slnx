@@ -1,0 +1,15 @@
+<Solution>
+  <Folder Name="/src/" />
+  <Folder Name="/src/Bootstrapper/">
+    <Project Path="src/Bootstrapper/Tameru.Api/Tameru.Api.csproj" />
+  </Folder>
+  <Folder Name="/src/BuildingBlocks/">
+    <Project Path="src/BuildingBlocks/Tameru.Application.Abstractions/Tameru.Application.Abstractions.csproj" />
+    <Project Path="src/BuildingBlocks/Tameru.Infrastructure.Common/Tameru.Infrastructure.Common.csproj" />
+    <Project Path="src/BuildingBlocks/Tameru.SharedKernel/Tameru.SharedKernel.csproj" />
+    <Project Path="src/BuildingBlocks/Tameru.Web.Common/Tameru.Web.Common.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Tameru.ArchitectureTests/Tameru.ArchitectureTests.csproj" />
+  </Folder>
+</Solution>
