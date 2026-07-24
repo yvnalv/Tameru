@@ -147,9 +147,16 @@ read models rebuildable from Ledger events.
 - `budgeting.budget_lines`: unique `(budget_period_id, category_id)`.
 - `accounts.accounts`: `(group_id)`, `(is_active)`.
 
+## Naming convention
+
+Columns are snake_case via `EFCore.NamingConventions` (`UseSnakeCaseNamingConvention`), applied on
+every module's `DbContext` options (and its design-time factory) so entity property `DisplayName`
+maps to column `display_name`, etc. (ADR-0007).
+
 ## Migrations
 
-- Per-module EF Core migrations (each module's Infrastructure owns its migration history table).
+- Per-module EF Core migrations (each module's Infrastructure owns its migration history table,
+  `__ef_migrations_history`, in the module's own schema).
 - Applied automatically in Development (`Database__AutoMigrate=true`); explicit in Production.
 - Seed (idempotent): the owner user, default account groups, the Budget→Category→Sub starter
   taxonomy, and the three Master Plan sections with 40/50/10 targets.

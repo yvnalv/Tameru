@@ -9,7 +9,15 @@
     <Project Path="src/BuildingBlocks/Tameru.SharedKernel/Tameru.SharedKernel.csproj" />
     <Project Path="src/BuildingBlocks/Tameru.Web.Common/Tameru.Web.Common.csproj" />
   </Folder>
+  <Folder Name="/src/Modules/" />
+  <Folder Name="/src/Modules/Identity/">
+    <Project Path="src/Modules/Identity/Tameru.Identity.Api/Tameru.Identity.Api.csproj" />
+    <Project Path="src/Modules/Identity/Tameru.Identity.Application/Tameru.Identity.Application.csproj" />
+    <Project Path="src/Modules/Identity/Tameru.Identity.Domain/Tameru.Identity.Domain.csproj" />
+    <Project Path="src/Modules/Identity/Tameru.Identity.Infrastructure/Tameru.Identity.Infrastructure.csproj" />
+  </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Tameru.ArchitectureTests/Tameru.ArchitectureTests.csproj" />
+    <Project Path="tests/Tameru.Identity.UnitTests/Tameru.Identity.UnitTests.csproj" />
   </Folder>
 </Solution>
