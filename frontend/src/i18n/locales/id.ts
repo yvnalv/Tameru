@@ -26,7 +26,7 @@ export default {
     title: 'Masuk',
     subtitle: 'Masuk ke akun Tameru Anda.',
     email: 'Email',
-    emailPlaceholder: 'anda@contoh.com',
+    emailPlaceholder: "anda{'@'}contoh.com",
     password: 'Kata sandi',
     passwordPlaceholder: 'Kata sandi Anda',
     submit: 'Masuk',

@@ -26,7 +26,7 @@ export default {
     title: 'Sign in',
     subtitle: 'Sign in to your Tameru account.',
     email: 'Email',
-    emailPlaceholder: 'you@example.com',
+    emailPlaceholder: "you{'@'}example.com",
     password: 'Password',
     passwordPlaceholder: 'Your password',
     submit: 'Sign in',

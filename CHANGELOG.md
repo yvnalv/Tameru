@@ -3,6 +3,20 @@
 This file is Tameru's immutable historical record. A task is not complete until this file has been
 updated. Newest entries at the top. See `CLAUDE.md` → **CHANGELOG Rules** for the full procedure.
 
+## [2026-07-24 16:22:00 UTC]
+
+CHG-0010 — Fix: login email field vanished in production (vue-i18n '@' escaping)
+
+- The login email placeholder messages (`you@example.com` / `anda@contoh.com`) contained a literal
+  `@`, which vue-i18n parses as its linked-message syntax (`@:key`). In the stricter production i18n
+  runtime this broke the email field's render, so only the password field showed. Escaped the `@` as
+  `{'@'}` in both locales.
+- Added a `LoginView` mount test asserting both the email and password fields render and that the
+  placeholder resolves to `you@example.com` (regression guard). Frontend suite: 15 tests green.
+- Rebuilt the Docker `web` image with the fix.
+
+---
+
 ## [2026-07-24 16:12:09 UTC]
 
 CHG-0009 — M6: Frontend scaffold + shell + login
