@@ -3,6 +3,23 @@
 This file is Tameru's immutable historical record. A task is not complete until this file has been
 updated. Newest entries at the top. See `CLAUDE.md` → **CHANGELOG Rules** for the full procedure.
 
+## [2026-07-24 16:41:09 UTC]
+
+CHG-0012 — Dashboard redesign (full, richer layout)
+
+- Reworked the sparse placeholder dashboard into a full, responsive layout: a net-worth hero
+  (2/3 width) alongside a compact "This month" income/expense/net summary card; a full-width 12-month
+  cashflow chart; and an accounts + recent-activity two-column row with strong empty states and CTAs
+  (Add account / Add transaction linking to those sections).
+- New `CashflowChart` component: lightweight income-vs-expense monthly bars built with CSS/flex
+  (solid fills, semantic green/red, localized month labels, hover tooltips) — no chart dependency,
+  matching the design language (no gradients).
+- Widened the shell content to `max-w-[1600px]` so it fills wide screens; added the dashboard i18n
+  keys (this-month, cashflow, recent, add-account/-transaction, view-all) in both locales.
+- Frontend suite green (15 tests); rebuilt the Docker `web` image.
+
+---
+
 ## [2026-07-24 16:31:40 UTC]
 
 CHG-0011 — Fix: navigable sidebar + aligned shell layout
