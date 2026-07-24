@@ -4,9 +4,9 @@
 
 ## Phase
 
-**Core money + first UI.** M0–M5 (backend MVP) complete; M6 (frontend scaffold + shell + login)
-complete. M7 (frontend MVP screens) next. The ledger is live end-to-end and now a real Vue client
-signs in and renders a live dashboard (net worth + monthly cashflow) from the API.
+**MVP feature-complete.** M0–M5 (backend) and M6–M7 (frontend) complete. A real Vue client signs in
+and drives the whole workbook menu — Dashboard, Transactions, Accounts, Budget, Master Plan,
+Categories — against the live API. M8 (import, i18n audit & polish) is next.
 See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md).
 
 ## Done
@@ -54,10 +54,14 @@ See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md).
   (Button/Card/BalanceCard/StatTile/StatusChip/TransactionRow/SpendBar/Money/…). 14 Vitest tests
   (formatters + auth guard); `vue-tsc` typecheck + build green. Added a Docker `web` service (Nginx +
   SPA) — full app runs on Docker at `:8091`, Nginx proxying `/api` to the API. Verified end-to-end.
-- **M7 (active)** — Frontend MVP screens. Done: full Dashboard, **Accounts** (list + create/edit +
-  deactivate) and **Transactions** (filtered/paginated list + create for Income/Expense/Transfer +
-  clear/unclear/void), with typed `lib/*` modules, `AppSelect`/`AppModal`, and EN/ID strings.
-  Remaining: Categories, Budget, Master Plan.
+- ✅ **M7** — Frontend MVP screens complete: Dashboard, **Accounts**, **Transactions**,
+  **Categories** (Budget→Category→Sub tree + CRUD), **Budget** (month picker; Plan editable,
+  Actual/Leftover derived from the ledger), and **Master Plan** (Investment/Needs/Wants 40/50/10;
+  items `Price × Frequency`). Typed `lib/*` per module, `AppSelect`/`AppModal`, bilingual EN/ID,
+  seeded-name localization. `vue-tsc` + build + 15 Vitest tests green. Verified end-to-end on Docker
+  with seeded data (budget Actual derives live from the ledger).
+- **M8 (next)** — Import, i18n audit & polish (spreadsheet/CSV import, completeness check, density
+  toggle, empty/error/loading states, CSV/PDF export).
 
 ## Deferred (post-MVP)
 

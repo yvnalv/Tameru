@@ -125,5 +125,39 @@ while month <= today:
     month = dt.date(y + (m // 12), (m % 12) + 1, 1)
 
 print(f"created {created} transactions across {len(acc)} accounts")
+
+# --- budget for the current month -----------------------------------------
+period = req("GET", f"/budget-periods/{today.year}/{today.month}", token)
+if not period.get("success"):
+    period = req("POST", "/budget-periods", token, {"year": today.year, "month": today.month, "note": "Monthly plan"})
+period_id = period["data"]["id"]
+plans = {"Food": 3_000_000, "Transportation": 1_000_000, "Internet": 400_000,
+         "Personal": 800_000, "Entertainment": 1_200_000}
+lines = [{"categoryId": cat[name], "planAmount": amt} for name, amt in plans.items() if name in cat]
+req("PUT", f"/budget-periods/{period_id}/lines", token, {"lines": lines})
+print(f"budget {today.year}-{today.month:02d}: {len(lines)} plan lines")
+
+# --- master plan items ----------------------------------------------------
+mp = req("GET", "/master-plan", token)["data"]
+sec = {s["name"]: s["id"] for s in mp["sections"]}
+existing_items = {i["name"] for s in mp["sections"] for i in s["items"]}
+PLAN_ITEMS = [
+    ("Investment", "Emergency fund", 50_000_000, 1),
+    ("Investment", "Mutual funds", 2_000_000, 12),
+    ("Investment", "Gold", 1_000_000, 12),
+    ("Needs", "Rent", 3_500_000, 12),
+    ("Needs", "Groceries", 2_000_000, 12),
+    ("Needs", "Utilities", 800_000, 12),
+    ("Wants", "Vacation", 15_000_000, 1),
+    ("Wants", "Gadgets", 5_000_000, 2),
+]
+added = 0
+for i, (sname, iname, price, freq) in enumerate(PLAN_ITEMS):
+    if sname in sec and iname not in existing_items:
+        req("POST", "/master-plan/items", token,
+            {"sectionId": sec[sname], "name": iname, "price": price, "frequency": freq, "sortOrder": i})
+        added += 1
+print(f"master plan: added {added} items")
+
 nw = req("GET", "/reports/net-worth", token)["data"]
 print(f"net worth now: Rp {nw['total']:,.0f} across {len(nw['accounts'])} accounts")

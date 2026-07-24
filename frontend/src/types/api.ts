@@ -92,6 +92,60 @@ export interface Category {
   sortOrder: number;
 }
 
+// --- Budget -----------------------------------------------------------------
+
+export interface BudgetPeriodSummary {
+  id: string;
+  year: number;
+  month: number;
+  note: string | null;
+}
+
+export interface BudgetLine {
+  categoryId: string;
+  categoryName: string | null;
+  plan: number;
+  actual: number;
+  leftover: number;
+}
+
+export interface BudgetPeriod {
+  id: string;
+  year: number;
+  month: number;
+  note: string | null;
+  lines: BudgetLine[];
+  totalPlan: number;
+  totalActual: number;
+  totalLeftover: number;
+}
+
+// --- Master Plan ------------------------------------------------------------
+
+export interface MasterPlanItem {
+  id: string;
+  sectionId: string;
+  name: string;
+  price: number;
+  frequency: number;
+  totalBudget: number;
+  sortOrder: number;
+}
+
+export interface MasterPlanSection {
+  id: string;
+  name: string;
+  targetPercent: number;
+  sortOrder: number;
+  items: MasterPlanItem[];
+  total: number;
+}
+
+export interface MasterPlan {
+  sections: MasterPlanSection[];
+  grandTotal: number;
+}
+
 // --- Identity ---------------------------------------------------------------
 
 export interface AuthUser {

@@ -3,6 +3,29 @@
 This file is Tameru's immutable historical record. A task is not complete until this file has been
 updated. Newest entries at the top. See `CLAUDE.md` → **CHANGELOG Rules** for the full procedure.
 
+## [2026-07-24 17:07:01 UTC]
+
+CHG-0014 — M7 (part 2): Categories, Budget & Master Plan screens — MVP feature-complete
+
+- Typed `lib/budgeting.ts` (budget periods + lines, master plan) and budgeting types; a
+  `seededNames` helper that localizes seeded reference names (categories, master-plan sections) only
+  while still at their English default (a user rename shows verbatim, per CLAUDE.md i18n rules).
+- **Categories screen** (`/categories`): the Budget→Category→Sub tree grouped by budget with flow +
+  system badges; add budget / add child / add sub, edit, and deactivate (system-guarded).
+- **Budget screen** (`/budget`): month prev/next picker; Plan/Actual/Leftover totals and a per-line
+  table (Actual/Leftover derived from the ledger); "Edit plans" mode upserts plan amounts per expense
+  category; create-period flow when a month has none.
+- **Master Plan screen** (`/master-plan`): Investment/Needs/Wants sections with editable target %,
+  `Price × Frequency` item rows (add/edit/delete), section totals and grand total.
+- Wired the three real routes (removing the last placeholders); the nav "Soon" badges are gone.
+- Extended EN/ID dictionaries (categories, budget, master-plan, category enums) — kept structurally
+  identical. `vue-tsc` + build + 15 Vitest tests green; Docker `web` rebuilt.
+- Extended `scripts/seed_demo.py` to seed a current-month budget (plan lines) and master-plan items.
+  Verified end-to-end: budget Actual (9,124,000) derives live from the seeded ledger vs Plan
+  (6,400,000) → Leftover −2,724,000; master plan grand total 186,600,000 across 40/50/10 sections.
+
+---
+
 ## [2026-07-24 16:55:39 UTC]
 
 CHG-0013 — M7 (part 1): Accounts & Transactions screens + demo seed
