@@ -26,8 +26,9 @@ public static class AccountsInfrastructureModule
         services.AddScoped<IAccountRepository, AccountRepository>();
         services.AddScoped<IAccountGroupRepository, AccountGroupRepository>();
 
-        // Provided cross-module contract.
+        // Provided cross-module contracts.
         services.AddScoped<IAccountDirectory, AccountDirectory>();
+        services.AddScoped<IAccountBalanceDirectory, AccountBalanceDirectory>();
 
         // Consumed cross-module contract: default no-op until the Ledger module replaces it (M3).
         services.TryAddScoped<ILedgerAccountQuery, NoOpLedgerAccountQuery>();

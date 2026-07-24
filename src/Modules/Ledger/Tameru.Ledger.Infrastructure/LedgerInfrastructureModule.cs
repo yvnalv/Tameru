@@ -28,9 +28,11 @@ public static class LedgerInfrastructureModule
         services.AddScoped<ILedgerUnitOfWork>(sp => sp.GetRequiredService<LedgerDbContext>());
         services.AddScoped<ITransactionRepository, TransactionRepository>();
 
-        // Provided cross-module contracts — replace the Accounts no-op default; expose spend totals.
+        // Provided cross-module contracts — replace the Accounts no-op default; expose spend totals
+        // and aggregate reads for Reporting.
         services.AddScoped<ILedgerAccountQuery, LedgerAccountQuery>();
         services.AddScoped<ICategorySpendQuery, CategorySpendQuery>();
+        services.AddScoped<ILedgerReportingQuery, LedgerReportingQuery>();
 
         // Consumed contract: permissive default until the Budgeting module replaces it (M4).
         services.TryAddScoped<ICategoryDirectory, NoOpCategoryDirectory>();

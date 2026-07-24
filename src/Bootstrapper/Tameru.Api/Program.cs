@@ -22,6 +22,8 @@ using Tameru.Identity.Infrastructure.Seeding;
 using Tameru.Ledger.Api;
 using Tameru.Ledger.Infrastructure;
 using Tameru.Ledger.Infrastructure.Persistence;
+using Tameru.Reporting.Api;
+using Tameru.Reporting.Infrastructure;
 using Tameru.SharedKernel.Time;
 using Tameru.Web.Common.Contracts;
 using Tameru.Web.Common.Middleware;
@@ -47,6 +49,9 @@ builder.Services.AddIdentityModule(config);
 builder.Services.AddAccountsModule(config);
 builder.Services.AddLedgerModule(config);
 builder.Services.AddBudgetingModule(config);
+
+// Reporting composes the Accounts + Ledger contracts (read-only); it owns no data.
+builder.Services.AddReportingModule(config);
 
 // Authentication / authorization.
 var jwt = config.GetSection(JwtOptions.SectionName).Get<JwtOptions>() ?? new JwtOptions();
@@ -103,6 +108,7 @@ app.MapIdentityEndpoints();
 app.MapAccountsEndpoints();
 app.MapLedgerEndpoints();
 app.MapBudgetingEndpoints();
+app.MapReportingEndpoints();
 
 app.Run();
 return;

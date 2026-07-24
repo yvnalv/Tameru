@@ -37,11 +37,17 @@
     <Project Path="src/Modules/Ledger/Tameru.Ledger.Domain/Tameru.Ledger.Domain.csproj" />
     <Project Path="src/Modules/Ledger/Tameru.Ledger.Infrastructure/Tameru.Ledger.Infrastructure.csproj" />
   </Folder>
+  <Folder Name="/src/Modules/Reporting/">
+    <Project Path="src/Modules/Reporting/Tameru.Reporting.Api/Tameru.Reporting.Api.csproj" />
+    <Project Path="src/Modules/Reporting/Tameru.Reporting.Application/Tameru.Reporting.Application.csproj" />
+    <Project Path="src/Modules/Reporting/Tameru.Reporting.Infrastructure/Tameru.Reporting.Infrastructure.csproj" />
+  </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Tameru.Accounts.UnitTests/Tameru.Accounts.UnitTests.csproj" />
     <Project Path="tests/Tameru.ArchitectureTests/Tameru.ArchitectureTests.csproj" />
     <Project Path="tests/Tameru.Budgeting.UnitTests/Tameru.Budgeting.UnitTests.csproj" />
     <Project Path="tests/Tameru.Identity.UnitTests/Tameru.Identity.UnitTests.csproj" />
     <Project Path="tests/Tameru.Ledger.UnitTests/Tameru.Ledger.UnitTests.csproj" />
+    <Project Path="tests/Tameru.Reporting.UnitTests/Tameru.Reporting.UnitTests.csproj" />
   </Folder>
 </Solution>
