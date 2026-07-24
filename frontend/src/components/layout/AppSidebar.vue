@@ -11,25 +11,22 @@ import logoLockup from '@/assets/brand/logo-lockup.svg';
     </div>
 
     <nav class="flex-1 space-y-1 px-3 py-2">
-      <template v-for="item in navItems" :key="item.key">
-        <RouterLink
-          v-if="item.route"
-          :to="{ name: item.route }"
-          class="flex items-center gap-3 rounded-control px-3 py-2 text-sm font-medium text-text-muted hover:bg-surface-2 hover:text-text"
-          active-class="!bg-accent-soft !text-accent"
-        >
-          <component :is="item.icon" :size="20" :stroke-width="1.5" />
-          {{ $t(`nav.${item.key}`) }}
-        </RouterLink>
+      <RouterLink
+        v-for="item in navItems"
+        :key="item.key"
+        :to="{ name: item.route }"
+        class="flex items-center gap-3 rounded-control px-3 py-2 text-sm font-medium text-text-muted hover:bg-surface-2 hover:text-text"
+        active-class="!bg-accent-soft !text-accent"
+      >
+        <component :is="item.icon" :size="20" :stroke-width="1.5" />
+        <span class="flex-1">{{ $t(`nav.${item.key}`) }}</span>
         <span
-          v-else
-          class="flex cursor-default items-center gap-3 rounded-control px-3 py-2 text-sm font-medium text-text-muted/60"
-          :title="$t('common.comingSoon')"
+          v-if="item.placeholder"
+          class="rounded-full bg-surface-2 px-1.5 py-0.5 text-[10px] font-medium text-text-muted"
         >
-          <component :is="item.icon" :size="20" :stroke-width="1.5" />
-          {{ $t(`nav.${item.key}`) }}
+          {{ $t('common.soon') }}
         </span>
-      </template>
+      </RouterLink>
     </nav>
   </aside>
 </template>

@@ -3,6 +3,98 @@
 This file is Tameru's immutable historical record. A task is not complete until this file has been
 updated. Newest entries at the top. See `CLAUDE.md` → **CHANGELOG Rules** for the full procedure.
 
+## [2026-07-24 17:07:01 UTC]
+
+CHG-0014 — M7 (part 2): Categories, Budget & Master Plan screens — MVP feature-complete
+
+- Typed `lib/budgeting.ts` (budget periods + lines, master plan) and budgeting types; a
+  `seededNames` helper that localizes seeded reference names (categories, master-plan sections) only
+  while still at their English default (a user rename shows verbatim, per CLAUDE.md i18n rules).
+- **Categories screen** (`/categories`): the Budget→Category→Sub tree grouped by budget with flow +
+  system badges; add budget / add child / add sub, edit, and deactivate (system-guarded).
+- **Budget screen** (`/budget`): month prev/next picker; Plan/Actual/Leftover totals and a per-line
+  table (Actual/Leftover derived from the ledger); "Edit plans" mode upserts plan amounts per expense
+  category; create-period flow when a month has none.
+- **Master Plan screen** (`/master-plan`): Investment/Needs/Wants sections with editable target %,
+  `Price × Frequency` item rows (add/edit/delete), section totals and grand total.
+- Wired the three real routes (removing the last placeholders); the nav "Soon" badges are gone.
+- Extended EN/ID dictionaries (categories, budget, master-plan, category enums) — kept structurally
+  identical. `vue-tsc` + build + 15 Vitest tests green; Docker `web` rebuilt.
+- Extended `scripts/seed_demo.py` to seed a current-month budget (plan lines) and master-plan items.
+  Verified end-to-end: budget Actual (9,124,000) derives live from the seeded ledger vs Plan
+  (6,400,000) → Leftover −2,724,000; master plan grand total 186,600,000 across 40/50/10 sections.
+
+---
+
+## [2026-07-24 16:55:39 UTC]
+
+CHG-0013 — M7 (part 1): Accounts & Transactions screens + demo seed
+
+- Typed API modules `lib/accounts.ts`, `lib/transactions.ts`, `lib/categories.ts` (+ `Paged<T>`,
+  Account/Transaction/Category types) and an `errorMessage` helper mapping backend error codes to
+  localized text. Shared UI: `AppSelect`, `AppModal` (teleported, Esc/backdrop close).
+- **Accounts screen** (`/accounts`): total net worth, account list (type/group/balance, inactive
+  dimmed), create/edit modal (name, type, group, opening balance, currency) and deactivate with the
+  in-use guard surfaced (`account_in_use`).
+- **Transactions screen** (`/transactions`): filtered (type/account/status/search/date range),
+  paginated list with signed colored amounts, transfer "A → B" rows, status chips; create modal with
+  an Income/Expense/Transfer type toggle and flow-aware budget/category pickers; clear/unclear and
+  void row actions. Both wired to the real routes (replacing their placeholders).
+- Extended EN/ID dictionaries (accounts, transactions, form/common, error codes) — kept structurally
+  identical. `vue-tsc` + build green; 15 Vitest tests green; Docker `web` rebuilt.
+- Added `scripts/seed_demo.py` (dev-only): seeds 5 accounts + hundreds of transactions across ~10
+  months. Seeded the local stack — net worth Rp 118,429,000 across 5 accounts, 411 transactions.
+
+---
+
+## [2026-07-24 16:41:09 UTC]
+
+CHG-0012 — Dashboard redesign (full, richer layout)
+
+- Reworked the sparse placeholder dashboard into a full, responsive layout: a net-worth hero
+  (2/3 width) alongside a compact "This month" income/expense/net summary card; a full-width 12-month
+  cashflow chart; and an accounts + recent-activity two-column row with strong empty states and CTAs
+  (Add account / Add transaction linking to those sections).
+- New `CashflowChart` component: lightweight income-vs-expense monthly bars built with CSS/flex
+  (solid fills, semantic green/red, localized month labels, hover tooltips) — no chart dependency,
+  matching the design language (no gradients).
+- Widened the shell content to `max-w-[1600px]` so it fills wide screens; added the dashboard i18n
+  keys (this-month, cashflow, recent, add-account/-transaction, view-all) in both locales.
+- Frontend suite green (15 tests); rebuilt the Docker `web` image.
+
+---
+
+## [2026-07-24 16:31:40 UTC]
+
+CHG-0011 — Fix: navigable sidebar + aligned shell layout
+
+- Sidebar/mobile-nav items other than Dashboard had no routes, so they rendered as dead placeholders.
+  Every menu item (Transactions, Accounts, Budget, Master Plan, Categories) is now a real route that
+  shows a navigable "coming soon" stub (`PlaceholderView`) until M7 builds the screen; active-nav
+  highlighting works throughout. Placeholder items show a small "Soon" badge in the sidebar.
+- Fixed the shell layout: `main` was centered (`mx-auto max-w-[1200px]`) while the topbar was not,
+  producing a large empty left gutter and title/content misalignment. `main` is now left-aligned
+  (`max-w-[1400px]`) with the same horizontal padding as the topbar, so the page title and content
+  align under the sidebar.
+- Added `common.soon` / `common.comingSoonNote` to both locales. Frontend suite green (15 tests);
+  rebuilt the Docker `web` image.
+
+---
+
+## [2026-07-24 16:22:00 UTC]
+
+CHG-0010 — Fix: login email field vanished in production (vue-i18n '@' escaping)
+
+- The login email placeholder messages (`you@example.com` / `anda@contoh.com`) contained a literal
+  `@`, which vue-i18n parses as its linked-message syntax (`@:key`). In the stricter production i18n
+  runtime this broke the email field's render, so only the password field showed. Escaped the `@` as
+  `{'@'}` in both locales.
+- Added a `LoginView` mount test asserting both the email and password fields render and that the
+  placeholder resolves to `you@example.com` (regression guard). Frontend suite: 15 tests green.
+- Rebuilt the Docker `web` image with the fix.
+
+---
+
 ## [2026-07-24 16:12:09 UTC]
 
 CHG-0009 — M6: Frontend scaffold + shell + login

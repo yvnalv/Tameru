@@ -78,10 +78,11 @@ Compilable skeleton, no features.
 > Note: CHG-0008 was used for the local Docker stack (API + Postgres); the frontend milestone is
 > recorded as CHG-0009.
 
-## M7 — Frontend MVP screens (`CHG-0009…`)
+## M7 — Frontend MVP screens (`CHG-0013…0014`) ✅
 
-- Dashboard → Transactions (all 3 types) → Accounts → Budget → Master Plan → Categories.
-- Every screen fully EN + ID; wired to typed `lib/*` API modules.
+- Dashboard → Transactions (all 3 types) → Accounts → Budget → Master Plan → Categories, all wired to
+  typed `lib/*` API modules, fully EN + ID, with seeded-name localization.
+- Accounts/Transactions in CHG-0013; Categories/Budget/Master Plan in CHG-0014.
 
 ## M8 — Import, i18n audit & polish (`CHG-00xx`)
 
@@ -99,5 +100,5 @@ module's projects directly:
 
 ## Current position
 
-See [STATUS.md](STATUS.md). Completed: **M0, M1, M2, M3, M4, M5** (backend MVP) and **M6** (frontend
-scaffold + shell + login). Active milestone: **M7 — Frontend MVP screens**.
+See [STATUS.md](STATUS.md). Completed: **M0–M5** (backend MVP) and **M6–M7** (frontend shell + all
+MVP screens) — the MVP is feature-complete. Next milestone: **M8 — Import, i18n audit & polish**.
