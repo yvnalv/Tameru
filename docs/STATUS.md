@@ -60,8 +60,10 @@ See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md).
   items `Price × Frequency`). Typed `lib/*` per module, `AppSelect`/`AppModal`, bilingual EN/ID,
   seeded-name localization. `vue-tsc` + build + 15 Vitest tests green. Verified end-to-end on Docker
   with seeded data (budget Actual derives live from the ledger).
-- **M8 (next)** — Import, i18n audit & polish (spreadsheet/CSV import, completeness check, density
-  toggle, empty/error/loading states, CSV/PDF export).
+- **M8 (active)** — Analytics & polish. Done: a **Reports** screen surfacing the M5 `overview`
+  (category × month heatmap matrix) and `category-tracker` (daily/monthly pivot) endpoints, with a
+  top-categories summary — frontend-only, no backend change. Remaining: spreadsheet/CSV import, i18n
+  completeness check, density toggle, CSV/PDF export.
 
 ## Deferred (post-MVP)
 

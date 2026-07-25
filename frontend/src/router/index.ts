@@ -25,6 +25,7 @@ const routes: RouteRecordRaw[] = [
       },
       { path: 'transactions', name: 'transactions', component: () => import('@/views/transactions/TransactionsView.vue') },
       { path: 'accounts', name: 'accounts', component: () => import('@/views/accounts/AccountsView.vue') },
+      { path: 'reports', name: 'reports', component: () => import('@/views/reports/ReportsView.vue') },
       { path: 'budget', name: 'budget', component: () => import('@/views/budget/BudgetView.vue') },
       { path: 'master-plan', name: 'masterPlan', component: () => import('@/views/masterPlan/MasterPlanView.vue') },
       { path: 'categories', name: 'categories', component: () => import('@/views/categories/CategoriesView.vue') },

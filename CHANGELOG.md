@@ -3,6 +3,25 @@
 This file is Tameru's immutable historical record. A task is not complete until this file has been
 updated. Newest entries at the top. See `CLAUDE.md` → **CHANGELOG Rules** for the full procedure.
 
+## [2026-07-25 12:04:11 UTC]
+
+CHG-0015 — M8 (part 1): Reports / Analytics screen
+
+- New **Reports** screen (`/reports`, added to the menu with a chart icon) surfacing the M5 analytics
+  endpoints that no screen used yet — no backend change:
+  - **Yearly overview**: a category × 12-month spending matrix with heatmap cells (accent-intensity by
+    value), a sticky category column, month/grand totals, and a top-categories summary (SpendBar +
+    list). Year prev/next selector.
+  - **Category tracker**: a category × period pivot with a Monthly/Daily granularity toggle and a
+    from/to date range; sticky category column, period + grand totals.
+- Typed `getOverview` / `getCategoryTracker` in `lib/reports.ts` (+ Overview/CategoryTracker types);
+  category ids resolved to localized names via `seededNames`. Compact id-ID cell formatting; both
+  tables scroll horizontally within their own container (no page overflow).
+- i18n: `nav.reports` + a `reports.*` block in EN and ID (kept structurally identical).
+- `vue-tsc` + build + 15 Vitest tests green; Docker `web` rebuilt. Verified end-to-end (overview 5
+  categories / total 63,246,000; monthly tracker 7 periods × 5 categories; `/reports` history
+  fallback 200).
+
 ## [2026-07-24 17:07:01 UTC]
 
 CHG-0014 — M7 (part 2): Categories, Budget & Master Plan screens — MVP feature-complete
