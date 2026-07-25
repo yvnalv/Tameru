@@ -3,6 +3,26 @@
 This file is Tameru's immutable historical record. A task is not complete until this file has been
 updated. Newest entries at the top. See `CLAUDE.md` → **CHANGELOG Rules** for the full procedure.
 
+## [2026-07-25 14:06:02 UTC]
+
+CHG-0026 — M9 part 8: cross-cutting polish (toasts, confirm dialog, skeletons, self-hosted Inter)
+
+- **Toasts**: a `toast` store + `ToastHost` (teleported, bottom, auto-dismiss, success/error/info with
+  icons). All former `window.alert(...)` error popups now raise `toast.error(...)`, and destructive
+  successes show a `toast.success(...)`.
+- **Confirm dialog**: a promise-based `confirm` store + `ConfirmDialog` (styled, Esc/backdrop to
+  cancel, danger variant) replaces every `window.confirm(...)` — deactivate account/category, void
+  transaction, delete master-plan item. Both hosts are mounted once in `AppShell`.
+- **Loading skeletons**: `Skeleton` + `LoadingBlock` (shimmer, respects reduced-motion) replace the
+  "Loading…" text across Dashboard, Accounts, Transactions, Categories, Budget, Master Plan, and a
+  lighter row skeleton in Reports.
+- **Self-hosted Inter** via `@fontsource/inter` (400/500/600/700 woff2, bundled — 28 font assets); the
+  app no longer falls back to a system font, sharpening all type incl. the wordmark.
+- Added `common.confirm` / `common.done` to both locales. `vue-tsc` + build green (main bundle
+  ~225 kB; ECharts stays in the lazy Dashboard chunk); 22 Vitest tests; Docker `web` rebuilt.
+
+This completes **M9 — UI/UX hardening** (CHG-0019…0026).
+
 ## [2026-07-25 13:54:47 UTC]
 
 CHG-0025 — M9 part 7: richer dashboard with ECharts

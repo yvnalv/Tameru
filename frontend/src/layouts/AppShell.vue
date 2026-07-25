@@ -3,6 +3,8 @@ import { RouterView } from 'vue-router';
 import AppSidebar from '@/components/layout/AppSidebar.vue';
 import AppTopbar from '@/components/layout/AppTopbar.vue';
 import MobileNav from '@/components/layout/MobileNav.vue';
+import ToastHost from '@/components/ui/ToastHost.vue';
+import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 </script>
 
 <template>
@@ -17,5 +19,7 @@ import MobileNav from '@/components/layout/MobileNav.vue';
     </div>
 
     <MobileNav />
+    <ToastHost />
+    <ConfirmDialog />
   </div>
 </template>

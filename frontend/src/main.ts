@@ -6,6 +6,11 @@ import { i18n } from '@/i18n';
 import { setUnauthorizedHandler } from '@/lib/api';
 import { useAuthStore } from '@/stores/auth';
 import { useThemeStore } from '@/stores/theme';
+// Self-hosted Inter (woff2) — the app's type family (docs/frontend/DESIGN_LANGUAGE.md).
+import '@fontsource/inter/400.css';
+import '@fontsource/inter/500.css';
+import '@fontsource/inter/600.css';
+import '@fontsource/inter/700.css';
 import '@/assets/styles/main.css';
 
 const app = createApp(App);

@@ -8,6 +8,7 @@ import type { Category } from '@/types/api';
 import { displayName } from '@/lib/seededNames';
 import AppCard from '@/components/ui/AppCard.vue';
 import SpendBar from '@/components/ui/SpendBar.vue';
+import Skeleton from '@/components/ui/Skeleton.vue';
 import Money from '@/components/ui/Money.vue';
 
 type Granularity = 'yearly' | 'monthly' | 'daily';
@@ -165,7 +166,9 @@ onMounted(async () => {
         </div>
       </div>
 
-      <div v-if="loading" class="py-12 text-center text-sm text-text-muted">{{ t('common.loading') }}</div>
+      <div v-if="loading" class="space-y-2 py-2">
+        <Skeleton v-for="i in 6" :key="i" class="h-8 w-full" />
+      </div>
       <div v-else-if="failed" class="py-12 text-center text-sm text-text-muted">{{ t('errors.network_error') }}</div>
 
       <template v-else-if="matrix && matrix.rows.length">

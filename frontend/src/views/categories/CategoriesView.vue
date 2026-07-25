@@ -9,7 +9,10 @@ import type { Category } from '@/types/api';
 import { errorMessage } from '@/lib/errorMessage';
 import { categoriesImportConfig } from '@/lib/importConfigs';
 import { displayName } from '@/lib/seededNames';
+import { useToastStore } from '@/stores/toast';
+import { useConfirmStore } from '@/stores/confirm';
 import ImportModal from '@/components/ui/ImportModal.vue';
+import LoadingBlock from '@/components/ui/LoadingBlock.vue';
 import AppCard from '@/components/ui/AppCard.vue';
 import AppButton from '@/components/ui/AppButton.vue';
 import AppModal from '@/components/ui/AppModal.vue';
@@ -19,6 +22,8 @@ import FormField from '@/components/ui/FormField.vue';
 import IconButton from '@/components/ui/IconButton.vue';
 
 const { t, te, locale } = useI18n();
+const toast = useToastStore();
+const confirm = useConfirmStore();
 
 const cats = ref<Category[]>([]);
 const loading = ref(true);
@@ -106,12 +111,18 @@ async function save(): Promise<void> {
 }
 
 async function deactivate(c: Category): Promise<void> {
-  if (!window.confirm(t('categories.deactivateConfirm'))) return;
+  const ok = await confirm.ask({
+    message: t('categories.deactivateConfirm'),
+    confirmLabel: t('categories.deactivate'),
+    danger: true,
+  });
+  if (!ok) return;
   try {
     await deactivateCategory(c.id);
+    toast.success(t('common.done'));
     await load();
   } catch (error) {
-    window.alert(errorMessage(t, te, error));
+    toast.error(errorMessage(t, te, error));
   }
 }
 
@@ -130,7 +141,7 @@ onMounted(load);
       </div>
     </div>
 
-    <div v-if="loading" class="py-16 text-center text-sm text-text-muted">{{ t('common.loading') }}</div>
+    <LoadingBlock v-if="loading" />
     <div v-else-if="failed" class="py-16 text-center">
       <p class="text-sm text-text-muted">{{ t('errors.network_error') }}</p>
       <AppButton class="mt-4" variant="secondary" @click="load">{{ t('common.retry') }}</AppButton>

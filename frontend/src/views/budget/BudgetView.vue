@@ -8,12 +8,15 @@ import { ApiClientError } from '@/lib/api';
 import type { BudgetPeriod, Category } from '@/types/api';
 import { errorMessage } from '@/lib/errorMessage';
 import { displayName } from '@/lib/seededNames';
+import { useToastStore } from '@/stores/toast';
 import AppCard from '@/components/ui/AppCard.vue';
+import LoadingBlock from '@/components/ui/LoadingBlock.vue';
 import AppButton from '@/components/ui/AppButton.vue';
 import AppInput from '@/components/ui/AppInput.vue';
 import Money from '@/components/ui/Money.vue';
 
 const { t, te, locale } = useI18n();
+const toast = useToastStore();
 
 const now = new Date();
 const year = ref(now.getFullYear());
@@ -82,7 +85,7 @@ async function createPeriod(): Promise<void> {
     period.value = await createBudgetPeriod(year.value, month.value);
     startEdit();
   } catch (error) {
-    window.alert(errorMessage(t, te, error));
+    toast.error(errorMessage(t, te, error));
   }
 }
 
@@ -100,7 +103,7 @@ async function savePlans(): Promise<void> {
     period.value = await upsertBudgetLines(period.value.id, lines);
     editing.value = false;
   } catch (error) {
-    window.alert(errorMessage(t, te, error));
+    toast.error(errorMessage(t, te, error));
   } finally {
     saving.value = false;
   }
@@ -123,7 +126,7 @@ onMounted(async () => {
       </div>
     </div>
 
-    <div v-if="loading" class="py-16 text-center text-sm text-text-muted">{{ t('common.loading') }}</div>
+    <LoadingBlock v-if="loading" />
     <div v-else-if="failed" class="py-16 text-center">
       <p class="text-sm text-text-muted">{{ t('errors.network_error') }}</p>
       <AppButton class="mt-4" variant="secondary" @click="loadPeriod">{{ t('common.retry') }}</AppButton>

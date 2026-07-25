@@ -9,7 +9,10 @@ import type { MasterPlan, MasterPlanItem, MasterPlanSection } from '@/types/api'
 import { errorMessage } from '@/lib/errorMessage';
 import { masterPlanImportConfig } from '@/lib/importConfigs';
 import { displayName } from '@/lib/seededNames';
+import { useToastStore } from '@/stores/toast';
+import { useConfirmStore } from '@/stores/confirm';
 import ImportModal from '@/components/ui/ImportModal.vue';
+import LoadingBlock from '@/components/ui/LoadingBlock.vue';
 import AppCard from '@/components/ui/AppCard.vue';
 import AppButton from '@/components/ui/AppButton.vue';
 import AppModal from '@/components/ui/AppModal.vue';
@@ -19,6 +22,8 @@ import IconButton from '@/components/ui/IconButton.vue';
 import Money from '@/components/ui/Money.vue';
 
 const { t, te, locale } = useI18n();
+const toast = useToastStore();
+const confirm = useConfirmStore();
 
 const plan = ref<MasterPlan | null>(null);
 const loading = ref(true);
@@ -105,12 +110,18 @@ async function save(): Promise<void> {
 }
 
 async function removeItem(item: MasterPlanItem): Promise<void> {
-  if (!window.confirm(t('masterPlan.deleteConfirm'))) return;
+  const ok = await confirm.ask({
+    message: t('masterPlan.deleteConfirm'),
+    confirmLabel: t('common.delete'),
+    danger: true,
+  });
+  if (!ok) return;
   try {
     await deleteMasterPlanItem(item.id);
+    toast.success(t('common.done'));
     await load();
   } catch (error) {
-    window.alert(errorMessage(t, te, error));
+    toast.error(errorMessage(t, te, error));
   }
 }
 
@@ -132,7 +143,7 @@ onMounted(load);
       </div>
     </div>
 
-    <div v-if="loading" class="py-16 text-center text-sm text-text-muted">{{ t('common.loading') }}</div>
+    <LoadingBlock v-if="loading" />
     <div v-else-if="failed" class="py-16 text-center">
       <p class="text-sm text-text-muted">{{ t('errors.network_error') }}</p>
       <AppButton class="mt-4" variant="secondary" @click="load">{{ t('common.retry') }}</AppButton>

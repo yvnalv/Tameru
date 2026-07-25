@@ -18,6 +18,7 @@ import DonutChart from '@/components/ui/DonutChart.vue';
 import AvatarChip from '@/components/ui/AvatarChip.vue';
 import Money from '@/components/ui/Money.vue';
 import AppButton from '@/components/ui/AppButton.vue';
+import LoadingBlock from '@/components/ui/LoadingBlock.vue';
 
 const { t, locale } = useI18n();
 
@@ -83,7 +84,7 @@ onMounted(load);
 
 <template>
   <div>
-    <div v-if="loading" class="py-24 text-center text-sm text-text-muted">{{ t('common.loading') }}</div>
+    <LoadingBlock v-if="loading" />
 
     <div v-else-if="failed" class="py-24 text-center">
       <p class="text-sm text-text-muted">{{ t('errors.network_error') }}</p>

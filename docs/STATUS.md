@@ -77,7 +77,9 @@ See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md).
   alongside Accounts/Transactions; **P7** richer **ECharts** dashboard — a 12-month income/expense
   bar chart, an expenses-by-category donut (this month), and a recent-10-transactions feed, next to
   the net-worth hero, this-month tiles and accounts (ECharts code-split into the lazy Dashboard
-  chunk). Remaining: cross-cutting polish (toasts/confirm dialog, skeletons, self-hosted Inter).
+  chunk); **P8** cross-cutting polish — styled **toasts** + a promise-based **confirm dialog**
+  (replacing all native `alert`/`confirm`), **loading skeletons** in place of "Loading…" text, and
+  **self-hosted Inter** (woff2). The UI/UX hardening pass (M9) is complete.
 
 ## Deferred (post-MVP)
 
