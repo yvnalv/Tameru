@@ -1,4 +1,4 @@
-import { LayoutDashboard, ArrowLeftRight, Wallet, PieChart, Target, Tags } from 'lucide-vue-next';
+import { LayoutDashboard, ArrowLeftRight, Wallet, PieChart, Target, Tags, BarChart3 } from 'lucide-vue-next';
 import type { Component } from 'vue';
 
 export interface NavItem {
@@ -15,6 +15,7 @@ export const navItems: NavItem[] = [
   { key: 'dashboard', icon: LayoutDashboard, route: 'dashboard' },
   { key: 'transactions', icon: ArrowLeftRight, route: 'transactions' },
   { key: 'accounts', icon: Wallet, route: 'accounts' },
+  { key: 'reports', icon: BarChart3, route: 'reports' },
   { key: 'budget', icon: PieChart, route: 'budget' },
   { key: 'masterPlan', icon: Target, route: 'masterPlan' },
   { key: 'categories', icon: Tags, route: 'categories' },

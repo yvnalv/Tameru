@@ -194,3 +194,32 @@ export interface CashflowReport {
   net: number;
   trend: MonthlyCashflow[];
 }
+
+export interface OverviewRow {
+  categoryId: string;
+  months: number[];
+  total: number;
+}
+
+export interface OverviewReport {
+  year: number;
+  categories: OverviewRow[];
+  monthlyTotals: number[];
+  total: number;
+}
+
+export interface CategoryTrackerRow {
+  categoryId: string;
+  amounts: number[];
+  total: number;
+}
+
+export interface CategoryTrackerReport {
+  granularity: string;
+  from: string;
+  to: string;
+  periods: string[];
+  categories: CategoryTrackerRow[];
+  periodTotals: number[];
+  total: number;
+}
