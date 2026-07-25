@@ -3,6 +3,26 @@
 This file is Tameru's immutable historical record. A task is not complete until this file has been
 updated. Newest entries at the top. See `CLAUDE.md` → **CHANGELOG Rules** for the full procedure.
 
+## [2026-07-25 13:54:47 UTC]
+
+CHG-0025 — M9 part 7: richer dashboard with ECharts
+
+- Adopted **Apache ECharts** via `vue-echarts` (the documented stack), tree-shaken to only the chart
+  types/components used (`BarChart`, `PieChart`, grid, tooltip, canvas renderer) and **code-split into
+  the lazy Dashboard chunk** so the main bundle stays ~218 kB. Chart colors mirror the design tokens
+  (`lib/chartTheme.ts`), dark tooltip included.
+- Rebuilt the **Dashboard** into a richer layout:
+  - Net-worth hero (with the account spend-bar) + a "This month" income/expense/net card.
+  - **Cashflow** — a 12-month income vs. expense bar chart (ECharts, solid green/red, no gradient),
+    replacing the CSS bars.
+  - **Expenses by category** — a donut of this month's spend (top 6 + "Others") with a colored legend
+    and a centered total.
+  - **Recent transactions** — the latest 10 as an activity feed (avatar, date · category, signed
+    amount), plus the accounts summary.
+- Added `DonutChart` component and dashboard i18n (`expenses`, `others`, `noExpenses`) in both locales.
+- `vue-tsc` + build green; 22 Vitest tests; Docker `web` rebuilt. Verified dashboard data end-to-end
+  (5-category donut for the month; 10 recent transactions).
+
 ## [2026-07-25 13:45:49 UTC]
 
 CHG-0024 — M9 part 6: progress-bar fix + import on every screen

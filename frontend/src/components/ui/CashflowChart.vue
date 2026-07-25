@@ -1,59 +1,63 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import '@/lib/echarts';
+import VChart from 'vue-echarts';
 import { useI18n } from 'vue-i18n';
 import type { MonthlyCashflow } from '@/types/api';
 import { formatMoney } from '@/lib/format';
+import { chart, darkTooltip } from '@/lib/chartTheme';
 
-// Lightweight 12-month income-vs-expense bars. CSS/flex, solid fills, no gradient (design language).
+// 12-month income vs expense bars (ECharts, dark theme, solid fills — no gradient).
 const props = defineProps<{ months: MonthlyCashflow[]; currency?: string }>();
 const { t, locale } = useI18n();
 
-const max = computed(() =>
-  Math.max(1, ...props.months.flatMap((m) => [m.income, m.expense])),
-);
+const monthLabel = (m: number) => new Date(2020, m - 1, 1).toLocaleString(locale.value, { month: 'short' });
+const compact = (v: number) => new Intl.NumberFormat(locale.value, { notation: 'compact', maximumFractionDigits: 1 }).format(v);
 
-function heightPct(value: number): number {
-  return value <= 0 ? 0 : Math.max(3, (value / max.value) * 100);
-}
-
-function monthLabel(month: number): string {
-  return new Date(2020, month - 1, 1).toLocaleString(locale.value, { month: 'short' });
-}
+const option = computed(() => ({
+  tooltip: {
+    trigger: 'axis',
+    ...darkTooltip,
+    valueFormatter: (v: number) => formatMoney(v, props.currency ?? 'IDR'),
+  },
+  grid: { left: 8, right: 8, top: 10, bottom: 4, containLabel: true },
+  xAxis: {
+    type: 'category',
+    data: props.months.map((m) => monthLabel(m.month)),
+    axisLabel: { color: chart.textMuted, fontSize: 11 },
+    axisLine: { lineStyle: { color: chart.border } },
+    axisTick: { show: false },
+  },
+  yAxis: {
+    type: 'value',
+    axisLabel: { color: chart.textMuted, fontSize: 11, formatter: (v: number) => compact(v) },
+    splitLine: { lineStyle: { color: chart.border, type: 'dashed' } },
+  },
+  series: [
+    {
+      name: t('enums.transactionType.Income'),
+      type: 'bar',
+      data: props.months.map((m) => m.income),
+      itemStyle: { color: chart.positive, borderRadius: [3, 3, 0, 0] },
+      barMaxWidth: 14,
+    },
+    {
+      name: t('enums.transactionType.Expense'),
+      type: 'bar',
+      data: props.months.map((m) => m.expense),
+      itemStyle: { color: chart.negative, borderRadius: [3, 3, 0, 0] },
+      barMaxWidth: 14,
+    },
+  ],
+}));
 </script>
 
 <template>
   <div>
-    <div class="mb-4 flex items-center gap-4 text-xs text-text-muted">
-      <span class="inline-flex items-center gap-1.5">
-        <span class="h-2.5 w-2.5 rounded-sm" style="background: var(--positive)" />
-        {{ t('enums.transactionType.Income') }}
-      </span>
-      <span class="inline-flex items-center gap-1.5">
-        <span class="h-2.5 w-2.5 rounded-sm" style="background: var(--negative)" />
-        {{ t('enums.transactionType.Expense') }}
-      </span>
+    <div class="mb-3 flex items-center gap-4 text-xs text-text-muted">
+      <span class="inline-flex items-center gap-1.5"><span class="h-2.5 w-2.5 rounded-sm" style="background: var(--positive)" />{{ t('enums.transactionType.Income') }}</span>
+      <span class="inline-flex items-center gap-1.5"><span class="h-2.5 w-2.5 rounded-sm" style="background: var(--negative)" />{{ t('enums.transactionType.Expense') }}</span>
     </div>
-
-    <div class="flex h-44 items-end gap-1.5 sm:gap-2">
-      <div
-        v-for="m in months"
-        :key="m.month"
-        class="group flex h-full flex-1 flex-col items-center justify-end"
-      >
-        <div class="flex h-full w-full items-end justify-center gap-[3px]">
-          <div
-            class="w-1/3 max-w-[10px] rounded-t-sm bg-[color:var(--positive)] transition-[height] duration-200"
-            :style="{ height: `${heightPct(m.income)}%` }"
-            :title="`${t('enums.transactionType.Income')}: ${formatMoney(m.income, currency ?? 'IDR')}`"
-          />
-          <div
-            class="w-1/3 max-w-[10px] rounded-t-sm bg-[color:var(--negative)] transition-[height] duration-200"
-            :style="{ height: `${heightPct(m.expense)}%` }"
-            :title="`${t('enums.transactionType.Expense')}: ${formatMoney(m.expense, currency ?? 'IDR')}`"
-          />
-        </div>
-        <span class="mt-2 text-[11px] uppercase text-text-muted">{{ monthLabel(m.month) }}</span>
-      </div>
-    </div>
+    <VChart :option="option" autoresize class="h-56 w-full" />
   </div>
 </template>

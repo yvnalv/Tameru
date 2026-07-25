@@ -74,8 +74,10 @@ See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md).
   5 yrs / 12 months / days-of-month with prev-next; monthly also has year prev/next); **P5** Budget
   now shows per-category **progress bars** (green fill to Plan, red overspend beyond, % + leftover);
   **P6** CSV **import on every relevant screen** — added Categories and Master Plan importers
-  alongside Accounts/Transactions. Next: richer **ECharts** dashboard, then cross-cutting polish
-  (toasts, skeletons, self-hosted Inter).
+  alongside Accounts/Transactions; **P7** richer **ECharts** dashboard — a 12-month income/expense
+  bar chart, an expenses-by-category donut (this month), and a recent-10-transactions feed, next to
+  the net-worth hero, this-month tiles and accounts (ECharts code-split into the lazy Dashboard
+  chunk). Remaining: cross-cutting polish (toasts/confirm dialog, skeletons, self-hosted Inter).
 
 ## Deferred (post-MVP)
 
