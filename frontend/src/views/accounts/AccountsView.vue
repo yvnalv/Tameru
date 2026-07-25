@@ -1,14 +1,16 @@
 <script setup lang="ts">
 import { onMounted, ref, computed, reactive } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Plus, Pencil, Ban } from 'lucide-vue-next';
+import { Plus, Pencil, Ban, Upload } from 'lucide-vue-next';
 import {
   listAccounts, listAccountGroups, createAccount, updateAccount, deactivateAccount,
   type AccountInput,
 } from '@/lib/accounts';
 import type { Account, AccountGroup } from '@/types/api';
 import { errorMessage } from '@/lib/errorMessage';
+import { accountsImportConfig } from '@/lib/importConfigs';
 import { useDensity } from '@/composables/useDensity';
+import ImportModal from '@/components/ui/ImportModal.vue';
 import AppCard from '@/components/ui/AppCard.vue';
 import AppButton from '@/components/ui/AppButton.vue';
 import AppModal from '@/components/ui/AppModal.vue';
@@ -19,6 +21,12 @@ import Money from '@/components/ui/Money.vue';
 
 const { t, te } = useI18n();
 const { rowPad } = useDensity();
+const importOpen = ref(false);
+const importConfig = computed(() => accountsImportConfig(groups.value));
+
+async function onImported(): Promise<void> {
+  await load();
+}
 
 const accounts = ref<Account[]>([]);
 const groups = ref<AccountGroup[]>([]);
@@ -118,7 +126,12 @@ onMounted(load);
   <div class="space-y-4">
     <div class="flex items-center justify-between">
       <h1 class="text-lg font-semibold">{{ t('accounts.title') }}</h1>
-      <AppButton @click="openCreate"><Plus :size="16" />{{ t('accounts.add') }}</AppButton>
+      <div class="flex items-center gap-2">
+        <AppButton variant="secondary" @click="importOpen = true">
+          <Upload :size="16" /><span class="hidden sm:inline">{{ t('import.accounts') }}</span>
+        </AppButton>
+        <AppButton @click="openCreate"><Plus :size="16" />{{ t('accounts.add') }}</AppButton>
+      </div>
     </div>
 
     <div v-if="loading" class="py-16 text-center text-sm text-text-muted">{{ t('common.loading') }}</div>
@@ -219,5 +232,13 @@ onMounted(load);
         <AppButton :loading="saving" @click="save">{{ saving ? t('common.saving') : t('common.save') }}</AppButton>
       </template>
     </AppModal>
+
+    <ImportModal
+      v-if="importOpen"
+      :title="t('import.accounts')"
+      :config="importConfig"
+      @close="importOpen = false"
+      @done="onImported"
+    />
   </div>
 </template>

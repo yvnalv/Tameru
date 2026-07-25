@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref, reactive, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Plus, Check, Undo2, Ban, ArrowRight, Download } from 'lucide-vue-next';
+import { Plus, Check, Undo2, Ban, ArrowRight, Download, Upload } from 'lucide-vue-next';
 import {
   listTransactions, createTransaction, clearTransaction, unclearTransaction, voidTransaction,
   type TransactionFilter, type TransactionInput,
@@ -12,7 +12,9 @@ import type { Account, Category, Paged, Transaction } from '@/types/api';
 import { errorMessage } from '@/lib/errorMessage';
 import { formatShortDate } from '@/lib/format';
 import { toCsv, downloadCsv } from '@/lib/csv';
+import { transactionsImportConfig } from '@/lib/importConfigs';
 import { useDensity } from '@/composables/useDensity';
+import ImportModal from '@/components/ui/ImportModal.vue';
 import AppCard from '@/components/ui/AppCard.vue';
 import AppButton from '@/components/ui/AppButton.vue';
 import AppModal from '@/components/ui/AppModal.vue';
@@ -25,6 +27,13 @@ import Money from '@/components/ui/Money.vue';
 const { t, te, locale } = useI18n();
 const { rowPad } = useDensity();
 const exporting = ref(false);
+const importOpen = ref(false);
+
+const importConfig = computed(() => transactionsImportConfig(accounts.value, categories.value, locale.value));
+
+async function onImported(): Promise<void> {
+  await Promise.all([loadPage(), loadRefs()]);
+}
 
 const page = ref<Paged<Transaction> | null>(null);
 const accounts = ref<Account[]>([]);
@@ -245,8 +254,11 @@ onMounted(async () => {
     <div class="flex items-center justify-between">
       <h1 class="text-lg font-semibold">{{ t('transactions.title') }}</h1>
       <div class="flex items-center gap-2">
+        <AppButton variant="secondary" @click="importOpen = true">
+          <Upload :size="16" /><span class="hidden sm:inline">{{ t('import.transactions') }}</span>
+        </AppButton>
         <AppButton variant="secondary" :loading="exporting" @click="exportCsv">
-          <Download :size="16" />{{ t('common.export') }}
+          <Download :size="16" /><span class="hidden sm:inline">{{ t('common.export') }}</span>
         </AppButton>
         <AppButton @click="openCreate"><Plus :size="16" />{{ t('transactions.add') }}</AppButton>
       </div>
@@ -385,5 +397,13 @@ onMounted(async () => {
         <AppButton :loading="saving" @click="save">{{ saving ? t('common.saving') : t('common.save') }}</AppButton>
       </template>
     </AppModal>
+
+    <ImportModal
+      v-if="importOpen"
+      :title="t('import.transactions')"
+      :config="importConfig"
+      @close="importOpen = false"
+      @done="onImported"
+    />
   </div>
 </template>

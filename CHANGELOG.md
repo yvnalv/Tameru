@@ -3,9 +3,23 @@
 This file is Tameru's immutable historical record. A task is not complete until this file has been
 updated. Newest entries at the top. See `CLAUDE.md` → **CHANGELOG Rules** for the full procedure.
 
-## [2026-07-25 12:19:12 UTC]
+## [2026-07-25 12:29:46 UTC]
 
-CHG-0017 — M8 (part 2): polish — i18n parity test, density toggle, CSV export
+CHG-0018 — M8 (part 3): CSV import (accounts & transactions)
+
+- Client-side CSV import — no backend change; it reuses the existing, fully validated create
+  endpoints (one request per row), so all money rules still apply server-side.
+- `lib/csvParse.ts`: an RFC-4180 parser (quoted fields, escaped quotes, embedded commas/newlines,
+  CRLF, BOM) with 5 unit tests. `lib/import.ts` (config type + template download + lenient amount
+  parse) and `lib/importConfigs.ts` (accounts + transactions configs resolving account/category names
+  → ids, with an early flow-mismatch guard).
+- `ImportModal`: upload → **preview** (per-row valid/skip with reasons) → **import** (progress bar) →
+  **report** (created / failed with messages); a "Download template" button emits a headers+sample CSV.
+- Wired an **Import** action into the Transactions and Accounts screens.
+- i18n `import.*` in EN + ID (kept structurally identical).
+- `vue-tsc` + build green; frontend suite now 22 Vitest tests. Docker `web` rebuilt. Verified the flow
+  end-to-end against the live API (a valid Expense + Transfer created; a row with an unknown account
+  skipped, matching the preview's validation).
 
 - **i18n parity test** (`src/i18n/locales.spec.ts`): asserts the EN and ID dictionaries have an
   identical key set and no empty values — a permanent guard against locale drift (CLAUDE.md i18n rule).
