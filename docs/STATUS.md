@@ -61,9 +61,10 @@ See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md).
   seeded-name localization. `vue-tsc` + build + 15 Vitest tests green. Verified end-to-end on Docker
   with seeded data (budget Actual derives live from the ledger).
 - **M8 (active)** — Analytics & polish. Done: a **Reports** screen (M5 overview heatmap +
-  category-tracker pivot); an **i18n EN/ID parity test**; a **density toggle** (topbar, applied to the
-  Transactions/Accounts lists); and **CSV export** of transactions (respects the active filters).
-  Remaining: spreadsheet/CSV import, PDF export.
+  category-tracker pivot); an **i18n EN/ID parity test**; a **density toggle**; **CSV export** of
+  transactions; and **CSV import** (client-side upload → preview/validate → per-row create via the
+  existing endpoints, with a result report) for **accounts** and **transactions** (name→id resolution,
+  downloadable templates). Remaining (optional): PDF export, categories import.
 
 ## Deferred (post-MVP)
 
