@@ -4,6 +4,7 @@ import { LogOut, Languages, Rows2, Rows3 } from 'lucide-vue-next';
 import { useAuthStore } from '@/stores/auth';
 import { useUiStore } from '@/stores/ui';
 import { useDensity } from '@/composables/useDensity';
+import IconButton from '@/components/ui/IconButton.vue';
 
 const router = useRouter();
 const auth = useAuthStore();
@@ -25,13 +26,12 @@ async function signOut(): Promise<void> {
     </h1>
 
     <div class="flex items-center gap-1">
-      <button
-        class="inline-flex items-center rounded-control p-2 text-text-muted hover:bg-surface-2 hover:text-text"
-        :title="$t('common.density')"
+      <IconButton
+        :icon="density.compact.value ? Rows2 : Rows3"
+        :label="$t('common.density')"
+        :size="18"
         @click="density.toggle()"
-      >
-        <component :is="density.compact.value ? Rows2 : Rows3" :size="18" :stroke-width="1.5" />
-      </button>
+      />
 
       <button
         class="inline-flex items-center gap-1.5 rounded-control px-2.5 py-1.5 text-sm font-medium text-text-muted hover:bg-surface-2 hover:text-text"

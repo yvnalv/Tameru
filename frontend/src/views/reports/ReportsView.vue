@@ -31,7 +31,7 @@ const catName = (id: string) => {
   const c = categories.value.find((x) => x.id === id);
   return displayName(c?.name ?? null, locale.value) || id.slice(0, 6);
 };
-const monthLabel = (m: number) => new Date(2020, m - 1, 1).toLocaleString(locale.value, { month: 'narrow' });
+const monthLabel = (m: number) => new Date(2020, m - 1, 1).toLocaleString(locale.value, { month: 'short' });
 
 // --- heatmap ---------------------------------------------------------------
 const overviewMax = computed(() =>

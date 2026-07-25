@@ -3,6 +3,23 @@
 This file is Tameru's immutable historical record. A task is not complete until this file has been
 updated. Newest entries at the top. See `CLAUDE.md` → **CHANGELOG Rules** for the full procedure.
 
+## [2026-07-25 13:09:51 UTC]
+
+CHG-0019 — M9 (UI/UX hardening) part 1: quick wins
+
+- **Month labels** now use the short format (`Jan`, `Feb`, …) instead of single letters, in the
+  cashflow chart and the Reports matrices.
+- New reusable **`IconButton`** — an icon-only button that is always labelled (a styled tooltip on
+  hover/focus + `aria-label`). Applied to every icon-only action (transaction rows, accounts,
+  categories, master-plan, the topbar density toggle). The transaction-row actions now read clearly
+  (mark cleared / mark uncleared / void) with clearer icons.
+- **Collapsible sidebar**: a toggle collapses it to a 72px icon-only rail (labels shown as tooltips);
+  the state persists (`tameru.sidebarCollapsed`). Uses the brand mark when collapsed, lockup when open.
+- **Scrollable tables**: the Budget and Master Plan tables now scroll horizontally within their own
+  container (Reports already did), so nothing overflows the page on narrow screens.
+- Added `common.collapse`/`common.expand` to both locales (i18n parity test still green).
+- `vue-tsc` + build green; 22 Vitest tests; Docker `web` rebuilt.
+
 ## [2026-07-25 12:29:46 UTC]
 
 CHG-0018 — M8 (part 3): CSV import (accounts & transactions)

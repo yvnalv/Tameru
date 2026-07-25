@@ -148,7 +148,8 @@ onMounted(async () => {
         </div>
 
         <!-- View mode -->
-        <table v-if="!editing" class="w-full text-sm">
+        <div v-if="!editing" class="scroll-slim overflow-x-auto">
+        <table class="w-full min-w-[520px] text-sm">
           <thead>
             <tr class="text-left text-[12px] uppercase text-text-muted">
               <th class="px-5 py-2 font-medium">{{ t('budget.category') }}</th>
@@ -169,9 +170,11 @@ onMounted(async () => {
             </tr>
           </tbody>
         </table>
+        </div>
 
         <!-- Edit mode -->
-        <table v-else class="w-full text-sm">
+        <div v-else class="scroll-slim overflow-x-auto">
+        <table class="w-full min-w-[360px] text-sm">
           <thead>
             <tr class="text-left text-[12px] uppercase text-text-muted">
               <th class="px-5 py-2 font-medium">{{ t('budget.category') }}</th>
@@ -191,6 +194,7 @@ onMounted(async () => {
             </tr>
           </tbody>
         </table>
+        </div>
       </AppCard>
     </template>
   </div>

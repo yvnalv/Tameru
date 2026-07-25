@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref, reactive, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Plus, Check, Undo2, Ban, ArrowRight, Download, Upload } from 'lucide-vue-next';
+import { Plus, CircleCheck, RotateCcw, Ban, ArrowRight, Download, Upload } from 'lucide-vue-next';
 import {
   listTransactions, createTransaction, clearTransaction, unclearTransaction, voidTransaction,
   type TransactionFilter, type TransactionInput,
@@ -22,6 +22,7 @@ import AppInput from '@/components/ui/AppInput.vue';
 import AppSelect from '@/components/ui/AppSelect.vue';
 import FormField from '@/components/ui/FormField.vue';
 import StatusChip from '@/components/ui/StatusChip.vue';
+import IconButton from '@/components/ui/IconButton.vue';
 import Money from '@/components/ui/Money.vue';
 
 const { t, te, locale } = useI18n();
@@ -304,18 +305,13 @@ onMounted(async () => {
               :signed="tx.type !== 'Transfer'"
               class="w-32 shrink-0 text-right text-sm font-medium"
             />
-            <div class="flex w-16 shrink-0 items-center justify-end gap-1">
-              <button
-                class="rounded-control p-1.5 text-text-muted hover:bg-surface-2 hover:text-text"
-                :title="tx.status === 'Cleared' ? t('transactions.unclear') : t('transactions.clear')"
+            <div class="flex w-16 shrink-0 items-center justify-end gap-0.5">
+              <IconButton
+                :icon="tx.status === 'Cleared' ? RotateCcw : CircleCheck"
+                :label="tx.status === 'Cleared' ? t('transactions.unclear') : t('transactions.clear')"
                 @click="toggleClear(tx)"
-              >
-                <Undo2 v-if="tx.status === 'Cleared'" :size="15" />
-                <Check v-else :size="15" />
-              </button>
-              <button class="rounded-control p-1.5 text-text-muted hover:bg-surface-2 hover:text-negative" :title="t('transactions.void')" @click="remove(tx)">
-                <Ban :size="15" />
-              </button>
+              />
+              <IconButton :icon="Ban" :label="t('transactions.void')" danger @click="remove(tx)" />
             </div>
           </li>
         </ul>

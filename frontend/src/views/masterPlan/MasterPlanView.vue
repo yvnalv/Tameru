@@ -13,6 +13,7 @@ import AppButton from '@/components/ui/AppButton.vue';
 import AppModal from '@/components/ui/AppModal.vue';
 import AppInput from '@/components/ui/AppInput.vue';
 import FormField from '@/components/ui/FormField.vue';
+import IconButton from '@/components/ui/IconButton.vue';
 import Money from '@/components/ui/Money.vue';
 
 const { t, te, locale } = useI18n();
@@ -143,7 +144,8 @@ onMounted(load);
           <AppButton class="ml-3" variant="secondary" @click="openAddItem(section)"><Plus :size="15" />{{ t('masterPlan.addItem') }}</AppButton>
         </div>
 
-        <table class="w-full text-sm">
+        <div class="scroll-slim overflow-x-auto">
+        <table class="w-full min-w-[560px] text-sm">
           <thead>
             <tr class="text-left text-[12px] uppercase text-text-muted">
               <th class="px-5 py-2 font-medium">{{ t('masterPlan.name') }}</th>
@@ -160,9 +162,9 @@ onMounted(load);
               <td class="px-5 py-2.5 text-right tnum">{{ item.frequency }}</td>
               <td class="px-5 py-2.5 text-right font-medium"><Money :value="item.totalBudget" /></td>
               <td class="px-5 py-2.5">
-                <div class="flex items-center justify-end gap-1">
-                  <button class="rounded-control p-1.5 text-text-muted hover:bg-surface-2 hover:text-text" :title="t('common.edit')" @click="openEditItem(section, item)"><Pencil :size="14" /></button>
-                  <button class="rounded-control p-1.5 text-text-muted hover:bg-surface-2 hover:text-negative" :title="t('common.delete')" @click="removeItem(item)"><Trash2 :size="14" /></button>
+                <div class="flex items-center justify-end gap-0.5">
+                  <IconButton :icon="Pencil" :label="t('common.edit')" :size="14" @click="openEditItem(section, item)" />
+                  <IconButton :icon="Trash2" :label="t('common.delete')" :size="14" danger @click="removeItem(item)" />
                 </div>
               </td>
             </tr>
@@ -171,6 +173,7 @@ onMounted(load);
             </tr>
           </tbody>
         </table>
+        </div>
       </AppCard>
     </div>
 

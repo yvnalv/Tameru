@@ -26,6 +26,8 @@ export default {
     language: 'Language',
     density: 'Density',
     export: 'Export CSV',
+    collapse: 'Collapse sidebar',
+    expand: 'Expand sidebar',
     save: 'Save',
     cancel: 'Cancel',
     add: 'Add',
