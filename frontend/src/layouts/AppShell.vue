@@ -11,7 +11,7 @@ import MobileNav from '@/components/layout/MobileNav.vue';
 
     <div class="flex min-w-0 flex-1 flex-col">
       <AppTopbar />
-      <main class="scroll-slim w-full max-w-[1600px] flex-1 px-4 py-6 pb-28 md:px-8 md:pb-8">
+      <main class="scroll-slim w-full flex-1 px-4 py-6 pb-28 md:px-8 md:pb-8">
         <RouterView />
       </main>
     </div>

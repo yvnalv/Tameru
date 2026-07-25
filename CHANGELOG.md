@@ -3,6 +3,30 @@
 This file is Tameru's immutable historical record. A task is not complete until this file has been
 updated. Newest entries at the top. See `CLAUDE.md` → **CHANGELOG Rules** for the full procedure.
 
+## [2026-07-25 13:28:51 UTC]
+
+CHG-0022 — M9 part 4: Reports — single card with Yearly/Monthly/Daily toggle
+
+- Merged the two Reports cards (yearly overview + category tracker — they showed the same data) into
+  **one** "Category tracker" card with a `Yearly | Monthly | Daily` toggle:
+  - **Yearly** — the last 5 years (columns = years), aggregated **client-side** from monthly data.
+  - **Monthly** — the 12 months of the current year.
+  - **Daily** — the days of the selected month, with ‹ prev / next › month navigation (like Budget).
+- Kept the heatmap cells, sticky category column, period + grand totals, and the top-categories
+  summary; all three modes share one reshaping helper over the `category-tracker` endpoint.
+- Added `reports.yearly` to both locales. (A dedicated backend yearly-aggregation endpoint is a noted
+  future improvement — see docs/API_SPEC.md — for after the UI stabilizes.)
+- `vue-tsc` + build green; 22 Vitest tests; verified data for all three modes.
+
+## [2026-07-25 13:24:00 UTC]
+
+CHG-0021 — M9 part 3: content area fills the screen width
+
+- The main content was capped at `max-w-[1600px]` and left-aligned, leaving dead space on wide
+  screens (and it didn't reclaim the space when the sidebar collapsed). Removed the cap so the content
+  region is fluid — it fills the available width and expands/contracts with the sidebar. Committed with
+  the sidebar-toggle fix in the same PR.
+
 ## [2026-07-25 13:18:52 UTC]
 
 CHG-0020 — M9 part 2: fixed sidebar toggle + responsive/mobile pass
