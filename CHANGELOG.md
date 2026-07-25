@@ -3,6 +3,20 @@
 This file is Tameru's immutable historical record. A task is not complete until this file has been
 updated. Newest entries at the top. See `CLAUDE.md` → **CHANGELOG Rules** for the full procedure.
 
+## [2026-07-25 14:14:35 UTC]
+
+CHG-0027 — M9 part 9: consistent money format + logged-in user in the top bar
+
+- **One money format everywhere.** Dropped the `+`/`−` signed style (`formatSignedMoney`); every amount
+  now uses the id-ID **parentheses** style for negatives (per the locked design language). The `Money`
+  component always renders **negatives in red**; positives stay neutral unless `colored` marks a
+  semantic gain (income / net / leftover), which renders green. Transaction rows now show income green,
+  expense `(Rp …)` red, transfer neutral — matching the rest of the app. Removed the unused
+  `TransactionRow` component and the signed-format unit tests.
+- **Logged-in owner** shown in the top bar: an avatar chip with the display name + email (avatar-only
+  on mobile). The sign-out button became a tooltip'd icon button.
+- `vue-tsc` + build green; 19 Vitest tests; Docker `web` rebuilt.
+
 ## [2026-07-25 14:06:02 UTC]
 
 CHG-0026 — M9 part 8: cross-cutting polish (toasts, confirm dialog, skeletons, self-hosted Inter)

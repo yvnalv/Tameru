@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { formatMoney, formatNumber, formatSignedMoney } from '@/lib/format';
+import { formatMoney, formatNumber } from '@/lib/format';
 
 describe('formatNumber (id-ID)', () => {
   it('groups thousands with dots', () => {
@@ -31,19 +31,5 @@ describe('formatMoney', () => {
 
   it('uses the raw code for non-IDR currencies', () => {
     expect(formatMoney(1000, 'USD')).toBe('USD 1.000');
-  });
-});
-
-describe('formatSignedMoney', () => {
-  it('shows a plus for income', () => {
-    expect(formatSignedMoney(3000000)).toBe('+Rp 3.000.000');
-  });
-
-  it('shows a true minus sign for expense', () => {
-    expect(formatSignedMoney(-500000)).toBe('−Rp 500.000');
-  });
-
-  it('has no sign for zero', () => {
-    expect(formatSignedMoney(0)).toBe('Rp 0');
   });
 });

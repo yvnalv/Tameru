@@ -315,7 +315,7 @@ onMounted(async () => {
             <Money
               :value="signedAmount(tx)"
               :currency="tx.currencyCode"
-              :signed="tx.type !== 'Transfer'"
+              :colored="tx.type === 'Income'"
               class="shrink-0 whitespace-nowrap text-right text-sm font-medium"
             />
             <div class="flex shrink-0 items-center justify-end gap-0.5">

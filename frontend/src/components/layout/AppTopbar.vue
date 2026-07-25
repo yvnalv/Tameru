@@ -5,6 +5,7 @@ import { useAuthStore } from '@/stores/auth';
 import { useUiStore } from '@/stores/ui';
 import { useDensity } from '@/composables/useDensity';
 import IconButton from '@/components/ui/IconButton.vue';
+import AvatarChip from '@/components/ui/AvatarChip.vue';
 
 const router = useRouter();
 const auth = useAuthStore();
@@ -51,14 +52,16 @@ async function signOut(): Promise<void> {
         <span class="uppercase">{{ ui.locale }}</span>
       </button>
 
-      <button
-        class="inline-flex items-center gap-1.5 rounded-control px-2.5 py-1.5 text-sm font-medium text-text-muted hover:bg-surface-2 hover:text-text"
-        :title="$t('common.signOut')"
-        @click="signOut"
-      >
-        <LogOut :size="18" :stroke-width="1.5" />
-        <span class="hidden sm:inline">{{ $t('common.signOut') }}</span>
-      </button>
+      <IconButton :icon="LogOut" :label="$t('common.signOut')" :size="18" @click="signOut" />
+
+      <!-- Logged-in owner -->
+      <div v-if="auth.user" class="ml-1 flex items-center gap-2 border-l border-border pl-2.5">
+        <AvatarChip :name="auth.user.displayName || auth.user.email" />
+        <div class="hidden leading-tight sm:block">
+          <p class="max-w-[9rem] truncate text-sm font-medium">{{ auth.user.displayName || auth.user.email }}</p>
+          <p class="max-w-[9rem] truncate text-[12px] text-text-muted">{{ auth.user.email }}</p>
+        </div>
+      </div>
     </div>
   </header>
 </template>

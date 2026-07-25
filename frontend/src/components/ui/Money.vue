@@ -1,29 +1,24 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { formatMoney, formatSignedMoney } from '@/lib/format';
+import { formatMoney } from '@/lib/format';
 
+// One money format app-wide: id-ID with negatives in parentheses (design language). Negatives are
+// always red; positives are neutral unless `colored` marks a semantic gain (income/net), then green.
 const props = withDefaults(
   defineProps<{
     value: number;
     currency?: string;
-    /** Show an explicit +/− sign and color by sign (for ledger amounts). */
-    signed?: boolean;
-    /** Color negatives red / positives green even without a sign. */
     colored?: boolean;
+    fractionDigits?: 0 | 2;
   }>(),
-  { currency: 'IDR', signed: false, colored: false },
+  { currency: 'IDR', colored: false, fractionDigits: 0 },
 );
 
-const text = computed(() =>
-  props.signed
-    ? formatSignedMoney(props.value, props.currency)
-    : formatMoney(props.value, props.currency),
-);
+const text = computed(() => formatMoney(props.value, props.currency, props.fractionDigits));
 
 const colorClass = computed(() => {
-  if (!props.signed && !props.colored) return '';
-  if (props.value > 0) return 'text-positive';
   if (props.value < 0) return 'text-negative';
+  if (props.value > 0 && props.colored) return 'text-positive';
   return '';
 });
 </script>

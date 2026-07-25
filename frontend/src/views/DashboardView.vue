@@ -165,7 +165,7 @@ onMounted(load);
                 <p class="truncate text-sm font-medium">{{ tx.title }}</p>
                 <p class="truncate text-[13px] text-text-muted">{{ formatShortDate(tx.date, locale) }} · {{ catName(tx.categoryId) }}</p>
               </div>
-              <Money :value="signedAmount(tx)" :currency="tx.currencyCode" :signed="tx.type !== 'Transfer'" class="shrink-0 text-sm font-medium" />
+              <Money :value="signedAmount(tx)" :currency="tx.currencyCode" :colored="tx.type === 'Income'" class="shrink-0 text-sm font-medium" />
             </li>
           </ul>
           <div v-else class="px-5 py-8 text-center">
