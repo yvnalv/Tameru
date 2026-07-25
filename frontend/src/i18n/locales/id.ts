@@ -26,6 +26,8 @@ export default {
     language: 'Bahasa',
     density: 'Kerapatan',
     export: 'Ekspor CSV',
+    collapse: 'Ciutkan bilah sisi',
+    expand: 'Perluas bilah sisi',
     save: 'Simpan',
     cancel: 'Batal',
     add: 'Tambah',

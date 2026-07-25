@@ -11,6 +11,7 @@ import { errorMessage } from '@/lib/errorMessage';
 import { accountsImportConfig } from '@/lib/importConfigs';
 import { useDensity } from '@/composables/useDensity';
 import ImportModal from '@/components/ui/ImportModal.vue';
+import IconButton from '@/components/ui/IconButton.vue';
 import AppCard from '@/components/ui/AppCard.vue';
 import AppButton from '@/components/ui/AppButton.vue';
 import AppModal from '@/components/ui/AppModal.vue';
@@ -124,7 +125,7 @@ onMounted(load);
 
 <template>
   <div class="space-y-4">
-    <div class="flex items-center justify-between">
+    <div class="flex flex-wrap items-center justify-between gap-3">
       <h1 class="text-lg font-semibold">{{ t('accounts.title') }}</h1>
       <div class="flex items-center gap-2">
         <AppButton variant="secondary" @click="importOpen = true">
@@ -167,18 +168,9 @@ onMounted(load);
               </p>
             </div>
             <Money :value="a.balance" :currency="a.currencyCode" class="text-sm font-medium" />
-            <div class="flex items-center gap-1">
-              <button class="rounded-control p-1.5 text-text-muted hover:bg-surface-2 hover:text-text" :title="t('common.edit')" @click="openEdit(a)">
-                <Pencil :size="16" />
-              </button>
-              <button
-                v-if="a.isActive"
-                class="rounded-control p-1.5 text-text-muted hover:bg-surface-2 hover:text-negative"
-                :title="t('accounts.deactivate')"
-                @click="deactivate(a)"
-              >
-                <Ban :size="16" />
-              </button>
+            <div class="flex items-center gap-0.5">
+              <IconButton :icon="Pencil" :label="t('common.edit')" @click="openEdit(a)" />
+              <IconButton v-if="a.isActive" :icon="Ban" :label="t('accounts.deactivate')" danger @click="deactivate(a)" />
             </div>
           </li>
         </ul>

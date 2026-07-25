@@ -14,6 +14,7 @@ import AppModal from '@/components/ui/AppModal.vue';
 import AppInput from '@/components/ui/AppInput.vue';
 import AppSelect from '@/components/ui/AppSelect.vue';
 import FormField from '@/components/ui/FormField.vue';
+import IconButton from '@/components/ui/IconButton.vue';
 
 const { t, te, locale } = useI18n();
 
@@ -133,9 +134,9 @@ onMounted(load);
           <span class="text-sm font-semibold" :class="{ 'opacity-50': !b.isActive }">{{ displayName(b.name, locale) }}</span>
           <span class="rounded-full bg-surface-2 px-1.5 py-0.5 text-[10px] text-text-muted">{{ t(`enums.categoryFlow.${b.flow}`) }}</span>
           <span v-if="b.isSystem" class="rounded-full bg-surface-2 px-1.5 py-0.5 text-[10px] text-text-muted">{{ t('common.system') }}</span>
-          <div class="ml-auto flex items-center gap-1">
-            <button class="rounded-control p-1.5 text-text-muted hover:bg-surface-2 hover:text-text" :title="t('common.edit')" @click="openEdit(b)"><Pencil :size="15" /></button>
-            <button class="rounded-control p-1.5 text-text-muted hover:bg-surface-2 hover:text-text" :title="t('categories.addChild')" @click="openAdd('Category', b)"><Plus :size="15" /></button>
+          <div class="ml-auto flex items-center gap-0.5">
+            <IconButton :icon="Pencil" :label="t('common.edit')" :size="15" @click="openEdit(b)" />
+            <IconButton :icon="Plus" :label="t('categories.addChild')" :size="15" @click="openAdd('Category', b)" />
           </div>
         </div>
 
@@ -144,19 +145,19 @@ onMounted(load);
           <li v-for="c in childrenOf(b.id)" :key="c.id" class="px-5">
             <div class="flex items-center gap-2 py-2.5" :class="{ 'opacity-50': !c.isActive }">
               <span class="text-sm">{{ displayName(c.name, locale) }}</span>
-              <div class="ml-auto flex items-center gap-1">
-                <button class="rounded-control p-1.5 text-text-muted hover:bg-surface-2 hover:text-text" :title="t('categories.addChild')" @click="openAdd('Sub', c)"><Plus :size="14" /></button>
-                <button class="rounded-control p-1.5 text-text-muted hover:bg-surface-2 hover:text-text" :title="t('common.edit')" @click="openEdit(c)"><Pencil :size="14" /></button>
-                <button v-if="!c.isSystem && c.isActive" class="rounded-control p-1.5 text-text-muted hover:bg-surface-2 hover:text-negative" :title="t('categories.deactivate')" @click="deactivate(c)"><Ban :size="14" /></button>
+              <div class="ml-auto flex items-center gap-0.5">
+                <IconButton :icon="Plus" :label="t('categories.addChild')" :size="14" @click="openAdd('Sub', c)" />
+                <IconButton :icon="Pencil" :label="t('common.edit')" :size="14" @click="openEdit(c)" />
+                <IconButton v-if="!c.isSystem && c.isActive" :icon="Ban" :label="t('categories.deactivate')" :size="14" danger @click="deactivate(c)" />
               </div>
             </div>
             <!-- Subs -->
             <ul v-if="childrenOf(c.id).length" class="border-l border-border pb-1 pl-4">
               <li v-for="s in childrenOf(c.id)" :key="s.id" class="flex items-center gap-2 py-2 text-text-muted" :class="{ 'opacity-50': !s.isActive }">
                 <span class="text-[13px]">{{ displayName(s.name, locale) }}</span>
-                <div class="ml-auto flex items-center gap-1">
-                  <button class="rounded-control p-1.5 hover:bg-surface-2 hover:text-text" :title="t('common.edit')" @click="openEdit(s)"><Pencil :size="13" /></button>
-                  <button v-if="!s.isSystem && s.isActive" class="rounded-control p-1.5 hover:bg-surface-2 hover:text-negative" :title="t('categories.deactivate')" @click="deactivate(s)"><Ban :size="13" /></button>
+                <div class="ml-auto flex items-center gap-0.5">
+                  <IconButton :icon="Pencil" :label="t('common.edit')" :size="13" @click="openEdit(s)" />
+                  <IconButton v-if="!s.isSystem && s.isActive" :icon="Ban" :label="t('categories.deactivate')" :size="13" danger @click="deactivate(s)" />
                 </div>
               </li>
             </ul>

@@ -17,7 +17,7 @@ function heightPct(value: number): number {
 }
 
 function monthLabel(month: number): string {
-  return new Date(2020, month - 1, 1).toLocaleString(locale.value, { month: 'narrow' });
+  return new Date(2020, month - 1, 1).toLocaleString(locale.value, { month: 'short' });
 }
 </script>
 

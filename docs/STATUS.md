@@ -65,6 +65,13 @@ See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md).
   transactions; and **CSV import** (client-side upload → preview/validate → per-row create via the
   existing endpoints, with a result report) for **accounts** and **transactions** (name→id resolution,
   downloadable templates). Remaining (optional): PDF export, categories import.
+- **M9 (active)** — UI/UX hardening (agreed multi-phase pass). Done: **P1** short month labels
+  (`Jan/Feb/Mar`), tooltip'd `IconButton` on every icon-only action, a **collapsible sidebar** (72px
+  icon-only rail; toggle now fixed in the top bar so it never moves), scrollable tables; **P2
+  responsive/mobile** pass (headers wrap, mobile-friendly transaction rows, stacked totals, fluid
+  card numbers — targets iPhone 8 / Android ~375px). Next: Reports restructure (Yearly/Monthly/Daily
+  toggle), Budget progress bars, import everywhere, richer **ECharts** dashboard, then cross-cutting
+  polish (toasts, skeletons, self-hosted Inter).
 
 ## Deferred (post-MVP)
 
