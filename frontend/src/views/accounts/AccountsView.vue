@@ -8,6 +8,7 @@ import {
 } from '@/lib/accounts';
 import type { Account, AccountGroup } from '@/types/api';
 import { errorMessage } from '@/lib/errorMessage';
+import { useDensity } from '@/composables/useDensity';
 import AppCard from '@/components/ui/AppCard.vue';
 import AppButton from '@/components/ui/AppButton.vue';
 import AppModal from '@/components/ui/AppModal.vue';
@@ -17,6 +18,7 @@ import FormField from '@/components/ui/FormField.vue';
 import Money from '@/components/ui/Money.vue';
 
 const { t, te } = useI18n();
+const { rowPad } = useDensity();
 
 const accounts = ref<Account[]>([]);
 const groups = ref<AccountGroup[]>([]);
@@ -136,8 +138,8 @@ onMounted(load);
           <li
             v-for="a in accounts"
             :key="a.id"
-            class="flex items-center gap-3 px-5 py-3.5"
-            :class="{ 'opacity-50': !a.isActive }"
+            class="flex items-center gap-3 px-5"
+            :class="[rowPad, { 'opacity-50': !a.isActive }]"
           >
             <div class="min-w-0 flex-1">
               <div class="flex items-center gap-2">

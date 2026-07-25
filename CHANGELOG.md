@@ -3,9 +3,19 @@
 This file is Tameru's immutable historical record. A task is not complete until this file has been
 updated. Newest entries at the top. See `CLAUDE.md` → **CHANGELOG Rules** for the full procedure.
 
-## [2026-07-25 12:14:09 UTC]
+## [2026-07-25 12:19:12 UTC]
 
-CHG-0016 — Fix: restore the Reporting project reference in the API host (broken build)
+CHG-0017 — M8 (part 2): polish — i18n parity test, density toggle, CSV export
+
+- **i18n parity test** (`src/i18n/locales.spec.ts`): asserts the EN and ID dictionaries have an
+  identical key set and no empty values — a permanent guard against locale drift (CLAUDE.md i18n rule).
+- **Density toggle**: `useDensity` composable over the ui store's persisted `density`; a topbar control
+  (Rows2/Rows3 icon) switches comfortable/compact, applied to the Transactions and Accounts list rows.
+- **CSV export** of transactions: `lib/csv.ts` (RFC-4180 quoting, UTF-8 BOM for Excel) + an Export
+  button on the Transactions screen that pulls all rows matching the active filters and downloads
+  `tameru-transactions-YYYY-MM-DD.csv` with localized headers.
+- Added `common.density` / `common.export` and `transactions.type` to both locales (kept identical).
+- `vue-tsc` + build green; frontend suite now 17 Vitest tests; Docker `web` rebuilt.
 
 - `Program.cs` uses `Tameru.Reporting.Api`/`Tameru.Reporting.Infrastructure`, but the
   `Tameru.Reporting.Api` `<ProjectReference>` had been dropped from `Tameru.Api.csproj`, so the API no
