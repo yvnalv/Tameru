@@ -27,6 +27,7 @@ const loading = ref(true);
 const failed = ref(false);
 
 const now = new Date();
+const monthlyYear = ref(now.getFullYear());
 const dailyYear = ref(now.getFullYear());
 const dailyMonth = ref(now.getMonth() + 1);
 
@@ -78,7 +79,8 @@ async function load(): Promise<void> {
       const cols = Array.from({ length: 5 }, (_, i) => String(cy - 4 + i));
       matrix.value = buildFixed(tr, cols, (iso) => iso.slice(0, 4), cols);
     } else if (granularity.value === 'monthly') {
-      const tr = await getCategoryTracker('monthly', `${cy}-01-01`, `${cy}-12-31`);
+      const y = monthlyYear.value;
+      const tr = await getCategoryTracker('monthly', `${y}-01-01`, `${y}-12-31`);
       const cols = Array.from({ length: 12 }, (_, i) => pad(i + 1));
       const labels = Array.from({ length: 12 }, (_, i) => monthShort(i + 1));
       matrix.value = buildFixed(tr, cols, (iso) => iso.slice(5, 7), labels);
@@ -101,6 +103,10 @@ function setGranularity(g: Granularity): void {
   granularity.value = g;
   load();
 }
+function changeMonthlyYear(delta: number): void {
+  monthlyYear.value += delta;
+  load();
+}
 function changeDailyMonth(delta: number): void {
   const d = new Date(dailyYear.value, dailyMonth.value - 1 + delta, 1);
   dailyYear.value = d.getFullYear();
@@ -110,12 +116,8 @@ function changeDailyMonth(delta: number): void {
 const dailyMonthLabel = computed(() =>
   new Date(dailyYear.value, dailyMonth.value - 1, 1).toLocaleString(locale.value, { month: 'long', year: 'numeric' }),
 );
-const rangeLabel = computed(() => {
-  const cy = now.getFullYear();
-  if (granularity.value === 'yearly') return `${cy - 4}–${cy}`;
-  if (granularity.value === 'monthly') return String(cy);
-  return '';
-});
+// Static range shown for the yearly view (monthly/daily have their own prev/next nav).
+const rangeLabel = computed(() => `${now.getFullYear() - 4}–${now.getFullYear()}`);
 
 const topCategories = computed(() => matrix.value?.rows.slice(0, 7) ?? []);
 const segments = computed(() => topCategories.value.map((c) => ({ label: catName(c.categoryId), value: c.total })));
@@ -152,6 +154,12 @@ onMounted(async () => {
             <button class="rounded-control border border-border p-1.5 text-text-muted hover:bg-surface-2 hover:text-text" :aria-label="t('transactions.prev')" @click="changeDailyMonth(-1)"><ChevronLeft :size="16" /></button>
             <span class="min-w-[7.5rem] text-center text-[13px] font-medium">{{ dailyMonthLabel }}</span>
             <button class="rounded-control border border-border p-1.5 text-text-muted hover:bg-surface-2 hover:text-text" :aria-label="t('transactions.next')" @click="changeDailyMonth(1)"><ChevronRight :size="16" /></button>
+          </div>
+          <!-- Monthly: year prev/next -->
+          <div v-else-if="granularity === 'monthly'" class="flex items-center gap-1.5">
+            <button class="rounded-control border border-border p-1.5 text-text-muted hover:bg-surface-2 hover:text-text" :aria-label="t('transactions.prev')" @click="changeMonthlyYear(-1)"><ChevronLeft :size="16" /></button>
+            <span class="tnum min-w-[3.5rem] text-center text-[13px] font-medium">{{ monthlyYear }}</span>
+            <button class="rounded-control border border-border p-1.5 text-text-muted hover:bg-surface-2 hover:text-text" :aria-label="t('transactions.next')" @click="changeMonthlyYear(1)"><ChevronRight :size="16" /></button>
           </div>
           <span v-else class="tnum text-[13px] text-text-muted">{{ rangeLabel }}</span>
         </div>

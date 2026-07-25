@@ -3,6 +3,18 @@
 This file is Tameru's immutable historical record. A task is not complete until this file has been
 updated. Newest entries at the top. See `CLAUDE.md` → **CHANGELOG Rules** for the full procedure.
 
+## [2026-07-25 13:36:27 UTC]
+
+CHG-0023 — M9 part 5: Reports monthly year nav + Budget progress bars
+
+- **Reports → Monthly** now has ‹ prev / next › **year** navigation (was fixed to the current year);
+  Daily keeps its month nav, Yearly stays a fixed last-5-years range.
+- **Budget** view now renders each category as a **progress bar** instead of a plain table row: a green
+  fill up to the Plan and a **red segment for the overspend** beyond it, with `Actual / Plan`, the used
+  **%** (red when over 100%), and the per-line leftover. The totals cards and the "Edit plans" mode are
+  unchanged.
+- `vue-tsc` + build green; 22 Vitest tests; Docker `web` rebuilt.
+
 ## [2026-07-25 13:28:51 UTC]
 
 CHG-0022 — M9 part 4: Reports — single card with Yearly/Monthly/Daily toggle
