@@ -1,9 +1,10 @@
 // Per-entity import configs. Each captures the loaded reference data (accounts, categories) so it can
 // resolve names → ids, then delegates creation to the existing typed API modules.
-import type { Account, AccountGroup, Category } from '@/types/api';
+import type { Account, AccountGroup, Category, MasterPlanSection } from '@/types/api';
 import { createAccount } from '@/lib/accounts';
 import { createTransaction } from '@/lib/transactions';
-import { flowAccepts } from '@/lib/categories';
+import { createCategory, flowAccepts } from '@/lib/categories';
+import { createMasterPlanItem } from '@/lib/budgeting';
 import { displayName } from '@/lib/seededNames';
 import { ApiClientError } from '@/lib/api';
 import { type ImportConfig, parseAmount } from '@/lib/import';
@@ -11,6 +12,9 @@ import { type ImportConfig, parseAmount } from '@/lib/import';
 const ACCOUNT_TYPES = ['Cash', 'Bank', 'EWallet', 'Investment', 'Blocked'];
 const TX_TYPES = ['Income', 'Expense', 'Transfer'];
 const STATUSES = ['Cleared', 'Uncleared'];
+const CATEGORY_LEVELS = ['Budget', 'Category', 'Sub'];
+const CATEGORY_FLOWS = ['Any', 'Income', 'Expense', 'Transfer'];
+const PARENT_LEVEL: Record<string, string> = { Category: 'Budget', Sub: 'Category' };
 
 const ci = (a: string, b: string) => a.toLowerCase() === b.toLowerCase();
 const canon = (list: string[], v: string) => list.find((x) => ci(x, v));
@@ -110,6 +114,72 @@ export function transactionsImportConfig(
           categoryId: category?.id ?? null,
         });
       }
+    },
+  };
+}
+
+// --- Categories -------------------------------------------------------------
+// Parents must already exist (import Budgets first, or add categories under the seeded budgets).
+
+export function categoriesImportConfig(categories: Category[], locale: string): ImportConfig {
+  return {
+    templateName: 'tameru-categories-template',
+    columns: ['name', 'level', 'parent', 'flow'],
+    sample: ['Groceries', 'Category', 'Needs', 'Expense'],
+    summary: (r) => r.name || '—',
+    validate: (r) => {
+      if (!r.name) return 'name is required';
+      const level = canon(CATEGORY_LEVELS, r.level);
+      if (!level) return `invalid level '${r.level}' (Budget/Category/Sub)`;
+      if (r.flow && !canon(CATEGORY_FLOWS, r.flow)) return `invalid flow '${r.flow}'`;
+      if (level !== 'Budget') {
+        if (!r.parent) return `parent is required for a ${level}`;
+        if (!findCategory(categories, r.parent, PARENT_LEVEL[level], locale)) {
+          return `unknown parent '${r.parent}' (must be an existing ${PARENT_LEVEL[level]})`;
+        }
+      }
+      return null;
+    },
+    importRecord: async (r) => {
+      const level = canon(CATEGORY_LEVELS, r.level) ?? 'Category';
+      const parent = level === 'Budget' ? undefined : findCategory(categories, r.parent, PARENT_LEVEL[level], locale);
+      await createCategory({
+        name: r.name,
+        level,
+        parentId: parent?.id ?? null,
+        flow: canon(CATEGORY_FLOWS, r.flow) ?? 'Any',
+        sortOrder: 0,
+      });
+    },
+  };
+}
+
+// --- Master Plan items ------------------------------------------------------
+
+export function masterPlanImportConfig(sections: MasterPlanSection[], locale: string): ImportConfig {
+  const findSection = (name: string) =>
+    sections.find((s) => ci(s.name, name) || ci(displayName(s.name, locale), name));
+  return {
+    templateName: 'tameru-master-plan-template',
+    columns: ['section', 'name', 'price', 'frequency'],
+    sample: ['Investment', 'Mutual funds', '2000000', '12'],
+    summary: (r) => r.name || '—',
+    validate: (r) => {
+      if (!findSection(r.section)) return `unknown section '${r.section}' (Investment/Needs/Wants)`;
+      if (!r.name) return 'name is required';
+      if (parseAmount(r.price) === null) return 'invalid price';
+      const freq = Number(r.frequency);
+      if (!Number.isInteger(freq) || freq < 1) return 'frequency must be a whole number ≥ 1';
+      return null;
+    },
+    importRecord: async (r) => {
+      await createMasterPlanItem({
+        sectionId: findSection(r.section)!.id,
+        name: r.name,
+        price: parseAmount(r.price) ?? 0,
+        frequency: Number(r.frequency),
+        sortOrder: 0,
+      });
     },
   };
 }

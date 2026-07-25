@@ -1,13 +1,15 @@
 <script setup lang="ts">
 import { onMounted, ref, reactive, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Plus, Pencil, Trash2 } from 'lucide-vue-next';
+import { Plus, Pencil, Trash2, Upload } from 'lucide-vue-next';
 import {
   getMasterPlan, createMasterPlanItem, updateMasterPlanItem, deleteMasterPlanItem, updateMasterPlanSection,
 } from '@/lib/budgeting';
 import type { MasterPlan, MasterPlanItem, MasterPlanSection } from '@/types/api';
 import { errorMessage } from '@/lib/errorMessage';
+import { masterPlanImportConfig } from '@/lib/importConfigs';
 import { displayName } from '@/lib/seededNames';
+import ImportModal from '@/components/ui/ImportModal.vue';
 import AppCard from '@/components/ui/AppCard.vue';
 import AppButton from '@/components/ui/AppButton.vue';
 import AppModal from '@/components/ui/AppModal.vue';
@@ -21,6 +23,8 @@ const { t, te, locale } = useI18n();
 const plan = ref<MasterPlan | null>(null);
 const loading = ref(true);
 const failed = ref(false);
+const importOpen = ref(false);
+const importConfig = computed(() => masterPlanImportConfig(plan.value?.sections ?? [], locale.value));
 
 async function load(): Promise<void> {
   loading.value = true;
@@ -115,11 +119,16 @@ onMounted(load);
 
 <template>
   <div class="space-y-4">
-    <div class="flex items-center justify-between">
+    <div class="flex flex-wrap items-center justify-between gap-3">
       <h1 class="text-lg font-semibold">{{ t('masterPlan.title') }}</h1>
-      <div v-if="plan" class="text-right">
-        <p class="text-[13px] text-text-muted">{{ t('masterPlan.grandTotal') }}</p>
-        <p class="text-lg font-semibold"><Money :value="plan.grandTotal" /></p>
+      <div class="flex items-center gap-3">
+        <AppButton variant="secondary" @click="importOpen = true">
+          <Upload :size="16" /><span class="hidden sm:inline">{{ t('import.masterPlan') }}</span>
+        </AppButton>
+        <div v-if="plan" class="text-right">
+          <p class="text-[13px] text-text-muted">{{ t('masterPlan.grandTotal') }}</p>
+          <p class="text-lg font-semibold"><Money :value="plan.grandTotal" /></p>
+        </div>
       </div>
     </div>
 
@@ -204,5 +213,13 @@ onMounted(load);
         <AppButton :loading="saving" @click="save">{{ saving ? t('common.saving') : t('common.save') }}</AppButton>
       </template>
     </AppModal>
+
+    <ImportModal
+      v-if="importOpen"
+      :title="t('import.masterPlan')"
+      :config="importConfig"
+      @close="importOpen = false"
+      @done="load"
+    />
   </div>
 </template>

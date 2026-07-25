@@ -118,6 +118,8 @@ export default {
   import: {
     accounts: 'Import accounts',
     transactions: 'Import transactions',
+    categories: 'Import categories',
+    masterPlan: 'Import items',
     expectedColumns: 'Your CSV should have these columns (first row = headers):',
     chooseFile: 'Choose CSV file',
     downloadTemplate: 'Download template',

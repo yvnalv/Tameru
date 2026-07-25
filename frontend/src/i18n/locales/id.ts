@@ -118,6 +118,8 @@ export default {
   import: {
     accounts: 'Impor akun',
     transactions: 'Impor transaksi',
+    categories: 'Impor kategori',
+    masterPlan: 'Impor item',
     expectedColumns: 'CSV Anda harus memiliki kolom berikut (baris pertama = header):',
     chooseFile: 'Pilih berkas CSV',
     downloadTemplate: 'Unduh templat',

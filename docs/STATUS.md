@@ -72,9 +72,10 @@ See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md).
   card numbers — targets iPhone 8 / Android ~375px); **P3** content area fills the screen width (no
   max-width cap); **P4** Reports merged into one card with a `Yearly | Monthly | Daily` toggle (last
   5 yrs / 12 months / days-of-month with prev-next; monthly also has year prev/next); **P5** Budget
-  now shows per-category **progress bars** (green fill to Plan, red overspend beyond, % + leftover).
-  Next: import everywhere, richer **ECharts** dashboard, then cross-cutting polish (toasts,
-  skeletons, self-hosted Inter).
+  now shows per-category **progress bars** (green fill to Plan, red overspend beyond, % + leftover);
+  **P6** CSV **import on every relevant screen** — added Categories and Master Plan importers
+  alongside Accounts/Transactions. Next: richer **ECharts** dashboard, then cross-cutting polish
+  (toasts, skeletons, self-hosted Inter).
 
 ## Deferred (post-MVP)
 

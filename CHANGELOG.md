@@ -3,6 +3,22 @@
 This file is Tameru's immutable historical record. A task is not complete until this file has been
 updated. Newest entries at the top. See `CLAUDE.md` → **CHANGELOG Rules** for the full procedure.
 
+## [2026-07-25 13:45:49 UTC]
+
+CHG-0024 — M9 part 6: progress-bar fix + import on every screen
+
+- **Budget progress bar** fix: the green (up-to-plan) segment had its own `rounded-full`, which
+  rounded the green→red junction while the red segment stayed square — mismatched. The segments are
+  now plain rectangles inside the rounded, clipped container, so the junction is a clean straight edge
+  and only the outer ends are rounded.
+- **Import everywhere**: added CSV importers for **Categories** (name / level / parent / flow —
+  parents resolved against existing categories) and **Master Plan** items (section / name / price /
+  frequency — section resolved by name). Import is now on Accounts, Transactions, Categories, and
+  Master Plan, each reusing the preview→import→report `ImportModal` and the existing validated
+  create endpoints. Added `import.categories` / `import.masterPlan` to both locales.
+- `vue-tsc` + build green; 22 Vitest tests; verified both new importers create records against the
+  live API (a Category under an existing budget; a Master Plan item 2,000,000 × 12 = 24,000,000).
+
 ## [2026-07-25 13:36:27 UTC]
 
 CHG-0023 — M9 part 5: Reports monthly year nav + Budget progress bars

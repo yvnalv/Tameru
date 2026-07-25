@@ -177,8 +177,10 @@ onMounted(async () => {
                 >{{ usedPct(line.plan, line.actual) }}%</span>
               </span>
             </div>
+            <!-- Container is rounded + clips; the inner segments are plain rects so the green→red
+                 junction is a clean straight edge and only the outer ends are rounded. -->
             <div class="relative h-2.5 w-full overflow-hidden rounded-full bg-surface-2">
-              <div class="absolute inset-y-0 left-0 rounded-full bg-positive" :style="{ width: `${greenWidth(line.plan, line.actual)}%` }" />
+              <div class="absolute inset-y-0 left-0 bg-positive" :style="{ width: `${greenWidth(line.plan, line.actual)}%` }" />
               <div class="absolute inset-y-0 bg-negative" :style="{ left: `${greenWidth(line.plan, line.actual)}%`, width: `${redWidth(line.plan, line.actual)}%` }" />
             </div>
             <div class="flex justify-end text-[12px] text-text-muted">
