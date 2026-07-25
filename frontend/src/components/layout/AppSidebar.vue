@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { RouterLink } from 'vue-router';
-import { PanelLeftClose, PanelLeftOpen } from 'lucide-vue-next';
 import { navItems } from '@/components/layout/navItems';
 import { useUiStore } from '@/stores/ui';
 import logoLockup from '@/assets/brand/logo-lockup.svg';
@@ -14,29 +13,11 @@ const ui = useUiStore();
     class="hidden shrink-0 flex-col border-r border-border bg-sidebar transition-[width] duration-200 md:flex"
     :class="ui.sidebarCollapsed ? 'w-[72px]' : 'w-[248px]'"
   >
-    <!-- Header: logo + collapse toggle -->
-    <div class="flex h-16 items-center px-3" :class="ui.sidebarCollapsed ? 'justify-center' : 'justify-between px-5'">
+    <!-- Header: logo only (the collapse toggle lives in the top bar, at a fixed position) -->
+    <div class="flex h-16 items-center" :class="ui.sidebarCollapsed ? 'justify-center px-3' : 'px-5'">
       <img v-if="!ui.sidebarCollapsed" :src="logoLockup" alt="Tameru" class="h-7" />
       <img v-else :src="logoMark" alt="Tameru" class="h-8 w-8" />
-      <button
-        v-if="!ui.sidebarCollapsed"
-        class="rounded-control p-1.5 text-text-muted hover:bg-surface-2 hover:text-text"
-        :aria-label="$t('common.collapse')"
-        @click="ui.toggleSidebar()"
-      >
-        <PanelLeftClose :size="18" :stroke-width="1.5" />
-      </button>
     </div>
-
-    <!-- Expand button (collapsed only) -->
-    <button
-      v-if="ui.sidebarCollapsed"
-      class="mx-auto mb-1 rounded-control p-2 text-text-muted hover:bg-surface-2 hover:text-text"
-      :aria-label="$t('common.expand')"
-      @click="ui.toggleSidebar()"
-    >
-      <PanelLeftOpen :size="18" :stroke-width="1.5" />
-    </button>
 
     <nav class="flex-1 space-y-1 px-3 py-2">
       <RouterLink

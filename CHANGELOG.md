@@ -3,6 +3,22 @@
 This file is Tameru's immutable historical record. A task is not complete until this file has been
 updated. Newest entries at the top. See `CLAUDE.md` → **CHANGELOG Rules** for the full procedure.
 
+## [2026-07-25 13:18:52 UTC]
+
+CHG-0020 — M9 part 2: fixed sidebar toggle + responsive/mobile pass
+
+- **Sidebar toggle moved to a fixed spot in the top bar** (far left, before the page title). It no
+  longer jumps between the sidebar header and a floating button when collapsing — it stays in one
+  place and only its icon flips (a well-established pattern). The sidebar header now shows just the
+  logo (lockup when open, mark when collapsed).
+- **Responsive/mobile pass** targeting ~375px (iPhone 8) and Android:
+  - Page headers wrap their action buttons (Transactions, Accounts) instead of overflowing.
+  - Mobile-friendly transaction rows: the status chip is hidden on phones (status shown inline in the
+    meta line), the amount no longer has a fixed width, tighter padding — no horizontal overflow.
+  - Budget totals stack (1-col) on phones; Master Plan section headers wrap and the "Add item" label
+    collapses to an icon; the big BalanceCard number scales down (`text-3xl` on mobile) and wraps.
+- `vue-tsc` + build green; 22 Vitest tests; Docker `web` rebuilt.
+
 ## [2026-07-25 13:09:51 UTC]
 
 CHG-0019 — M9 (UI/UX hardening) part 1: quick wins

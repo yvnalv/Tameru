@@ -131,7 +131,7 @@ onMounted(load);
 
     <div v-else-if="plan" class="space-y-4">
       <AppCard v-for="section in plan.sections" :key="section.id" :padded="false">
-        <div class="flex items-center gap-2 border-b border-border px-5 py-3">
+        <div class="flex flex-wrap items-center gap-2 border-b border-border px-5 py-3">
           <span class="text-sm font-semibold">{{ displayName(section.name, locale) }}</span>
           <button
             class="inline-flex items-center gap-1 rounded-full bg-accent-soft px-2 py-0.5 text-[11px] font-medium text-accent hover:opacity-80"
@@ -141,7 +141,9 @@ onMounted(load);
             {{ t('masterPlan.target') }} {{ section.targetPercent }}%
           </button>
           <span class="ml-auto tnum text-sm font-medium"><Money :value="section.total" /></span>
-          <AppButton class="ml-3" variant="secondary" @click="openAddItem(section)"><Plus :size="15" />{{ t('masterPlan.addItem') }}</AppButton>
+          <AppButton variant="secondary" @click="openAddItem(section)">
+            <Plus :size="15" /><span class="hidden sm:inline">{{ t('masterPlan.addItem') }}</span>
+          </AppButton>
         </div>
 
         <div class="scroll-slim overflow-x-auto">

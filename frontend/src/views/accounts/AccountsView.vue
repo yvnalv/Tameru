@@ -125,7 +125,7 @@ onMounted(load);
 
 <template>
   <div class="space-y-4">
-    <div class="flex items-center justify-between">
+    <div class="flex flex-wrap items-center justify-between gap-3">
       <h1 class="text-lg font-semibold">{{ t('accounts.title') }}</h1>
       <div class="flex items-center gap-2">
         <AppButton variant="secondary" @click="importOpen = true">

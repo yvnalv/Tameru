@@ -125,7 +125,7 @@ onMounted(async () => {
 
     <template v-else>
       <!-- Totals -->
-      <div class="grid grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
         <AppCard>
           <p class="text-[13px] text-text-muted">{{ t('budget.plan') }}</p>
           <p class="mt-1 text-xl font-semibold"><Money :value="period.totalPlan" /></p>

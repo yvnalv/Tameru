@@ -252,7 +252,7 @@ onMounted(async () => {
 
 <template>
   <div class="space-y-4">
-    <div class="flex items-center justify-between">
+    <div class="flex flex-wrap items-center justify-between gap-3">
       <h1 class="text-lg font-semibold">{{ t('transactions.title') }}</h1>
       <div class="flex items-center gap-2">
         <AppButton variant="secondary" @click="importOpen = true">
@@ -286,26 +286,28 @@ onMounted(async () => {
     <template v-else>
       <AppCard v-if="page && page.items.length" :padded="false">
         <ul class="divide-y divide-border">
-          <li v-for="tx in page.items" :key="tx.id" class="flex items-center gap-3 px-5" :class="rowPad">
-            <div class="w-14 shrink-0 tnum text-[13px] text-text-muted">{{ formatShortDate(tx.date, locale) }}</div>
+          <li v-for="tx in page.items" :key="tx.id" class="flex items-center gap-2 px-4 sm:gap-3 sm:px-5" :class="rowPad">
+            <div class="w-12 shrink-0 tnum text-[13px] text-text-muted sm:w-14">{{ formatShortDate(tx.date, locale) }}</div>
             <div class="min-w-0 flex-1">
               <p class="truncate text-sm font-medium">{{ tx.title }}</p>
               <p class="flex items-center gap-1 truncate text-[13px] text-text-muted">
-                <span>{{ accountName(tx.accountId) }}</span>
+                <span class="truncate">{{ accountName(tx.accountId) }}</span>
                 <template v-if="tx.type === 'Transfer'">
-                  <ArrowRight :size="12" /><span>{{ accountName(tx.toAccountId) }}</span>
+                  <ArrowRight :size="12" class="shrink-0" /><span class="truncate">{{ accountName(tx.toAccountId) }}</span>
                 </template>
                 <template v-else-if="categoryName(tx.categoryId)"> · {{ categoryName(tx.categoryId) }}</template>
+                <!-- Status shown inline on mobile (the chip is hidden there to save width) -->
+                <span class="shrink-0 sm:hidden">· {{ t(`enums.transactionStatus.${tx.status}`) }}</span>
               </p>
             </div>
-            <StatusChip :status="tx.status as 'Cleared' | 'Uncleared'" />
+            <StatusChip :status="tx.status as 'Cleared' | 'Uncleared'" class="hidden sm:inline-flex" />
             <Money
               :value="signedAmount(tx)"
               :currency="tx.currencyCode"
               :signed="tx.type !== 'Transfer'"
-              class="w-32 shrink-0 text-right text-sm font-medium"
+              class="shrink-0 whitespace-nowrap text-right text-sm font-medium"
             />
-            <div class="flex w-16 shrink-0 items-center justify-end gap-0.5">
+            <div class="flex shrink-0 items-center justify-end gap-0.5">
               <IconButton
                 :icon="tx.status === 'Cleared' ? RotateCcw : CircleCheck"
                 :label="tx.status === 'Cleared' ? t('transactions.unclear') : t('transactions.clear')"

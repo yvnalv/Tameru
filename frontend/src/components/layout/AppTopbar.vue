@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
-import { LogOut, Languages, Rows2, Rows3 } from 'lucide-vue-next';
+import { LogOut, Languages, Rows2, Rows3, PanelLeftClose, PanelLeftOpen } from 'lucide-vue-next';
 import { useAuthStore } from '@/stores/auth';
 import { useUiStore } from '@/stores/ui';
 import { useDensity } from '@/composables/useDensity';
@@ -21,9 +21,18 @@ async function signOut(): Promise<void> {
   <header
     class="flex h-16 items-center justify-between border-b border-border bg-bg/80 px-4 backdrop-blur md:px-8"
   >
-    <h1 class="text-base font-semibold">
-      {{ $t(`nav.${(router.currentRoute.value.name as string) || 'dashboard'}`) }}
-    </h1>
+    <div class="flex items-center gap-2">
+      <IconButton
+        class="hidden md:inline-flex"
+        :icon="ui.sidebarCollapsed ? PanelLeftOpen : PanelLeftClose"
+        :label="ui.sidebarCollapsed ? $t('common.expand') : $t('common.collapse')"
+        :size="18"
+        @click="ui.toggleSidebar()"
+      />
+      <h1 class="text-base font-semibold">
+        {{ $t(`nav.${(router.currentRoute.value.name as string) || 'dashboard'}`) }}
+      </h1>
+    </div>
 
     <div class="flex items-center gap-1">
       <IconButton
