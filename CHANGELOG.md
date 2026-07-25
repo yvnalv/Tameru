@@ -3,6 +3,17 @@
 This file is Tameru's immutable historical record. A task is not complete until this file has been
 updated. Newest entries at the top. See `CLAUDE.md` → **CHANGELOG Rules** for the full procedure.
 
+## [2026-07-25 12:14:09 UTC]
+
+CHG-0016 — Fix: restore the Reporting project reference in the API host (broken build)
+
+- `Program.cs` uses `Tameru.Reporting.Api`/`Tameru.Reporting.Infrastructure`, but the
+  `Tameru.Reporting.Api` `<ProjectReference>` had been dropped from `Tameru.Api.csproj`, so the API no
+  longer compiled (`CS0234: … 'Reporting' does not exist in the namespace 'Tameru'`). Restored the
+  reference. The regression went unnoticed because only the frontend `web` image had been rebuilt
+  since M5; the `api` image ran a stale build until a full `docker compose up --build`.
+- `dotnet build` clean (0 warnings/errors); the API image builds and boots again.
+
 ## [2026-07-25 12:04:11 UTC]
 
 CHG-0015 — M8 (part 1): Reports / Analytics screen
