@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref, reactive, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Plus, Check, Undo2, Ban, ArrowRight } from 'lucide-vue-next';
+import { Plus, Check, Undo2, Ban, ArrowRight, Download } from 'lucide-vue-next';
 import {
   listTransactions, createTransaction, clearTransaction, unclearTransaction, voidTransaction,
   type TransactionFilter, type TransactionInput,
@@ -11,6 +11,8 @@ import { listCategories, flowAccepts } from '@/lib/categories';
 import type { Account, Category, Paged, Transaction } from '@/types/api';
 import { errorMessage } from '@/lib/errorMessage';
 import { formatShortDate } from '@/lib/format';
+import { toCsv, downloadCsv } from '@/lib/csv';
+import { useDensity } from '@/composables/useDensity';
 import AppCard from '@/components/ui/AppCard.vue';
 import AppButton from '@/components/ui/AppButton.vue';
 import AppModal from '@/components/ui/AppModal.vue';
@@ -21,6 +23,8 @@ import StatusChip from '@/components/ui/StatusChip.vue';
 import Money from '@/components/ui/Money.vue';
 
 const { t, te, locale } = useI18n();
+const { rowPad } = useDensity();
+const exporting = ref(false);
 
 const page = ref<Paged<Transaction> | null>(null);
 const accounts = ref<Account[]>([]);
@@ -95,6 +99,36 @@ const totalPages = computed(() => page.value?.totalPages ?? 1);
 function signedAmount(tx: Transaction): number {
   if (tx.type === 'Expense') return -tx.amount;
   return tx.amount;
+}
+
+async function exportCsv(): Promise<void> {
+  exporting.value = true;
+  try {
+    const clean: TransactionFilter = { page: 1, pageSize: 100000 };
+    if (filters.type) clean.type = filters.type;
+    if (filters.accountId) clean.accountId = filters.accountId;
+    if (filters.status) clean.status = filters.status;
+    if (filters.q) clean.q = filters.q;
+    if (filters.from) clean.from = filters.from;
+    if (filters.to) clean.to = filters.to;
+    const all = await listTransactions(clean);
+    const csv = toCsv(all.items, [
+      { header: t('transactions.date'), value: (r) => r.date },
+      { header: t('transactions.titleField'), value: (r) => r.title },
+      { header: t('transactions.type'), value: (r) => t(`enums.transactionType.${r.type}`) },
+      { header: t('transactions.account'), value: (r) => accountName(r.accountId) },
+      { header: t('transactions.toAccount'), value: (r) => (r.toAccountId ? accountName(r.toAccountId) : '') },
+      { header: t('transactions.category'), value: (r) => categoryName(r.categoryId) ?? '' },
+      { header: t('transactions.amount'), value: (r) => r.amount },
+      { header: t('transactions.status'), value: (r) => t(`enums.transactionStatus.${r.status}`) },
+      { header: t('transactions.description'), value: (r) => r.description ?? '' },
+    ]);
+    downloadCsv(`tameru-transactions-${new Date().toISOString().slice(0, 10)}.csv`, csv);
+  } catch (error) {
+    window.alert(errorMessage(t, te, error));
+  } finally {
+    exporting.value = false;
+  }
 }
 
 // --- create modal -----------------------------------------------------------
@@ -210,7 +244,12 @@ onMounted(async () => {
   <div class="space-y-4">
     <div class="flex items-center justify-between">
       <h1 class="text-lg font-semibold">{{ t('transactions.title') }}</h1>
-      <AppButton @click="openCreate"><Plus :size="16" />{{ t('transactions.add') }}</AppButton>
+      <div class="flex items-center gap-2">
+        <AppButton variant="secondary" :loading="exporting" @click="exportCsv">
+          <Download :size="16" />{{ t('common.export') }}
+        </AppButton>
+        <AppButton @click="openCreate"><Plus :size="16" />{{ t('transactions.add') }}</AppButton>
+      </div>
     </div>
 
     <!-- Filters -->
@@ -234,7 +273,7 @@ onMounted(async () => {
     <template v-else>
       <AppCard v-if="page && page.items.length" :padded="false">
         <ul class="divide-y divide-border">
-          <li v-for="tx in page.items" :key="tx.id" class="flex items-center gap-3 px-5 py-3">
+          <li v-for="tx in page.items" :key="tx.id" class="flex items-center gap-3 px-5" :class="rowPad">
             <div class="w-14 shrink-0 tnum text-[13px] text-text-muted">{{ formatShortDate(tx.date, locale) }}</div>
             <div class="min-w-0 flex-1">
               <p class="truncate text-sm font-medium">{{ tx.title }}</p>

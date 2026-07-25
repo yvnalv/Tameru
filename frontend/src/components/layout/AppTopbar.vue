@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
-import { LogOut, Languages } from 'lucide-vue-next';
+import { LogOut, Languages, Rows2, Rows3 } from 'lucide-vue-next';
 import { useAuthStore } from '@/stores/auth';
 import { useUiStore } from '@/stores/ui';
+import { useDensity } from '@/composables/useDensity';
 
 const router = useRouter();
 const auth = useAuthStore();
 const ui = useUiStore();
+const density = useDensity();
 
 async function signOut(): Promise<void> {
   await auth.logout();
@@ -23,6 +25,14 @@ async function signOut(): Promise<void> {
     </h1>
 
     <div class="flex items-center gap-1">
+      <button
+        class="inline-flex items-center rounded-control p-2 text-text-muted hover:bg-surface-2 hover:text-text"
+        :title="$t('common.density')"
+        @click="density.toggle()"
+      >
+        <component :is="density.compact.value ? Rows2 : Rows3" :size="18" :stroke-width="1.5" />
+      </button>
+
       <button
         class="inline-flex items-center gap-1.5 rounded-control px-2.5 py-1.5 text-sm font-medium text-text-muted hover:bg-surface-2 hover:text-text"
         :title="$t('common.language')"
