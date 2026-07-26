@@ -24,7 +24,7 @@ services:
       timeout: 5s
       retries: 5
 
-  api:
+  tameru-api:
     build:
       context: .
       dockerfile: Dockerfile.api
@@ -51,14 +51,14 @@ services:
     ports:
       - "${API_PORT:-8090}:8080"
 
-  web:
+  tameru-web:
     build:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: tameru-web
     restart: unless-stopped
     depends_on:
-      - api
+      - tameru-api
     ports:
       - "${WEB_PORT:-8091}:80"
 

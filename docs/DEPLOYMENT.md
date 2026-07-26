@@ -72,6 +72,88 @@ docker compose up -d --build
 - **Change the seeded owner password** after first login (the seed only runs once).
 - **Updates:** `git pull && docker compose up -d --build`. Migrations apply automatically on API start.
 
+### On a shared multi-app VPS (GHCR images + shared Nginx + shared Postgres)
+
+When Tameru runs next to other apps behind one Nginx and one Postgres, don't build on the server —
+CI publishes the images to GHCR and you pull them. Add two services to your existing `docker-compose.yml`:
+
+```yaml
+  # ── Tameru API (.NET 8) ──
+  tameru-api:
+    image: ghcr.io/yvnalv/tameru-api:${TAMERU_TAG:-latest}
+    container_name: tameru-api
+    restart: unless-stopped
+    mem_limit: 512m
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      # Uses the shared Postgres. EF creates the "tameru" database on first run if missing.
+      ConnectionStrings__Postgres: "Host=postgres;Port=5432;Database=${TAMERU_DB:-tameru};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
+      Jwt__SigningKey: ${TAMERU_JWT_SIGNING_KEY:?set TAMERU_JWT_SIGNING_KEY in .env (>=32 chars)}
+      Jwt__Issuer: Tameru
+      Jwt__Audience: Tameru
+      Database__AutoMigrate: "true"
+      Seed__Enabled: "true"
+      Seed__Owner__Email: ${TAMERU_OWNER_EMAIL:?set TAMERU_OWNER_EMAIL in .env}
+      Seed__Owner__Password: ${TAMERU_OWNER_PASSWORD:?set TAMERU_OWNER_PASSWORD in .env}
+      Seed__Owner__DisplayName: ${TAMERU_OWNER_NAME:-Yovan}
+      Seed__Owner__Locale: en
+      Cors__AllowedOrigins__0: ${TAMERU_ORIGIN:-https://tameru.yvnalvworks.com}
+    expose:
+      - "8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # ── Tameru SPA (Vue + Nginx; proxies /api → tameru-api) ──
+  tameru-web:
+    image: ghcr.io/yvnalv/tameru-web:${TAMERU_TAG:-latest}
+    container_name: tameru-web
+    restart: unless-stopped
+    mem_limit: 64m
+    expose:
+      - "80"
+    depends_on:
+      - tameru-api
+```
+
+Add a server block to your shared Nginx config for the subdomain (front `tameru-web`; the SPA image
+already proxies `/api` internally to `tameru-api`):
+
+```nginx
+server {
+    listen 443 ssl;
+    server_name tameru.yvnalvworks.com;
+    ssl_certificate     /etc/letsencrypt/live/tameru.yvnalvworks.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/tameru.yvnalvworks.com/privkey.pem;
+    location / {
+        proxy_pass http://tameru-web:80;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+`.env` additions:
+
+```dotenv
+TAMERU_TAG=latest
+TAMERU_DB=tameru
+TAMERU_JWT_SIGNING_KEY=<openssl rand -base64 48>
+TAMERU_OWNER_EMAIL=you@example.com
+TAMERU_OWNER_PASSWORD=<strong>
+TAMERU_OWNER_NAME=Yovan
+TAMERU_ORIGIN=https://tameru.yvnalvworks.com
+```
+
+Steps: (1) merge to `main` so CI publishes `ghcr.io/yvnalv/tameru-api` and `tameru-web`; (2) point
+`tameru.yvnalvworks.com` DNS at the VPS and obtain a cert (`certbot certonly`); (3) paste the two
+services + Nginx block, fill `.env`; (4) `docker compose pull tameru-api tameru-web && docker compose
+up -d && docker compose restart nginx`. The API auto-creates/migrates the `tameru` DB and seeds the
+owner. Change the owner password after first login. Update later with
+`docker compose pull tameru-api tameru-web && docker compose up -d`.
+
 ## Database
 
 - Migrations are per-module EF Core migrations. In Development they auto-apply

@@ -3,6 +3,23 @@
 This file is Tameru's immutable historical record. A task is not complete until this file has been
 updated. Newest entries at the top. See `CLAUDE.md` → **CHANGELOG Rules** for the full procedure.
 
+## [2026-07-26 04:57:35 UTC]
+
+CHG-0031 — Publish images to GHCR + shared multi-app VPS deployment
+
+- **CI now publishes images.** A `publish` job in `.github/workflows/ci.yml` builds `tameru-api` and
+  `tameru-web` and pushes them to `ghcr.io/yvnalv/*` — gated on the backend + frontend jobs passing,
+  and only on `main` / `v*` tags (tags: `latest`, git-sha, and the version tag). Mirrors how the other
+  apps on the VPS are deployed (pull prebuilt images, don't build on the server).
+- **SPA proxies to `tameru-api`.** `frontend/nginx.conf` now proxies `/api` to `tameru-api:8080` (was
+  `api:8080`) so it never collides with another app's `api` service on a shared Docker network. The
+  local `docker-compose.yml` services were renamed to `tameru-api` / `tameru-web` to match.
+- **Shared-stack deploy guide.** `docs/DEPLOYMENT.md` gains an "on a shared multi-app VPS" section:
+  the two GHCR-image services to add to an existing compose (shared Postgres — EF auto-creates the
+  `tameru` database — and shared Nginx), the Nginx server block for the subdomain, the `.env` keys,
+  and the pull/deploy steps.
+- Verified locally: renamed stack rebuilds; SPA → `tameru-api` proxy and owner login work.
+
 ## [2026-07-26 04:32:13 UTC]
 
 CHG-0030 — Integration tests, CI pipeline, and VPS-ready deployment
