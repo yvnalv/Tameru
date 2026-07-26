@@ -69,9 +69,17 @@ See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md).
   (`Jan/Feb/Mar`), tooltip'd `IconButton` on every icon-only action, a **collapsible sidebar** (72px
   icon-only rail; toggle now fixed in the top bar so it never moves), scrollable tables; **P2
   responsive/mobile** pass (headers wrap, mobile-friendly transaction rows, stacked totals, fluid
-  card numbers — targets iPhone 8 / Android ~375px). Next: Reports restructure (Yearly/Monthly/Daily
-  toggle), Budget progress bars, import everywhere, richer **ECharts** dashboard, then cross-cutting
-  polish (toasts, skeletons, self-hosted Inter).
+  card numbers — targets iPhone 8 / Android ~375px); **P3** content area fills the screen width (no
+  max-width cap); **P4** Reports merged into one card with a `Yearly | Monthly | Daily` toggle (last
+  5 yrs / 12 months / days-of-month with prev-next; monthly also has year prev/next); **P5** Budget
+  now shows per-category **progress bars** (green fill to Plan, red overspend beyond, % + leftover);
+  **P6** CSV **import on every relevant screen** — added Categories and Master Plan importers
+  alongside Accounts/Transactions; **P7** richer **ECharts** dashboard — a 12-month income/expense
+  bar chart, an expenses-by-category donut (this month), and a recent-10-transactions feed, next to
+  the net-worth hero, this-month tiles and accounts (ECharts code-split into the lazy Dashboard
+  chunk); **P8** cross-cutting polish — styled **toasts** + a promise-based **confirm dialog**
+  (replacing all native `alert`/`confirm`), **loading skeletons** in place of "Loading…" text, and
+  **self-hosted Inter** (woff2). The UI/UX hardening pass (M9) is complete.
 
 ## Deferred (post-MVP)
 

@@ -1,13 +1,18 @@
 <script setup lang="ts">
 import { onMounted, ref, reactive, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Plus, Pencil, Ban } from 'lucide-vue-next';
+import { Plus, Pencil, Ban, Upload } from 'lucide-vue-next';
 import {
   listCategories, createCategory, updateCategory, deactivateCategory,
 } from '@/lib/categories';
 import type { Category } from '@/types/api';
 import { errorMessage } from '@/lib/errorMessage';
+import { categoriesImportConfig } from '@/lib/importConfigs';
 import { displayName } from '@/lib/seededNames';
+import { useToastStore } from '@/stores/toast';
+import { useConfirmStore } from '@/stores/confirm';
+import ImportModal from '@/components/ui/ImportModal.vue';
+import LoadingBlock from '@/components/ui/LoadingBlock.vue';
 import AppCard from '@/components/ui/AppCard.vue';
 import AppButton from '@/components/ui/AppButton.vue';
 import AppModal from '@/components/ui/AppModal.vue';
@@ -17,10 +22,14 @@ import FormField from '@/components/ui/FormField.vue';
 import IconButton from '@/components/ui/IconButton.vue';
 
 const { t, te, locale } = useI18n();
+const toast = useToastStore();
+const confirm = useConfirmStore();
 
 const cats = ref<Category[]>([]);
 const loading = ref(true);
 const failed = ref(false);
+const importOpen = ref(false);
+const importConfig = computed(() => categoriesImportConfig(cats.value, locale.value));
 
 const byOrder = (a: Category, b: Category) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name);
 const budgets = computed(() => cats.value.filter((c) => c.level === 'Budget').sort(byOrder));
@@ -102,12 +111,18 @@ async function save(): Promise<void> {
 }
 
 async function deactivate(c: Category): Promise<void> {
-  if (!window.confirm(t('categories.deactivateConfirm'))) return;
+  const ok = await confirm.ask({
+    message: t('categories.deactivateConfirm'),
+    confirmLabel: t('categories.deactivate'),
+    danger: true,
+  });
+  if (!ok) return;
   try {
     await deactivateCategory(c.id);
+    toast.success(t('common.done'));
     await load();
   } catch (error) {
-    window.alert(errorMessage(t, te, error));
+    toast.error(errorMessage(t, te, error));
   }
 }
 
@@ -116,12 +131,17 @@ onMounted(load);
 
 <template>
   <div class="space-y-4">
-    <div class="flex items-center justify-between">
+    <div class="flex flex-wrap items-center justify-between gap-3">
       <h1 class="text-lg font-semibold">{{ t('categories.title') }}</h1>
-      <AppButton @click="openAdd('Budget', null)"><Plus :size="16" />{{ t('categories.add') }}</AppButton>
+      <div class="flex items-center gap-2">
+        <AppButton variant="secondary" @click="importOpen = true">
+          <Upload :size="16" /><span class="hidden sm:inline">{{ t('import.categories') }}</span>
+        </AppButton>
+        <AppButton @click="openAdd('Budget', null)"><Plus :size="16" />{{ t('categories.add') }}</AppButton>
+      </div>
     </div>
 
-    <div v-if="loading" class="py-16 text-center text-sm text-text-muted">{{ t('common.loading') }}</div>
+    <LoadingBlock v-if="loading" />
     <div v-else-if="failed" class="py-16 text-center">
       <p class="text-sm text-text-muted">{{ t('errors.network_error') }}</p>
       <AppButton class="mt-4" variant="secondary" @click="load">{{ t('common.retry') }}</AppButton>
@@ -185,5 +205,13 @@ onMounted(load);
         <AppButton :loading="saving" @click="save">{{ saving ? t('common.saving') : t('common.save') }}</AppButton>
       </template>
     </AppModal>
+
+    <ImportModal
+      v-if="importOpen"
+      :title="t('import.categories')"
+      :config="importConfig"
+      @close="importOpen = false"
+      @done="load"
+    />
   </div>
 </template>

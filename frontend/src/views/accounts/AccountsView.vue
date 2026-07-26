@@ -10,8 +10,11 @@ import type { Account, AccountGroup } from '@/types/api';
 import { errorMessage } from '@/lib/errorMessage';
 import { accountsImportConfig } from '@/lib/importConfigs';
 import { useDensity } from '@/composables/useDensity';
+import { useToastStore } from '@/stores/toast';
+import { useConfirmStore } from '@/stores/confirm';
 import ImportModal from '@/components/ui/ImportModal.vue';
 import IconButton from '@/components/ui/IconButton.vue';
+import LoadingBlock from '@/components/ui/LoadingBlock.vue';
 import AppCard from '@/components/ui/AppCard.vue';
 import AppButton from '@/components/ui/AppButton.vue';
 import AppModal from '@/components/ui/AppModal.vue';
@@ -22,6 +25,8 @@ import Money from '@/components/ui/Money.vue';
 
 const { t, te } = useI18n();
 const { rowPad } = useDensity();
+const toast = useToastStore();
+const confirm = useConfirmStore();
 const importOpen = ref(false);
 const importConfig = computed(() => accountsImportConfig(groups.value));
 
@@ -111,12 +116,18 @@ async function save(): Promise<void> {
 }
 
 async function deactivate(a: Account): Promise<void> {
-  if (!window.confirm(t('accounts.deactivateConfirm'))) return;
+  const ok = await confirm.ask({
+    message: t('accounts.deactivateConfirm'),
+    confirmLabel: t('accounts.deactivate'),
+    danger: true,
+  });
+  if (!ok) return;
   try {
     await deactivateAccount(a.id);
+    toast.success(t('common.done'));
     await load();
   } catch (error) {
-    window.alert(errorMessage(t, te, error));
+    toast.error(errorMessage(t, te, error));
   }
 }
 
@@ -135,7 +146,7 @@ onMounted(load);
       </div>
     </div>
 
-    <div v-if="loading" class="py-16 text-center text-sm text-text-muted">{{ t('common.loading') }}</div>
+    <LoadingBlock v-if="loading" />
     <div v-else-if="failed" class="py-16 text-center">
       <p class="text-sm text-text-muted">{{ t('errors.network_error') }}</p>
       <AppButton class="mt-4" variant="secondary" @click="load">{{ t('common.retry') }}</AppButton>

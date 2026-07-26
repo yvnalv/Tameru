@@ -109,6 +109,10 @@ Create body (example — transfer):
 | GET | `/api/v1/reports/overview?year=` | yearly matrix (category × month) |
 | GET | `/api/v1/reports/category-tracker?granularity=daily|monthly&from=&to=` | pivot |
 
+> **Planned (future):** a yearly aggregation (e.g. `granularity=yearly`, or `/reports/overview-years?count=5`)
+> so the Reports "Yearly" view (last N years, category × year) is computed server-side. The frontend
+> currently aggregates monthly data client-side; add the backend endpoint once the UI stabilizes.
+
 ## Versioning
 
 `v1` is stable within MVP. Breaking changes bump the path (`/api/v2`). Additive changes stay in `v1`.

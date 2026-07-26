@@ -3,6 +3,112 @@
 This file is Tameru's immutable historical record. A task is not complete until this file has been
 updated. Newest entries at the top. See `CLAUDE.md` → **CHANGELOG Rules** for the full procedure.
 
+## [2026-07-25 14:14:35 UTC]
+
+CHG-0027 — M9 part 9: consistent money format + logged-in user in the top bar
+
+- **One money format everywhere.** Dropped the `+`/`−` signed style (`formatSignedMoney`); every amount
+  now uses the id-ID **parentheses** style for negatives (per the locked design language). The `Money`
+  component always renders **negatives in red**; positives stay neutral unless `colored` marks a
+  semantic gain (income / net / leftover), which renders green. Transaction rows now show income green,
+  expense `(Rp …)` red, transfer neutral — matching the rest of the app. Removed the unused
+  `TransactionRow` component and the signed-format unit tests.
+- **Logged-in owner** shown in the top bar: an avatar chip with the display name + email (avatar-only
+  on mobile). The sign-out button became a tooltip'd icon button.
+- `vue-tsc` + build green; 19 Vitest tests; Docker `web` rebuilt.
+
+## [2026-07-25 14:06:02 UTC]
+
+CHG-0026 — M9 part 8: cross-cutting polish (toasts, confirm dialog, skeletons, self-hosted Inter)
+
+- **Toasts**: a `toast` store + `ToastHost` (teleported, bottom, auto-dismiss, success/error/info with
+  icons). All former `window.alert(...)` error popups now raise `toast.error(...)`, and destructive
+  successes show a `toast.success(...)`.
+- **Confirm dialog**: a promise-based `confirm` store + `ConfirmDialog` (styled, Esc/backdrop to
+  cancel, danger variant) replaces every `window.confirm(...)` — deactivate account/category, void
+  transaction, delete master-plan item. Both hosts are mounted once in `AppShell`.
+- **Loading skeletons**: `Skeleton` + `LoadingBlock` (shimmer, respects reduced-motion) replace the
+  "Loading…" text across Dashboard, Accounts, Transactions, Categories, Budget, Master Plan, and a
+  lighter row skeleton in Reports.
+- **Self-hosted Inter** via `@fontsource/inter` (400/500/600/700 woff2, bundled — 28 font assets); the
+  app no longer falls back to a system font, sharpening all type incl. the wordmark.
+- Added `common.confirm` / `common.done` to both locales. `vue-tsc` + build green (main bundle
+  ~225 kB; ECharts stays in the lazy Dashboard chunk); 22 Vitest tests; Docker `web` rebuilt.
+
+This completes **M9 — UI/UX hardening** (CHG-0019…0026).
+
+## [2026-07-25 13:54:47 UTC]
+
+CHG-0025 — M9 part 7: richer dashboard with ECharts
+
+- Adopted **Apache ECharts** via `vue-echarts` (the documented stack), tree-shaken to only the chart
+  types/components used (`BarChart`, `PieChart`, grid, tooltip, canvas renderer) and **code-split into
+  the lazy Dashboard chunk** so the main bundle stays ~218 kB. Chart colors mirror the design tokens
+  (`lib/chartTheme.ts`), dark tooltip included.
+- Rebuilt the **Dashboard** into a richer layout:
+  - Net-worth hero (with the account spend-bar) + a "This month" income/expense/net card.
+  - **Cashflow** — a 12-month income vs. expense bar chart (ECharts, solid green/red, no gradient),
+    replacing the CSS bars.
+  - **Expenses by category** — a donut of this month's spend (top 6 + "Others") with a colored legend
+    and a centered total.
+  - **Recent transactions** — the latest 10 as an activity feed (avatar, date · category, signed
+    amount), plus the accounts summary.
+- Added `DonutChart` component and dashboard i18n (`expenses`, `others`, `noExpenses`) in both locales.
+- `vue-tsc` + build green; 22 Vitest tests; Docker `web` rebuilt. Verified dashboard data end-to-end
+  (5-category donut for the month; 10 recent transactions).
+
+## [2026-07-25 13:45:49 UTC]
+
+CHG-0024 — M9 part 6: progress-bar fix + import on every screen
+
+- **Budget progress bar** fix: the green (up-to-plan) segment had its own `rounded-full`, which
+  rounded the green→red junction while the red segment stayed square — mismatched. The segments are
+  now plain rectangles inside the rounded, clipped container, so the junction is a clean straight edge
+  and only the outer ends are rounded.
+- **Import everywhere**: added CSV importers for **Categories** (name / level / parent / flow —
+  parents resolved against existing categories) and **Master Plan** items (section / name / price /
+  frequency — section resolved by name). Import is now on Accounts, Transactions, Categories, and
+  Master Plan, each reusing the preview→import→report `ImportModal` and the existing validated
+  create endpoints. Added `import.categories` / `import.masterPlan` to both locales.
+- `vue-tsc` + build green; 22 Vitest tests; verified both new importers create records against the
+  live API (a Category under an existing budget; a Master Plan item 2,000,000 × 12 = 24,000,000).
+
+## [2026-07-25 13:36:27 UTC]
+
+CHG-0023 — M9 part 5: Reports monthly year nav + Budget progress bars
+
+- **Reports → Monthly** now has ‹ prev / next › **year** navigation (was fixed to the current year);
+  Daily keeps its month nav, Yearly stays a fixed last-5-years range.
+- **Budget** view now renders each category as a **progress bar** instead of a plain table row: a green
+  fill up to the Plan and a **red segment for the overspend** beyond it, with `Actual / Plan`, the used
+  **%** (red when over 100%), and the per-line leftover. The totals cards and the "Edit plans" mode are
+  unchanged.
+- `vue-tsc` + build green; 22 Vitest tests; Docker `web` rebuilt.
+
+## [2026-07-25 13:28:51 UTC]
+
+CHG-0022 — M9 part 4: Reports — single card with Yearly/Monthly/Daily toggle
+
+- Merged the two Reports cards (yearly overview + category tracker — they showed the same data) into
+  **one** "Category tracker" card with a `Yearly | Monthly | Daily` toggle:
+  - **Yearly** — the last 5 years (columns = years), aggregated **client-side** from monthly data.
+  - **Monthly** — the 12 months of the current year.
+  - **Daily** — the days of the selected month, with ‹ prev / next › month navigation (like Budget).
+- Kept the heatmap cells, sticky category column, period + grand totals, and the top-categories
+  summary; all three modes share one reshaping helper over the `category-tracker` endpoint.
+- Added `reports.yearly` to both locales. (A dedicated backend yearly-aggregation endpoint is a noted
+  future improvement — see docs/API_SPEC.md — for after the UI stabilizes.)
+- `vue-tsc` + build green; 22 Vitest tests; verified data for all three modes.
+
+## [2026-07-25 13:24:00 UTC]
+
+CHG-0021 — M9 part 3: content area fills the screen width
+
+- The main content was capped at `max-w-[1600px]` and left-aligned, leaving dead space on wide
+  screens (and it didn't reclaim the space when the sidebar collapsed). Removed the cap so the content
+  region is fluid — it fills the available width and expands/contracts with the sidebar. Committed with
+  the sidebar-toggle fix in the same PR.
+
 ## [2026-07-25 13:18:52 UTC]
 
 CHG-0020 — M9 part 2: fixed sidebar toggle + responsive/mobile pass

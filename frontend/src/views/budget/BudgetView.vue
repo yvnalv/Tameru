@@ -8,12 +8,15 @@ import { ApiClientError } from '@/lib/api';
 import type { BudgetPeriod, Category } from '@/types/api';
 import { errorMessage } from '@/lib/errorMessage';
 import { displayName } from '@/lib/seededNames';
+import { useToastStore } from '@/stores/toast';
 import AppCard from '@/components/ui/AppCard.vue';
+import LoadingBlock from '@/components/ui/LoadingBlock.vue';
 import AppButton from '@/components/ui/AppButton.vue';
 import AppInput from '@/components/ui/AppInput.vue';
 import Money from '@/components/ui/Money.vue';
 
 const { t, te, locale } = useI18n();
+const toast = useToastStore();
 
 const now = new Date();
 const year = ref(now.getFullYear());
@@ -58,6 +61,20 @@ function changeMonth(delta: number): void {
   loadPeriod();
 }
 
+// Progress-bar geometry for a budget line: green fill up to Plan, red for the overspend beyond it.
+function barMax(plan: number, actual: number): number {
+  return Math.max(plan, actual, 1);
+}
+function greenWidth(plan: number, actual: number): number {
+  return (Math.min(actual, plan) / barMax(plan, actual)) * 100;
+}
+function redWidth(plan: number, actual: number): number {
+  return (Math.max(0, actual - plan) / barMax(plan, actual)) * 100;
+}
+function usedPct(plan: number, actual: number): number | null {
+  return plan > 0 ? Math.round((actual / plan) * 100) : null;
+}
+
 function categoryName(id: string, fallback: string | null): string {
   const c = categories.value.find((x) => x.id === id);
   return displayName(c?.name ?? fallback, locale.value);
@@ -68,7 +85,7 @@ async function createPeriod(): Promise<void> {
     period.value = await createBudgetPeriod(year.value, month.value);
     startEdit();
   } catch (error) {
-    window.alert(errorMessage(t, te, error));
+    toast.error(errorMessage(t, te, error));
   }
 }
 
@@ -86,7 +103,7 @@ async function savePlans(): Promise<void> {
     period.value = await upsertBudgetLines(period.value.id, lines);
     editing.value = false;
   } catch (error) {
-    window.alert(errorMessage(t, te, error));
+    toast.error(errorMessage(t, te, error));
   } finally {
     saving.value = false;
   }
@@ -109,7 +126,7 @@ onMounted(async () => {
       </div>
     </div>
 
-    <div v-if="loading" class="py-16 text-center text-sm text-text-muted">{{ t('common.loading') }}</div>
+    <LoadingBlock v-if="loading" />
     <div v-else-if="failed" class="py-16 text-center">
       <p class="text-sm text-text-muted">{{ t('errors.network_error') }}</p>
       <AppButton class="mt-4" variant="secondary" @click="loadPeriod">{{ t('common.retry') }}</AppButton>
@@ -147,29 +164,33 @@ onMounted(async () => {
           <AppButton v-else :loading="saving" @click="savePlans">{{ saving ? t('common.saving') : t('budget.savePlans') }}</AppButton>
         </div>
 
-        <!-- View mode -->
-        <div v-if="!editing" class="scroll-slim overflow-x-auto">
-        <table class="w-full min-w-[520px] text-sm">
-          <thead>
-            <tr class="text-left text-[12px] uppercase text-text-muted">
-              <th class="px-5 py-2 font-medium">{{ t('budget.category') }}</th>
-              <th class="px-5 py-2 text-right font-medium">{{ t('budget.plan') }}</th>
-              <th class="px-5 py-2 text-right font-medium">{{ t('budget.actual') }}</th>
-              <th class="px-5 py-2 text-right font-medium">{{ t('budget.leftover') }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="line in period.lines" :key="line.categoryId" class="border-t border-border">
-              <td class="px-5 py-2.5">{{ categoryName(line.categoryId, line.categoryName) }}</td>
-              <td class="px-5 py-2.5 text-right"><Money :value="line.plan" /></td>
-              <td class="px-5 py-2.5 text-right"><Money :value="line.actual" /></td>
-              <td class="px-5 py-2.5 text-right"><Money :value="line.leftover" colored /></td>
-            </tr>
-            <tr v-if="!period.lines.length">
-              <td colspan="4" class="px-5 py-6 text-center text-[13px] text-text-muted">{{ t('budget.empty') }}</td>
-            </tr>
-          </tbody>
-        </table>
+        <!-- View mode: per-category progress bars (Actual vs Plan) -->
+        <div v-if="!editing" class="space-y-4 p-5">
+          <div v-for="line in period.lines" :key="line.categoryId" class="space-y-1.5">
+            <div class="flex items-center justify-between gap-3 text-sm">
+              <span class="truncate font-medium">{{ categoryName(line.categoryId, line.categoryName) }}</span>
+              <span class="tnum flex shrink-0 items-center gap-1.5 text-[13px]">
+                <span :class="line.actual > line.plan ? 'text-negative' : 'text-text'"><Money :value="line.actual" /></span>
+                <span class="text-text-muted">/</span>
+                <Money :value="line.plan" class="text-text-muted" />
+                <span
+                  v-if="usedPct(line.plan, line.actual) !== null"
+                  class="ml-1 font-medium"
+                  :class="line.actual > line.plan ? 'text-negative' : 'text-text-muted'"
+                >{{ usedPct(line.plan, line.actual) }}%</span>
+              </span>
+            </div>
+            <!-- Container is rounded + clips; the inner segments are plain rects so the green→red
+                 junction is a clean straight edge and only the outer ends are rounded. -->
+            <div class="relative h-2.5 w-full overflow-hidden rounded-full bg-surface-2">
+              <div class="absolute inset-y-0 left-0 bg-positive" :style="{ width: `${greenWidth(line.plan, line.actual)}%` }" />
+              <div class="absolute inset-y-0 bg-negative" :style="{ left: `${greenWidth(line.plan, line.actual)}%`, width: `${redWidth(line.plan, line.actual)}%` }" />
+            </div>
+            <div class="flex justify-end text-[12px] text-text-muted">
+              {{ t('budget.leftover') }}: <Money :value="line.leftover" colored class="ml-1" />
+            </div>
+          </div>
+          <p v-if="!period.lines.length" class="py-6 text-center text-[13px] text-text-muted">{{ t('budget.empty') }}</p>
         </div>
 
         <!-- Edit mode -->

@@ -14,7 +14,10 @@ import { formatShortDate } from '@/lib/format';
 import { toCsv, downloadCsv } from '@/lib/csv';
 import { transactionsImportConfig } from '@/lib/importConfigs';
 import { useDensity } from '@/composables/useDensity';
+import { useToastStore } from '@/stores/toast';
+import { useConfirmStore } from '@/stores/confirm';
 import ImportModal from '@/components/ui/ImportModal.vue';
+import LoadingBlock from '@/components/ui/LoadingBlock.vue';
 import AppCard from '@/components/ui/AppCard.vue';
 import AppButton from '@/components/ui/AppButton.vue';
 import AppModal from '@/components/ui/AppModal.vue';
@@ -27,6 +30,8 @@ import Money from '@/components/ui/Money.vue';
 
 const { t, te, locale } = useI18n();
 const { rowPad } = useDensity();
+const toast = useToastStore();
+const confirm = useConfirmStore();
 const exporting = ref(false);
 const importOpen = ref(false);
 
@@ -135,7 +140,7 @@ async function exportCsv(): Promise<void> {
     ]);
     downloadCsv(`tameru-transactions-${new Date().toISOString().slice(0, 10)}.csv`, csv);
   } catch (error) {
-    window.alert(errorMessage(t, te, error));
+    toast.error(errorMessage(t, te, error));
   } finally {
     exporting.value = false;
   }
@@ -230,17 +235,23 @@ async function toggleClear(tx: Transaction): Promise<void> {
     else await clearTransaction(tx.id);
     await loadPage();
   } catch (error) {
-    window.alert(errorMessage(t, te, error));
+    toast.error(errorMessage(t, te, error));
   }
 }
 
 async function remove(tx: Transaction): Promise<void> {
-  if (!window.confirm(t('transactions.voidConfirm'))) return;
+  const ok = await confirm.ask({
+    message: t('transactions.voidConfirm'),
+    confirmLabel: t('transactions.void'),
+    danger: true,
+  });
+  if (!ok) return;
   try {
     await voidTransaction(tx.id);
+    toast.success(t('common.done'));
     await Promise.all([loadPage(), loadRefs()]);
   } catch (error) {
-    window.alert(errorMessage(t, te, error));
+    toast.error(errorMessage(t, te, error));
   }
 }
 
@@ -277,7 +288,7 @@ onMounted(async () => {
       </div>
     </AppCard>
 
-    <div v-if="loading" class="py-16 text-center text-sm text-text-muted">{{ t('common.loading') }}</div>
+    <LoadingBlock v-if="loading" />
     <div v-else-if="failed" class="py-16 text-center">
       <p class="text-sm text-text-muted">{{ t('errors.network_error') }}</p>
       <AppButton class="mt-4" variant="secondary" @click="loadPage">{{ t('common.retry') }}</AppButton>
@@ -304,7 +315,7 @@ onMounted(async () => {
             <Money
               :value="signedAmount(tx)"
               :currency="tx.currencyCode"
-              :signed="tx.type !== 'Transfer'"
+              :colored="tx.type === 'Income'"
               class="shrink-0 whitespace-nowrap text-right text-sm font-medium"
             />
             <div class="flex shrink-0 items-center justify-end gap-0.5">

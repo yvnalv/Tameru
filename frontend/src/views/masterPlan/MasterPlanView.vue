@@ -1,13 +1,18 @@
 <script setup lang="ts">
 import { onMounted, ref, reactive, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Plus, Pencil, Trash2 } from 'lucide-vue-next';
+import { Plus, Pencil, Trash2, Upload } from 'lucide-vue-next';
 import {
   getMasterPlan, createMasterPlanItem, updateMasterPlanItem, deleteMasterPlanItem, updateMasterPlanSection,
 } from '@/lib/budgeting';
 import type { MasterPlan, MasterPlanItem, MasterPlanSection } from '@/types/api';
 import { errorMessage } from '@/lib/errorMessage';
+import { masterPlanImportConfig } from '@/lib/importConfigs';
 import { displayName } from '@/lib/seededNames';
+import { useToastStore } from '@/stores/toast';
+import { useConfirmStore } from '@/stores/confirm';
+import ImportModal from '@/components/ui/ImportModal.vue';
+import LoadingBlock from '@/components/ui/LoadingBlock.vue';
 import AppCard from '@/components/ui/AppCard.vue';
 import AppButton from '@/components/ui/AppButton.vue';
 import AppModal from '@/components/ui/AppModal.vue';
@@ -17,10 +22,14 @@ import IconButton from '@/components/ui/IconButton.vue';
 import Money from '@/components/ui/Money.vue';
 
 const { t, te, locale } = useI18n();
+const toast = useToastStore();
+const confirm = useConfirmStore();
 
 const plan = ref<MasterPlan | null>(null);
 const loading = ref(true);
 const failed = ref(false);
+const importOpen = ref(false);
+const importConfig = computed(() => masterPlanImportConfig(plan.value?.sections ?? [], locale.value));
 
 async function load(): Promise<void> {
   loading.value = true;
@@ -101,12 +110,18 @@ async function save(): Promise<void> {
 }
 
 async function removeItem(item: MasterPlanItem): Promise<void> {
-  if (!window.confirm(t('masterPlan.deleteConfirm'))) return;
+  const ok = await confirm.ask({
+    message: t('masterPlan.deleteConfirm'),
+    confirmLabel: t('common.delete'),
+    danger: true,
+  });
+  if (!ok) return;
   try {
     await deleteMasterPlanItem(item.id);
+    toast.success(t('common.done'));
     await load();
   } catch (error) {
-    window.alert(errorMessage(t, te, error));
+    toast.error(errorMessage(t, te, error));
   }
 }
 
@@ -115,15 +130,20 @@ onMounted(load);
 
 <template>
   <div class="space-y-4">
-    <div class="flex items-center justify-between">
+    <div class="flex flex-wrap items-center justify-between gap-3">
       <h1 class="text-lg font-semibold">{{ t('masterPlan.title') }}</h1>
-      <div v-if="plan" class="text-right">
-        <p class="text-[13px] text-text-muted">{{ t('masterPlan.grandTotal') }}</p>
-        <p class="text-lg font-semibold"><Money :value="plan.grandTotal" /></p>
+      <div class="flex items-center gap-3">
+        <AppButton variant="secondary" @click="importOpen = true">
+          <Upload :size="16" /><span class="hidden sm:inline">{{ t('import.masterPlan') }}</span>
+        </AppButton>
+        <div v-if="plan" class="text-right">
+          <p class="text-[13px] text-text-muted">{{ t('masterPlan.grandTotal') }}</p>
+          <p class="text-lg font-semibold"><Money :value="plan.grandTotal" /></p>
+        </div>
       </div>
     </div>
 
-    <div v-if="loading" class="py-16 text-center text-sm text-text-muted">{{ t('common.loading') }}</div>
+    <LoadingBlock v-if="loading" />
     <div v-else-if="failed" class="py-16 text-center">
       <p class="text-sm text-text-muted">{{ t('errors.network_error') }}</p>
       <AppButton class="mt-4" variant="secondary" @click="load">{{ t('common.retry') }}</AppButton>
@@ -204,5 +224,13 @@ onMounted(load);
         <AppButton :loading="saving" @click="save">{{ saving ? t('common.saving') : t('common.save') }}</AppButton>
       </template>
     </AppModal>
+
+    <ImportModal
+      v-if="importOpen"
+      :title="t('import.masterPlan')"
+      :config="importConfig"
+      @close="importOpen = false"
+      @done="load"
+    />
   </div>
 </template>
