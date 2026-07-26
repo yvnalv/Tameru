@@ -147,12 +147,31 @@ TAMERU_OWNER_NAME=Yovan
 TAMERU_ORIGIN=https://tameru.yvnalvworks.com
 ```
 
-Steps: (1) merge to `main` so CI publishes `ghcr.io/yvnalv/tameru-api` and `tameru-web`; (2) point
-`tameru.yvnalvworks.com` DNS at the VPS and obtain a cert (`certbot certonly`); (3) paste the two
-services + Nginx block, fill `.env`; (4) `docker compose pull tameru-api tameru-web && docker compose
-up -d && docker compose restart nginx`. The API auto-creates/migrates the `tameru` DB and seeds the
-owner. Change the owner password after first login. Update later with
-`docker compose pull tameru-api tameru-web && docker compose up -d`.
+Steps:
+
+1. **Publish images** — merge to `main` so CI pushes `ghcr.io/yvnalv/tameru-api` and `tameru-web`.
+2. **DNS** — add an A record `tameru.yvnalvworks.com` → the VPS IP; verify with
+   `dig +short tameru.yvnalvworks.com`.
+3. **TLS cert** — the Nginx container mounts `/etc/letsencrypt` read-only, so a host certbot cert is
+   picked up automatically. The zero-config method (brief Nginx stop while certbot binds port 80):
+   ```bash
+   docker compose stop nginx
+   sudo certbot certonly --standalone -d tameru.yvnalvworks.com \
+     --non-interactive --agree-tos -m you@yvnalvworks.com
+   docker compose start nginx
+   ```
+   This writes `/etc/letsencrypt/live/tameru.yvnalvworks.com/{fullchain,privkey}.pem`. (Renewal:
+   `certbot renew` runs from certbot's systemd timer; add a deploy hook to reload the container —
+   `certbot renew --deploy-hook "docker compose -f /path/docker-compose.yml restart nginx"`.)
+4. **Add the services + Nginx block**, fill `.env`, then:
+   ```bash
+   docker compose pull tameru-api tameru-web
+   docker compose up -d
+   docker compose exec nginx nginx -t && docker compose restart nginx
+   ```
+
+The API auto-creates/migrates the `tameru` DB and seeds the owner. Change the owner password after
+first login. Update later with `docker compose pull tameru-api tameru-web && docker compose up -d`.
 
 ## Database
 
