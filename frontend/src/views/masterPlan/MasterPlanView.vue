@@ -167,12 +167,12 @@ onMounted(load);
         </div>
 
         <div class="scroll-slim overflow-x-auto">
-        <table class="w-full min-w-[560px] text-sm">
+        <table class="w-full text-sm sm:min-w-[560px]">
           <thead>
             <tr class="text-left text-[12px] uppercase text-text-muted">
               <th class="px-5 py-2 font-medium">{{ t('masterPlan.name') }}</th>
-              <th class="px-5 py-2 text-right font-medium">{{ t('masterPlan.price') }}</th>
-              <th class="px-5 py-2 text-right font-medium">{{ t('masterPlan.frequency') }}</th>
+              <th class="hidden px-5 py-2 text-right font-medium sm:table-cell">{{ t('masterPlan.price') }}</th>
+              <th class="hidden px-5 py-2 text-right font-medium sm:table-cell">{{ t('masterPlan.frequency') }}</th>
               <th class="px-5 py-2 text-right font-medium">{{ t('masterPlan.total') }}</th>
               <th class="px-5 py-2"></th>
             </tr>
@@ -180,8 +180,8 @@ onMounted(load);
           <tbody>
             <tr v-for="item in section.items" :key="item.id" class="border-t border-border">
               <td class="px-5 py-2.5">{{ item.name }}</td>
-              <td class="px-5 py-2.5 text-right"><Money :value="item.price" /></td>
-              <td class="px-5 py-2.5 text-right tnum">{{ item.frequency }}</td>
+              <td class="hidden px-5 py-2.5 text-right sm:table-cell"><Money :value="item.price" /></td>
+              <td class="hidden px-5 py-2.5 text-right tnum sm:table-cell">{{ item.frequency }}</td>
               <td class="px-5 py-2.5 text-right font-medium"><Money :value="item.totalBudget" /></td>
               <td class="px-5 py-2.5">
                 <div class="flex items-center justify-end gap-0.5">
@@ -205,7 +205,7 @@ onMounted(load);
           <FormField :label="t('masterPlan.name')" for-id="mp-name">
             <AppInput id="mp-name" v-model="form.name" required />
           </FormField>
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <FormField :label="t('masterPlan.price')" for-id="mp-price">
               <AppInput id="mp-price" type="number" :model-value="String(form.price)" @update:model-value="form.price = Number($event)" />
             </FormField>

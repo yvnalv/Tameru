@@ -6,11 +6,13 @@ export type Density = 'comfortable' | 'compact';
 
 const DENSITY_KEY = 'tameru.density';
 const SIDEBAR_KEY = 'tameru.sidebarCollapsed';
+const HIDE_AMOUNTS_KEY = 'tameru.amountsHidden';
 
 export const useUiStore = defineStore('ui', () => {
   const locale = ref<AppLocale>(i18n.global.locale.value as AppLocale);
   const density = ref<Density>((localStorage.getItem(DENSITY_KEY) as Density) || 'comfortable');
   const sidebarCollapsed = ref(localStorage.getItem(SIDEBAR_KEY) === '1');
+  const amountsHidden = ref(localStorage.getItem(HIDE_AMOUNTS_KEY) === '1');
 
   function changeLocale(next: AppLocale): void {
     setLocale(next);
@@ -31,5 +33,13 @@ export const useUiStore = defineStore('ui', () => {
     localStorage.setItem(SIDEBAR_KEY, sidebarCollapsed.value ? '1' : '0');
   }
 
-  return { locale, density, sidebarCollapsed, changeLocale, toggleLocale, setDensity, toggleSidebar };
+  function toggleAmounts(): void {
+    amountsHidden.value = !amountsHidden.value;
+    localStorage.setItem(HIDE_AMOUNTS_KEY, amountsHidden.value ? '1' : '0');
+  }
+
+  return {
+    locale, density, sidebarCollapsed, amountsHidden,
+    changeLocale, toggleLocale, setDensity, toggleSidebar, toggleAmounts,
+  };
 });

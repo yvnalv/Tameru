@@ -25,6 +25,8 @@ export default {
     comingSoonNote: 'Layar ini segera hadir.',
     language: 'Bahasa',
     density: 'Kerapatan',
+    hideAmounts: 'Sembunyikan jumlah',
+    showAmounts: 'Tampilkan jumlah',
     export: 'Ekspor CSV',
     collapse: 'Ciutkan bilah sisi',
     expand: 'Perluas bilah sisi',

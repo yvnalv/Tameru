@@ -3,7 +3,7 @@ import { onMounted, ref, reactive, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Plus, CircleCheck, RotateCcw, Ban, ArrowRight, Download, Upload } from 'lucide-vue-next';
 import {
-  listTransactions, createTransaction, clearTransaction, unclearTransaction, voidTransaction,
+  listTransactions, createTransaction, updateTransaction, clearTransaction, unclearTransaction, voidTransaction,
   type TransactionFilter, type TransactionInput,
 } from '@/lib/transactions';
 import { listAccounts } from '@/lib/accounts';
@@ -148,6 +148,7 @@ async function exportCsv(): Promise<void> {
 
 // --- create modal -----------------------------------------------------------
 const modalOpen = ref(false);
+const editingId = ref<string | null>(null);
 const saving = ref(false);
 const formError = ref('');
 const today = new Date().toISOString().slice(0, 10);
@@ -184,6 +185,7 @@ const statusOptions = computed(() => [
 ]);
 
 function openCreate(): void {
+  editingId.value = null;
   Object.assign(form, {
     type: 'Expense', date: today, title: '', amount: 0,
     accountId: accounts.value[0]?.id ?? '', toAccountId: accounts.value[1]?.id ?? '',
@@ -193,7 +195,26 @@ function openCreate(): void {
   modalOpen.value = true;
 }
 
+function openEdit(tx: Transaction): void {
+  editingId.value = tx.id;
+  Object.assign(form, {
+    type: tx.type,
+    date: tx.date,
+    title: tx.title,
+    amount: tx.amount,
+    accountId: tx.accountId,
+    toAccountId: tx.toAccountId ?? '',
+    budgetCategoryId: tx.budgetCategoryId ?? '',
+    categoryId: tx.categoryId ?? '',
+    status: tx.status,
+    description: tx.description ?? '',
+  });
+  formError.value = '';
+  modalOpen.value = true;
+}
+
 function setType(type: string): void {
+  if (editingId.value) return; // type is immutable on an existing transaction
   form.type = type;
   form.budgetCategoryId = '';
   form.categoryId = '';
@@ -218,7 +239,22 @@ async function save(): Promise<void> {
     input.categoryId = form.categoryId || null;
   }
   try {
-    await createTransaction(input);
+    if (editingId.value) {
+      await updateTransaction(editingId.value, {
+        date: input.date,
+        title: input.title,
+        amount: input.amount,
+        accountId: input.accountId,
+        toAccountId: input.toAccountId ?? null,
+        budgetCategoryId: input.budgetCategoryId ?? null,
+        categoryId: input.categoryId ?? null,
+        status: input.status,
+        description: input.description ?? null,
+      });
+      toast.success(t('common.done'));
+    } else {
+      await createTransaction(input);
+    }
     modalOpen.value = false;
     await Promise.all([loadPage(), loadRefs()]);
   } catch (error) {
@@ -297,7 +333,13 @@ onMounted(async () => {
     <template v-else>
       <AppCard v-if="page && page.items.length" :padded="false">
         <ul class="divide-y divide-border">
-          <li v-for="tx in page.items" :key="tx.id" class="flex items-center gap-2 px-4 sm:gap-3 sm:px-5" :class="rowPad">
+          <li
+            v-for="tx in page.items"
+            :key="tx.id"
+            class="flex cursor-pointer items-center gap-2 px-4 hover:bg-surface-2 sm:gap-3 sm:px-5"
+            :class="rowPad"
+            @click="openEdit(tx)"
+          >
             <div class="w-12 shrink-0 tnum text-[13px] text-text-muted sm:w-14">{{ formatShortDate(tx.date, locale) }}</div>
             <div class="min-w-0 flex-1">
               <p class="truncate text-sm font-medium">{{ tx.title }}</p>
@@ -318,7 +360,7 @@ onMounted(async () => {
               :colored="tx.type === 'Income'"
               class="shrink-0 whitespace-nowrap text-right text-sm font-medium"
             />
-            <div class="flex shrink-0 items-center justify-end gap-0.5">
+            <div class="flex shrink-0 items-center justify-end gap-0.5" @click.stop>
               <IconButton
                 :icon="tx.status === 'Cleared' ? RotateCcw : CircleCheck"
                 :label="tx.status === 'Cleared' ? t('transactions.unclear') : t('transactions.clear')"
@@ -344,15 +386,16 @@ onMounted(async () => {
       </div>
     </template>
 
-    <!-- Create modal -->
-    <AppModal v-if="modalOpen" :title="t('transactions.add')" @close="modalOpen = false">
+    <!-- Create / edit modal -->
+    <AppModal v-if="modalOpen" :title="editingId ? t('transactions.edit') : t('transactions.add')" @close="modalOpen = false">
       <form class="space-y-4" @submit.prevent="save">
         <div class="grid grid-cols-3 gap-2">
           <button
             v-for="ty in TX_TYPES"
             :key="ty"
             type="button"
-            class="rounded-control border px-3 py-2 text-sm font-medium"
+            :disabled="!!editingId"
+            class="rounded-control border px-3 py-2 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-50"
             :class="form.type === ty ? 'border-accent bg-accent-soft text-accent' : 'border-border text-text-muted hover:bg-surface-2'"
             @click="setType(ty)"
           >
@@ -360,7 +403,7 @@ onMounted(async () => {
           </button>
         </div>
 
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <FormField :label="t('transactions.date')" for-id="tx-date">
             <AppInput id="tx-date" v-model="form.date" type="date" />
           </FormField>
@@ -373,7 +416,7 @@ onMounted(async () => {
           <AppInput id="tx-title" v-model="form.title" required />
         </FormField>
 
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <FormField :label="t('transactions.account')" for-id="tx-account">
             <AppSelect id="tx-account" v-model="form.accountId" :options="accountOptions" />
           </FormField>
@@ -385,7 +428,7 @@ onMounted(async () => {
           </FormField>
         </div>
 
-        <div v-if="form.type !== 'Transfer'" class="grid grid-cols-2 gap-4">
+        <div v-if="form.type !== 'Transfer'" class="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <FormField :label="t('transactions.budget')" for-id="tx-budget">
             <AppSelect id="tx-budget" v-model="form.budgetCategoryId" :options="budgetOptions" />
           </FormField>

@@ -31,6 +31,27 @@
   ::selection {
     background: var(--accent-soft);
   }
+
+  /* Native date/number inputs: match the width/height of text inputs and selects (no intrinsic
+     overflow, no number spinners) so form rows stay symmetric. */
+  input[type='date'] {
+    min-width: 0;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+  input[type='date']::-webkit-calendar-picker-indicator {
+    opacity: 0.55;
+    cursor: pointer;
+    filter: invert(0.7);
+  }
+  input[type='number']::-webkit-inner-spin-button,
+  input[type='number']::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type='number'] {
+    -moz-appearance: textfield;
+  }
 }
 
 @layer utilities {

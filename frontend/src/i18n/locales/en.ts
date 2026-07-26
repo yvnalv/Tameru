@@ -25,6 +25,8 @@ export default {
     comingSoonNote: 'This screen is coming soon.',
     language: 'Language',
     density: 'Density',
+    hideAmounts: 'Hide amounts',
+    showAmounts: 'Show amounts',
     export: 'Export CSV',
     collapse: 'Collapse sidebar',
     expand: 'Expand sidebar',

@@ -6,10 +6,12 @@ import { useI18n } from 'vue-i18n';
 import type { MonthlyCashflow } from '@/types/api';
 import { formatMoney } from '@/lib/format';
 import { chart, darkTooltip } from '@/lib/chartTheme';
+import { useUiStore } from '@/stores/ui';
 
 // 12-month income vs expense bars (ECharts, dark theme, solid fills — no gradient).
 const props = defineProps<{ months: MonthlyCashflow[]; currency?: string }>();
 const { t, locale } = useI18n();
+const ui = useUiStore();
 
 const monthLabel = (m: number) => new Date(2020, m - 1, 1).toLocaleString(locale.value, { month: 'short' });
 const compact = (v: number) => new Intl.NumberFormat(locale.value, { notation: 'compact', maximumFractionDigits: 1 }).format(v);
@@ -58,6 +60,11 @@ const option = computed(() => ({
       <span class="inline-flex items-center gap-1.5"><span class="h-2.5 w-2.5 rounded-sm" style="background: var(--positive)" />{{ t('enums.transactionType.Income') }}</span>
       <span class="inline-flex items-center gap-1.5"><span class="h-2.5 w-2.5 rounded-sm" style="background: var(--negative)" />{{ t('enums.transactionType.Expense') }}</span>
     </div>
-    <VChart :option="option" autoresize class="h-56 w-full" />
+    <VChart
+      :option="option"
+      autoresize
+      class="h-56 w-full transition"
+      :class="{ 'pointer-events-none blur-md': ui.amountsHidden }"
+    />
   </div>
 </template>
