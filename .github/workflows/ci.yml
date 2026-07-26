@@ -1,0 +1,107 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  backend:
+    name: Backend (build + tests)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # .NET 8 SDK provides the net8.0 runtime (the app targets net8.0); .NET 9 SDK is needed to
+      # build the .slnx solution file.
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+
+      - name: Restore
+        run: dotnet restore Tameru.slnx
+
+      - name: Build
+        run: dotnet build Tameru.slnx --configuration Release --no-restore
+
+      # Runs unit + architecture + integration tests. Integration tests use Testcontainers, which
+      # needs Docker — available on the GitHub-hosted ubuntu runner.
+      - name: Test
+        run: dotnet test Tameru.slnx --configuration Release --no-build --verbosity normal
+
+  frontend:
+    name: Frontend (typecheck + build + tests)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install
+        run: npm ci
+
+      - name: Build (vue-tsc typecheck + vite build)
+        run: npm run build
+
+      - name: Test
+        run: npm run test
+
+  # Build and push the deployable images to GHCR — only on main / version tags, and only once the
+  # backend and frontend jobs are green. Pull these on the VPS (see docs/DEPLOYMENT.md).
+  publish:
+    name: Publish images to GHCR
+    needs: [backend, frontend]
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        include:
+          - name: tameru-api
+            context: .
+            dockerfile: Dockerfile.api
+          - name: tameru-web
+            context: frontend
+            dockerfile: frontend/Dockerfile
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Image metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/${{ matrix.name }}
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=ref,event=tag
+            type=sha
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.dockerfile }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}

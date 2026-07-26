@@ -4,10 +4,11 @@
 
 ## Phase
 
-**MVP feature-complete.** M0–M5 (backend) and M6–M7 (frontend) complete. A real Vue client signs in
-and drives the whole workbook menu — Dashboard, Transactions, Accounts, Budget, Master Plan,
-Categories — against the live API. M8 (import, i18n audit & polish) is next.
-See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md).
+**MVP complete + hardened.** M0–M5 (backend) and M6–M8 (frontend + import/polish) done, followed by
+an M9 UI/UX hardening pass. Quality/ops now in place: **CI** (GitHub Actions) builds and tests both
+sides on every PR; **integration tests** (Testcontainers Postgres) cover the money-critical flows;
+and the Docker stack is **VPS-deploy ready** (env-driven secrets, owner seed, `DEPLOYMENT.md`).
+Remaining is optional polish + the post-MVP roadmap. See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md).
 
 ## Done
 
