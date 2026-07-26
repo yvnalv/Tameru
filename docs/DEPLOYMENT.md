@@ -86,11 +86,9 @@ CI publishes the images to GHCR and you pull them. Add two services to your exis
     mem_limit: 512m
     environment:
       ASPNETCORE_ENVIRONMENT: Production
-      # Uses the shared Postgres; EF creates the "tameru" database on first run if missing. Set the
-      # Username/Password to your shared Postgres superuser. If that container hardcodes its creds
-      # (not via .env), hardcode them here too — otherwise ${POSTGRES_USER}/${POSTGRES_PASSWORD}
-      # resolve to empty and the API can't connect.
-      ConnectionStrings__Postgres: "Host=postgres;Port=5432;Database=${TAMERU_DB:-tameru};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
+      # Dedicated per-app DB role on the shared Postgres — the secret lives in .env, not here.
+      # Create the role + database once (see the steps below) before first start.
+      ConnectionStrings__Postgres: "Host=postgres;Port=5432;Database=${TAMERU_DB:-tameru};Username=${TAMERU_DB_USER:-tameru};Password=${TAMERU_DB_PASSWORD:?set TAMERU_DB_PASSWORD in .env}"
       Jwt__SigningKey: ${TAMERU_JWT_SIGNING_KEY:?set TAMERU_JWT_SIGNING_KEY in .env (>=32 chars)}
       Jwt__Issuer: Tameru
       Jwt__Audience: Tameru
@@ -149,11 +147,23 @@ server {
 ```dotenv
 TAMERU_TAG=latest
 TAMERU_DB=tameru
+TAMERU_DB_USER=tameru
+TAMERU_DB_PASSWORD=<the password you set on the tameru role>
 TAMERU_JWT_SIGNING_KEY=<openssl rand -base64 48>
 TAMERU_OWNER_EMAIL=you@example.com
 TAMERU_OWNER_PASSWORD=<strong>
 TAMERU_OWNER_NAME=Yovan
 TAMERU_ORIGIN=https://tameru.yvnalvworks.com
+```
+
+Create the dedicated DB role + database once (secret stays out of the compose file), matching the
+per-app pattern used by the other services:
+
+```bash
+docker exec -it postgres psql -U <superuser> -d postgres -v pw="'<TAMERU_DB_PASSWORD>'" <<'SQL'
+CREATE ROLE tameru WITH LOGIN PASSWORD :pw;
+CREATE DATABASE tameru OWNER tameru;
+SQL
 ```
 
 Steps:
