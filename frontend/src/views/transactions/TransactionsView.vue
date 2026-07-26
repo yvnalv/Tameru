@@ -360,7 +360,7 @@ onMounted(async () => {
           </button>
         </div>
 
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <FormField :label="t('transactions.date')" for-id="tx-date">
             <AppInput id="tx-date" v-model="form.date" type="date" />
           </FormField>
@@ -373,7 +373,7 @@ onMounted(async () => {
           <AppInput id="tx-title" v-model="form.title" required />
         </FormField>
 
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <FormField :label="t('transactions.account')" for-id="tx-account">
             <AppSelect id="tx-account" v-model="form.accountId" :options="accountOptions" />
           </FormField>
@@ -385,7 +385,7 @@ onMounted(async () => {
           </FormField>
         </div>
 
-        <div v-if="form.type !== 'Transfer'" class="grid grid-cols-2 gap-4">
+        <div v-if="form.type !== 'Transfer'" class="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <FormField :label="t('transactions.budget')" for-id="tx-budget">
             <AppSelect id="tx-budget" v-model="form.budgetCategoryId" :options="budgetOptions" />
           </FormField>

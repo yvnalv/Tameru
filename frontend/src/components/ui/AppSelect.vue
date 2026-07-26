@@ -20,7 +20,7 @@ defineEmits<{ 'update:modelValue': [value: string] }>();
     :id="id"
     :value="modelValue"
     :disabled="disabled"
-    class="h-10 w-full rounded-control border border-border bg-surface px-3 text-sm text-text focus:border-accent disabled:opacity-50"
+    class="h-10 w-full min-w-0 rounded-control border border-border bg-surface px-3 text-sm text-text focus:border-accent disabled:opacity-50"
     @change="$emit('update:modelValue', ($event.target as HTMLSelectElement).value)"
   >
     <option v-if="placeholder" value="" disabled>{{ placeholder }}</option>

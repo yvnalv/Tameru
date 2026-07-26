@@ -3,6 +3,19 @@
 This file is Tameru's immutable historical record. A task is not complete until this file has been
 updated. Newest entries at the top. See `CLAUDE.md` → **CHANGELOG Rules** for the full procedure.
 
+## [2026-07-26 03:58:27 UTC]
+
+CHG-0028 — Responsive: field overflow + compact tables on small screens
+
+- **Field overflow fixed.** `AppInput`, `AppSelect`, and `FormField` now set `min-w-0`, so date/number
+  inputs shrink within their grid cell instead of forcing horizontal overflow on phones.
+- **Modal forms stack on phones.** The paired-field grids in the Account, Transaction, and Master Plan
+  modals are now `grid-cols-1 sm:grid-cols-2` — one column (full-width fields) under ~640px, two above.
+- **Compact Master Plan table.** The Price and Frequency columns are hidden below `sm` (Total =
+  Price × Frequency remains), and the table drops its min-width on phones so it fits without a
+  horizontal scroll.
+- `vue-tsc` + build green; 19 Vitest tests; Docker `web` rebuilt.
+
 ## [2026-07-25 14:14:35 UTC]
 
 CHG-0027 — M9 part 9: consistent money format + logged-in user in the top bar

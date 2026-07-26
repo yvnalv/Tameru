@@ -197,7 +197,7 @@ onMounted(load);
         <FormField :label="t('accounts.name')" for-id="acc-name">
           <AppInput id="acc-name" v-model="form.name" required />
         </FormField>
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <FormField :label="t('accounts.type')" for-id="acc-type">
             <AppSelect id="acc-type" v-model="form.type" :options="typeOptions" />
           </FormField>
@@ -210,7 +210,7 @@ onMounted(load);
             />
           </FormField>
         </div>
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <FormField :label="t('accounts.openingBalance')" for-id="acc-opening">
             <AppInput
               id="acc-opening"
