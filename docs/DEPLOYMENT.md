@@ -86,8 +86,9 @@ CI publishes the images to GHCR and you pull them. Add two services to your exis
     mem_limit: 512m
     environment:
       ASPNETCORE_ENVIRONMENT: Production
-      # Uses the shared Postgres. EF creates the "tameru" database on first run if missing.
-      ConnectionStrings__Postgres: "Host=postgres;Port=5432;Database=${TAMERU_DB:-tameru};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
+      # Dedicated per-app DB role on the shared Postgres — the secret lives in .env, not here.
+      # Create the role + database once (see the steps below) before first start.
+      ConnectionStrings__Postgres: "Host=postgres;Port=5432;Database=${TAMERU_DB:-tameru};Username=${TAMERU_DB_USER:-tameru};Password=${TAMERU_DB_PASSWORD:?set TAMERU_DB_PASSWORD in .env}"
       Jwt__SigningKey: ${TAMERU_JWT_SIGNING_KEY:?set TAMERU_JWT_SIGNING_KEY in .env (>=32 chars)}
       Jwt__Issuer: Tameru
       Jwt__Audience: Tameru
@@ -117,14 +118,15 @@ CI publishes the images to GHCR and you pull them. Add two services to your exis
 ```
 
 Add a server block to your shared Nginx config for the subdomain (front `tameru-web`; the SPA image
-already proxies `/api` internally to `tameru-api`):
+already proxies `/api` internally to `tameru-api`). The `ssl_certificate` path is the **shared SAN
+cert** (see the TLS step below — Tameru is added to the existing `yvnalvworks.com` cert):
 
 ```nginx
 server {
     listen 443 ssl;
     server_name tameru.yvnalvworks.com;
-    ssl_certificate     /etc/letsencrypt/live/tameru.yvnalvworks.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/tameru.yvnalvworks.com/privkey.pem;
+    ssl_certificate     /etc/letsencrypt/live/yvnalvworks.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/yvnalvworks.com/privkey.pem;
     location / {
         proxy_pass http://tameru-web:80;
         proxy_set_header Host $host;
@@ -133,6 +135,11 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 }
+server {
+    listen 80;
+    server_name tameru.yvnalvworks.com;
+    return 301 https://$host$request_uri;
+}
 ```
 
 `.env` additions:
@@ -140,6 +147,8 @@ server {
 ```dotenv
 TAMERU_TAG=latest
 TAMERU_DB=tameru
+TAMERU_DB_USER=tameru
+TAMERU_DB_PASSWORD=<the password you set on the tameru role>
 TAMERU_JWT_SIGNING_KEY=<openssl rand -base64 48>
 TAMERU_OWNER_EMAIL=you@example.com
 TAMERU_OWNER_PASSWORD=<strong>
@@ -147,12 +156,46 @@ TAMERU_OWNER_NAME=Yovan
 TAMERU_ORIGIN=https://tameru.yvnalvworks.com
 ```
 
-Steps: (1) merge to `main` so CI publishes `ghcr.io/yvnalv/tameru-api` and `tameru-web`; (2) point
-`tameru.yvnalvworks.com` DNS at the VPS and obtain a cert (`certbot certonly`); (3) paste the two
-services + Nginx block, fill `.env`; (4) `docker compose pull tameru-api tameru-web && docker compose
-up -d && docker compose restart nginx`. The API auto-creates/migrates the `tameru` DB and seeds the
-owner. Change the owner password after first login. Update later with
-`docker compose pull tameru-api tameru-web && docker compose up -d`.
+Create the dedicated DB role + database once (secret stays out of the compose file), matching the
+per-app pattern used by the other services:
+
+```bash
+# One command per line (copy-paste safe). <superuser> = your shared-Postgres user (e.g. yvnalvworks).
+docker exec postgres psql -U <superuser> -d postgres -c "CREATE ROLE tameru WITH LOGIN PASSWORD '<TAMERU_DB_PASSWORD>';"
+docker exec postgres psql -U <superuser> -d postgres -c "CREATE DATABASE tameru OWNER tameru;"
+```
+
+Steps:
+
+1. **Publish images** — merge to `main` so CI pushes `ghcr.io/yvnalv/tameru-api` and `tameru-web`.
+2. **DNS** — add an A record `tameru.yvnalvworks.com` → the VPS IP; verify with
+   `dig +short tameru.yvnalvworks.com`.
+3. **TLS cert** — the Nginx container mounts `/etc/letsencrypt` read-only, so a host certbot cert is
+   picked up automatically. If you already run a single **SAN cert** for your other subdomains
+   (standalone authenticator), just **expand it** to include Tameru — this reuses the same cert path
+   and your existing renewal. List *all* current domains plus the new one, keeping `--cert-name`:
+   ```bash
+   docker compose stop nginx
+   sudo certbot certonly --standalone --cert-name yvnalvworks.com \
+     -d yvnalvworks.com -d www.yvnalvworks.com \
+     -d accountrack.yvnalvworks.com -d n8n.yvnalvworks.com \
+     -d tameru.yvnalvworks.com \
+     --non-interactive --agree-tos -m you@yvnalvworks.com
+   docker compose start nginx
+   ```
+   certbot reports it is *expanding* the existing certificate; the file paths stay
+   `/etc/letsencrypt/live/yvnalvworks.com/{fullchain,privkey}.pem` and renewal keeps working as before.
+   (For a brand-new standalone setup instead, drop `--cert-name` and pass only `-d
+   tameru.yvnalvworks.com`, and point the Nginx block at that cert's own path.)
+4. **Add the services + Nginx block**, fill `.env`, then:
+   ```bash
+   docker compose pull tameru-api tameru-web
+   docker compose up -d
+   docker compose exec nginx nginx -t && docker compose restart nginx
+   ```
+
+The API auto-creates/migrates the `tameru` DB and seeds the owner. Change the owner password after
+first login. Update later with `docker compose pull tameru-api tameru-web && docker compose up -d`.
 
 ## Database
 
