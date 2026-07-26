@@ -1,3 +1,7 @@
+# LOCAL development / testing stack only — it BUILDS the images from source.
+# It is NOT the production file: a server pulls prebuilt GHCR images and runs its own compose
+# (shared Nginx + Postgres). For VPS deployment see docs/DEPLOYMENT.md → "on a shared multi-app VPS".
+#
 # Local full-stack run for hands-on testing (docs/DEPLOYMENT.md).
 # web (Nginx + Vue SPA) → api (.NET) → db (Postgres). The API reaches Postgres over the internal
 # compose network, so the database port is NOT published to the host (avoids clashing with a local
