@@ -117,14 +117,15 @@ CI publishes the images to GHCR and you pull them. Add two services to your exis
 ```
 
 Add a server block to your shared Nginx config for the subdomain (front `tameru-web`; the SPA image
-already proxies `/api` internally to `tameru-api`):
+already proxies `/api` internally to `tameru-api`). The `ssl_certificate` path is the **shared SAN
+cert** (see the TLS step below — Tameru is added to the existing `yvnalvworks.com` cert):
 
 ```nginx
 server {
     listen 443 ssl;
     server_name tameru.yvnalvworks.com;
-    ssl_certificate     /etc/letsencrypt/live/tameru.yvnalvworks.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/tameru.yvnalvworks.com/privkey.pem;
+    ssl_certificate     /etc/letsencrypt/live/yvnalvworks.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/yvnalvworks.com/privkey.pem;
     location / {
         proxy_pass http://tameru-web:80;
         proxy_set_header Host $host;
@@ -132,6 +133,11 @@ server {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
     }
+}
+server {
+    listen 80;
+    server_name tameru.yvnalvworks.com;
+    return 301 https://$host$request_uri;
 }
 ```
 
@@ -153,16 +159,22 @@ Steps:
 2. **DNS** — add an A record `tameru.yvnalvworks.com` → the VPS IP; verify with
    `dig +short tameru.yvnalvworks.com`.
 3. **TLS cert** — the Nginx container mounts `/etc/letsencrypt` read-only, so a host certbot cert is
-   picked up automatically. The zero-config method (brief Nginx stop while certbot binds port 80):
+   picked up automatically. If you already run a single **SAN cert** for your other subdomains
+   (standalone authenticator), just **expand it** to include Tameru — this reuses the same cert path
+   and your existing renewal. List *all* current domains plus the new one, keeping `--cert-name`:
    ```bash
    docker compose stop nginx
-   sudo certbot certonly --standalone -d tameru.yvnalvworks.com \
+   sudo certbot certonly --standalone --cert-name yvnalvworks.com \
+     -d yvnalvworks.com -d www.yvnalvworks.com \
+     -d accountrack.yvnalvworks.com -d n8n.yvnalvworks.com \
+     -d tameru.yvnalvworks.com \
      --non-interactive --agree-tos -m you@yvnalvworks.com
    docker compose start nginx
    ```
-   This writes `/etc/letsencrypt/live/tameru.yvnalvworks.com/{fullchain,privkey}.pem`. (Renewal:
-   `certbot renew` runs from certbot's systemd timer; add a deploy hook to reload the container —
-   `certbot renew --deploy-hook "docker compose -f /path/docker-compose.yml restart nginx"`.)
+   certbot reports it is *expanding* the existing certificate; the file paths stay
+   `/etc/letsencrypt/live/yvnalvworks.com/{fullchain,privkey}.pem` and renewal keeps working as before.
+   (For a brand-new standalone setup instead, drop `--cert-name` and pass only `-d
+   tameru.yvnalvworks.com`, and point the Nginx block at that cert's own path.)
 4. **Add the services + Nginx block**, fill `.env`, then:
    ```bash
    docker compose pull tameru-api tameru-web
