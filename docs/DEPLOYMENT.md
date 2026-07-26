@@ -160,8 +160,9 @@ Create the dedicated DB role + database once (secret stays out of the compose fi
 per-app pattern used by the other services:
 
 ```bash
-docker exec -it postgres psql -U <superuser> -d postgres -v pw="'<TAMERU_DB_PASSWORD>'" <<'SQL'
-CREATE ROLE tameru WITH LOGIN PASSWORD :pw;
+# Use -i (not -it) with a heredoc — a TTY can't attach to piped stdin.
+docker exec -i postgres psql -U <superuser> -d postgres <<'SQL'
+CREATE ROLE tameru WITH LOGIN PASSWORD '<TAMERU_DB_PASSWORD>';
 CREATE DATABASE tameru OWNER tameru;
 SQL
 ```
