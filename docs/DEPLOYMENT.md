@@ -86,7 +86,10 @@ CI publishes the images to GHCR and you pull them. Add two services to your exis
     mem_limit: 512m
     environment:
       ASPNETCORE_ENVIRONMENT: Production
-      # Uses the shared Postgres. EF creates the "tameru" database on first run if missing.
+      # Uses the shared Postgres; EF creates the "tameru" database on first run if missing. Set the
+      # Username/Password to your shared Postgres superuser. If that container hardcodes its creds
+      # (not via .env), hardcode them here too — otherwise ${POSTGRES_USER}/${POSTGRES_PASSWORD}
+      # resolve to empty and the API can't connect.
       ConnectionStrings__Postgres: "Host=postgres;Port=5432;Database=${TAMERU_DB:-tameru};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
       Jwt__SigningKey: ${TAMERU_JWT_SIGNING_KEY:?set TAMERU_JWT_SIGNING_KEY in .env (>=32 chars)}
       Jwt__Issuer: Tameru
