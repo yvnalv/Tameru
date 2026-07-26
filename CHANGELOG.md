@@ -3,6 +3,23 @@
 This file is Tameru's immutable historical record. A task is not complete until this file has been
 updated. Newest entries at the top. See `CLAUDE.md` → **CHANGELOG Rules** for the full procedure.
 
+## [2026-07-26 04:12:27 UTC]
+
+CHG-0029 — Editable transactions, privacy amount-mask, and date-field normalization
+
+- **Edit a transaction.** Transaction rows are now clickable and open the form pre-filled for editing
+  (the row's action buttons stop propagation so clear/void still work). Saving calls `PUT
+  /transactions/{id}`. The transaction **type is immutable** on edit (the toggle is disabled), matching
+  the backend contract. Verified end-to-end against the API.
+- **Hide amounts (privacy).** A new eye toggle in the top bar masks every figure as `Rp ••••`
+  (persisted, like m-banking apps). The `Money` component renders the mask and drops its colour when
+  hidden; the dashboard charts blur and disable their tooltips so nothing leaks. Added
+  `common.hideAmounts` / `common.showAmounts` in both locales.
+- **Date/number inputs normalized.** Native `input[type=date]` no longer overflows its grid cell
+  (its intrinsic width was beating the track); number-spinner buttons are removed. Together with the
+  earlier `min-w-0`, form rows stay symmetric.
+- `vue-tsc` + build green; 19 Vitest tests; Docker `web` rebuilt.
+
 ## [2026-07-26 03:58:27 UTC]
 
 CHG-0028 — Responsive: field overflow + compact tables on small screens

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
-import { LogOut, Languages, Rows2, Rows3, PanelLeftClose, PanelLeftOpen } from 'lucide-vue-next';
+import { LogOut, Languages, Rows2, Rows3, PanelLeftClose, PanelLeftOpen, Eye, EyeOff } from 'lucide-vue-next';
 import { useAuthStore } from '@/stores/auth';
 import { useUiStore } from '@/stores/ui';
 import { useDensity } from '@/composables/useDensity';
@@ -36,6 +36,12 @@ async function signOut(): Promise<void> {
     </div>
 
     <div class="flex items-center gap-1">
+      <IconButton
+        :icon="ui.amountsHidden ? EyeOff : Eye"
+        :label="ui.amountsHidden ? $t('common.showAmounts') : $t('common.hideAmounts')"
+        :size="18"
+        @click="ui.toggleAmounts()"
+      />
       <IconButton
         :icon="density.compact.value ? Rows2 : Rows3"
         :label="$t('common.density')"
