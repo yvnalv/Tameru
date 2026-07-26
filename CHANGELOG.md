@@ -3,6 +3,27 @@
 This file is Tameru's immutable historical record. A task is not complete until this file has been
 updated. Newest entries at the top. See `CLAUDE.md` → **CHANGELOG Rules** for the full procedure.
 
+## [2026-07-26 04:32:13 UTC]
+
+CHG-0030 — Integration tests, CI pipeline, and VPS-ready deployment
+
+- **Integration tests** (`tests/Tameru.IntegrationTests`): a `WebApplicationFactory<Program>` boots the
+  real API against a throwaway **PostgreSQL container (Testcontainers)**; the app auto-migrates and
+  seeds on startup. 8 tests cover the money-critical, end-to-end paths — owner login → `/me`, wrong
+  password → 401, unauthenticated → 401, balance derived from the ledger (income/expense/transfer),
+  void recomputes the balance, category-flow guard (422), and budget Actual/Leftover derived from the
+  ledger. Full solution suite now **107 tests** green. (Config is injected via env vars so it wins over
+  the empty appsettings connection string under minimal hosting.)
+- **CI** (`.github/workflows/ci.yml`): on every push/PR to `main` — backend `restore/build/test
+  Tameru.slnx` (unit + architecture + integration; installs .NET 8 for the runtime and .NET 9 for
+  `.slnx`), and frontend `npm ci` + build (`vue-tsc` + Vite) + Vitest.
+- **VPS-ready deployment**: `docker-compose.yml` now seeds the owner from `SEED_OWNER_*` env (dev
+  defaults preserve local behaviour); `.env.example` documents the production secrets/ports; and
+  `docs/DEPLOYMENT.md` gains a concrete "Deploy to a VPS" guide (env, TLS via a reverse proxy, firewall,
+  updates) and the real CI description.
+- Verified: full `dotnet test` green; local Docker stack recreated with the new env and owner login
+  still works.
+
 ## [2026-07-26 04:12:27 UTC]
 
 CHG-0029 — Editable transactions, privacy amount-mask, and date-field normalization

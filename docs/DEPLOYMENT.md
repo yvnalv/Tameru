@@ -49,6 +49,29 @@ Configure via the `Seed:Owner` section or environment variables.
 docker compose up -d --build
 ```
 
+## Deploy to a VPS
+
+The whole app ships as one Docker Compose stack (`web` → `api` → `db`). On a fresh server with Docker
+installed:
+
+```bash
+git clone https://github.com/yvnalv/Tameru.git && cd Tameru
+cp .env.example .env
+# Edit .env: set ASPNETCORE_ENVIRONMENT=Production, a strong POSTGRES_PASSWORD and Jwt__SigningKey,
+# the SEED_OWNER_* account, and CORS_ORIGIN=https://your-domain.
+docker compose up -d --build
+```
+
+- On first start the API auto-migrates every module and seeds the owner from `SEED_OWNER_*`.
+- The SPA (`web`) serves on `WEB_PORT` (default 8091) and proxies `/api` to the API over the internal
+  network — **only `web` needs to be public.** Keep `api` (8090) and `db` closed on the firewall, or
+  remove the `api` host port mapping entirely in production.
+- **TLS / domain:** put a reverse proxy (Caddy, Traefik, or Nginx) in front of `web` to terminate
+  HTTPS for your domain and forward to `WEB_PORT`. Caddy example: `your-domain { reverse_proxy
+  localhost:8091 }`.
+- **Change the seeded owner password** after first login (the seed only runs once).
+- **Updates:** `git pull && docker compose up -d --build`. Migrations apply automatically on API start.
+
 ## Database
 
 - Migrations are per-module EF Core migrations. In Development they auto-apply
@@ -59,9 +82,14 @@ docker compose up -d --build
 
 ## CI/CD (GitHub Actions)
 
-1. Build backend + run unit/architecture tests (integration when Docker available).
-2. Build frontend + run Vitest.
-3. On main: build and push images; deploy (compose pull + up) to the target host; run migrations.
+`.github/workflows/ci.yml` runs on every push/PR to `main`:
+
+1. **Backend** — `dotnet restore/build/test Tameru.slnx` (unit + architecture + **integration** tests;
+   the integration tests spin up PostgreSQL via Testcontainers on the runner's Docker).
+2. **Frontend** — `npm ci`, `npm run build` (`vue-tsc` typecheck + Vite build), `npm run test` (Vitest).
+
+Deploy is manual for now (`git pull && docker compose up -d --build` on the VPS); an image-push +
+remote-deploy step can be added later.
 
 ## Configuration keys (indicative)
 

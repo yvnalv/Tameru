@@ -42,6 +42,11 @@ services:
       Jwt__Audience: tameru
       Database__AutoMigrate: "true"
       Seed__Enabled: "true"
+      # Owner seeded on first run. Override via .env in production (defaults mirror the dev owner).
+      Seed__Owner__Email: ${SEED_OWNER_EMAIL:-owner@tameru.local}
+      Seed__Owner__Password: ${SEED_OWNER_PASSWORD:-ChangeMe!123}
+      Seed__Owner__DisplayName: ${SEED_OWNER_DISPLAY_NAME:-Yovan}
+      Seed__Owner__Locale: ${SEED_OWNER_LOCALE:-en}
       Cors__AllowedOrigins__0: ${CORS_ORIGIN:-http://localhost:5173}
     ports:
       - "${API_PORT:-8090}:8080"
