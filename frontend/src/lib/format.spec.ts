@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { formatMoney, formatNumber } from '@/lib/format';
+import { formatMoney, formatNumber, formatRowDate } from '@/lib/format';
 
 describe('formatNumber (id-ID)', () => {
   it('groups thousands with dots', () => {
@@ -31,5 +31,28 @@ describe('formatMoney', () => {
 
   it('uses the raw code for non-IDR currencies', () => {
     expect(formatMoney(1000, 'USD')).toBe('USD 1.000');
+  });
+});
+
+describe('formatRowDate', () => {
+  const today = new Date('2026-09-12T00:00:00');
+
+  it('omits the year for a date in the current year', () => {
+    expect(formatRowDate('2026-07-26', 'id', today)).not.toContain('2026');
+  });
+
+  it('appends the year for a date from another year', () => {
+    expect(formatRowDate('2024-07-26', 'id', today)).toContain('2024');
+  });
+
+  it('still names the day and month when the year is shown', () => {
+    const out = formatRowDate('2024-05-03', 'id', today);
+    expect(out).toContain('Mei');
+    expect(out).toContain('03');
+  });
+
+  it('localises the month name', () => {
+    expect(formatRowDate('2026-05-03', 'id', today)).toContain('Mei');
+    expect(formatRowDate('2026-05-03', 'en', today)).toContain('May');
   });
 });

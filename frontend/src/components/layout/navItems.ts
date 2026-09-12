@@ -25,5 +25,9 @@ export function iconForRoute(name: string): Component | undefined {
   return navItems.find((i) => i.route === name)?.icon;
 }
 
-// The subset shown in the mobile bottom-nav pill (keep it to five for thumb reach).
-export const mobileNavItems: NavItem[] = navItems.slice(0, 5);
+// The mobile bottom-nav pill shows four destinations plus a "More" button (five slots, for thumb
+// reach). Everything not in the pill must stay reachable from the More sheet — the sidebar is
+// hidden below `md`, so an item in neither place has no navigation path at all on a phone.
+export const MOBILE_PRIMARY_COUNT = 4;
+export const mobileNavItems: NavItem[] = navItems.slice(0, MOBILE_PRIMARY_COUNT);
+export const mobileMoreItems: NavItem[] = navItems.slice(MOBILE_PRIMARY_COUNT);

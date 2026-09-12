@@ -10,7 +10,7 @@ import { listAccounts } from '@/lib/accounts';
 import { listCategories, flowAccepts } from '@/lib/categories';
 import type { Account, Category, Paged, Transaction } from '@/types/api';
 import { errorMessage } from '@/lib/errorMessage';
-import { formatShortDate } from '@/lib/format';
+import { formatRowDate } from '@/lib/format';
 import { toCsv, downloadCsv } from '@/lib/csv';
 import { transactionsImportConfig } from '@/lib/importConfigs';
 import { useDensity } from '@/composables/useDensity';
@@ -103,6 +103,19 @@ function applyFilters(): void {
   loadPage();
 }
 
+// The search box applies on its own (debounced) and on Enter. Without this the typed value only
+// reached the API if the user happened to touch one of the other filters afterwards.
+let searchTimer: ReturnType<typeof setTimeout> | undefined;
+function onSearchInput(value: string): void {
+  filters.q = value;
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(applyFilters, 300);
+}
+function submitSearch(): void {
+  clearTimeout(searchTimer);
+  applyFilters();
+}
+
 function goTo(delta: number): void {
   filters.page = Math.max(1, (filters.page ?? 1) + delta);
   loadPage();
@@ -166,6 +179,15 @@ const form = reactive({
   description: '',
 });
 
+// Snapshot taken whenever the modal opens, so "dirty" means the user actually changed something.
+const formSnapshot = ref('');
+const formDirty = computed(() => JSON.stringify(form) !== formSnapshot.value);
+
+/** Currency of the account the amount will be posted to (money always carries its currency). */
+const amountCurrency = computed(
+  () => accounts.value.find((a) => a.id === form.accountId)?.currencyCode ?? 'IDR',
+);
+
 const accountOptions = computed(() => accounts.value.map((a) => ({ value: a.id, label: a.name })));
 const budgetOptions = computed(() => [
   { value: '', label: t('transactions.noCategory') },
@@ -192,6 +214,7 @@ function openCreate(): void {
     budgetCategoryId: '', categoryId: '', status: 'Uncleared', description: '',
   });
   formError.value = '';
+  formSnapshot.value = JSON.stringify(form);
   modalOpen.value = true;
 }
 
@@ -210,6 +233,7 @@ function openEdit(tx: Transaction): void {
     description: tx.description ?? '',
   });
   formError.value = '';
+  formSnapshot.value = JSON.stringify(form);
   modalOpen.value = true;
 }
 
@@ -299,8 +323,8 @@ onMounted(async () => {
 
 <template>
   <div class="space-y-4">
-    <div class="flex flex-wrap items-center justify-between gap-3">
-      <h1 class="text-lg font-semibold">{{ t('transactions.title') }}</h1>
+    <!-- The page title lives in the top bar (one <h1> per page); this row holds its actions. -->
+    <div class="flex flex-wrap items-center justify-end gap-3">
       <div class="flex items-center gap-2">
         <AppButton variant="secondary" @click="importOpen = true">
           <Upload :size="16" /><span class="hidden sm:inline">{{ t('import.transactions') }}</span>
@@ -314,14 +338,48 @@ onMounted(async () => {
 
     <!-- Filters -->
     <AppCard>
-      <div class="grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-6">
-        <AppSelect :model-value="filters.type ?? ''" :options="typeFilterOptions" @update:model-value="filters.type = $event; applyFilters()" />
-        <AppSelect :model-value="filters.accountId ?? ''" :options="accountFilterOptions" @update:model-value="filters.accountId = $event; applyFilters()" />
-        <AppSelect :model-value="filters.status ?? ''" :options="statusFilterOptions" @update:model-value="filters.status = $event; applyFilters()" />
-        <AppInput :model-value="filters.q ?? ''" :placeholder="t('common.search')" @update:model-value="filters.q = $event" />
-        <AppInput :model-value="filters.from ?? ''" type="date" @update:model-value="filters.from = $event; applyFilters()" />
-        <AppInput :model-value="filters.to ?? ''" type="date" @update:model-value="filters.to = $event; applyFilters()" />
-      </div>
+      <form class="grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-6" @submit.prevent="submitSearch">
+        <AppSelect
+          :model-value="filters.type ?? ''"
+          :options="typeFilterOptions"
+          :aria-label="t('transactions.filterType')"
+          @update:model-value="filters.type = $event; applyFilters()"
+        />
+        <AppSelect
+          :model-value="filters.accountId ?? ''"
+          :options="accountFilterOptions"
+          :aria-label="t('transactions.filterAccount')"
+          @update:model-value="filters.accountId = $event; applyFilters()"
+        />
+        <AppSelect
+          :model-value="filters.status ?? ''"
+          :options="statusFilterOptions"
+          :aria-label="t('transactions.filterStatus')"
+          @update:model-value="filters.status = $event; applyFilters()"
+        />
+        <AppInput
+          :model-value="filters.q ?? ''"
+          :placeholder="t('common.search')"
+          :aria-label="t('common.search')"
+          @update:model-value="onSearchInput"
+        />
+        <AppInput
+          :model-value="filters.from ?? ''"
+          type="date"
+          :aria-label="t('transactions.filterFrom')"
+          :title="t('transactions.filterFrom')"
+          @update:model-value="filters.from = $event; applyFilters()"
+        />
+        <AppInput
+          :model-value="filters.to ?? ''"
+          type="date"
+          :aria-label="t('transactions.filterTo')"
+          :title="t('transactions.filterTo')"
+          @update:model-value="filters.to = $event; applyFilters()"
+        />
+        <!-- Submitting is what Enter does; the button keeps that reachable without a mouse. -->
+        <button type="submit" class="sr-only">{{ t('common.search') }}</button>
+      </form>
     </AppCard>
 
     <LoadingBlock v-if="loading" />
@@ -340,7 +398,7 @@ onMounted(async () => {
             :class="rowPad"
             @click="openEdit(tx)"
           >
-            <div class="w-12 shrink-0 tnum text-[13px] text-text-muted sm:w-14">{{ formatShortDate(tx.date, locale) }}</div>
+            <div class="shrink-0 whitespace-nowrap tnum text-[13px] text-text-muted">{{ formatRowDate(tx.date, locale) }}</div>
             <div class="min-w-0 flex-1">
               <p class="truncate text-sm font-medium">{{ tx.title }}</p>
               <p class="flex items-center gap-1 truncate text-[13px] text-text-muted">
@@ -353,7 +411,11 @@ onMounted(async () => {
                 <span class="shrink-0 sm:hidden">· {{ t(`enums.transactionStatus.${tx.status}`) }}</span>
               </p>
             </div>
-            <StatusChip :status="tx.status as 'Cleared' | 'Uncleared'" class="hidden sm:inline-flex" />
+            <StatusChip
+              v-if="tx.status !== 'Cleared'"
+              :status="tx.status as 'Cleared' | 'Uncleared'"
+              class="hidden sm:inline-flex"
+            />
             <Money
               :value="signedAmount(tx)"
               :currency="tx.currencyCode"
@@ -387,7 +449,12 @@ onMounted(async () => {
     </template>
 
     <!-- Create / edit modal -->
-    <AppModal v-if="modalOpen" :title="editingId ? t('transactions.edit') : t('transactions.add')" @close="modalOpen = false">
+    <AppModal
+      v-if="modalOpen"
+      :title="editingId ? t('transactions.edit') : t('transactions.add')"
+      :dirty="formDirty"
+      @close="modalOpen = false"
+    >
       <form class="space-y-4" @submit.prevent="save">
         <div class="grid grid-cols-3 gap-2">
           <button
@@ -395,6 +462,7 @@ onMounted(async () => {
             :key="ty"
             type="button"
             :disabled="!!editingId"
+            :aria-pressed="form.type === ty"
             class="rounded-control border px-3 py-2 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-50"
             :class="form.type === ty ? 'border-accent bg-accent-soft text-accent' : 'border-border text-text-muted hover:bg-surface-2'"
             @click="setType(ty)"
@@ -408,7 +476,19 @@ onMounted(async () => {
             <AppInput id="tx-date" v-model="form.date" type="date" />
           </FormField>
           <FormField :label="t('transactions.amount')" for-id="tx-amount">
-            <AppInput id="tx-amount" type="number" :model-value="String(form.amount)" @update:model-value="form.amount = Number($event)" />
+            <div class="relative">
+              <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-sm text-text-muted">
+                {{ amountCurrency }}
+              </span>
+              <AppInput
+                id="tx-amount"
+                type="number"
+                class="pl-10"
+                placeholder="0"
+                :model-value="form.amount === 0 ? '' : String(form.amount)"
+                @update:model-value="form.amount = Number($event || 0)"
+              />
+            </div>
           </FormField>
         </div>
 

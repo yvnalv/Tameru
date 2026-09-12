@@ -130,8 +130,8 @@ onMounted(load);
 
 <template>
   <div class="space-y-4">
-    <div class="flex flex-wrap items-center justify-between gap-3">
-      <h1 class="text-lg font-semibold">{{ t('masterPlan.title') }}</h1>
+    <!-- The page title lives in the top bar (one <h1> per page); this row holds its actions. -->
+    <div class="flex flex-wrap items-center justify-end gap-3">
       <div class="flex items-center gap-3">
         <AppButton variant="secondary" @click="importOpen = true">
           <Upload :size="16" /><span class="hidden sm:inline">{{ t('import.masterPlan') }}</span>
@@ -154,7 +154,7 @@ onMounted(load);
         <div class="flex flex-wrap items-center gap-2 border-b border-border px-5 py-3">
           <span class="text-sm font-semibold">{{ displayName(section.name, locale) }}</span>
           <button
-            class="inline-flex items-center gap-1 rounded-full bg-accent-soft px-2 py-0.5 text-[11px] font-medium text-accent hover:opacity-80"
+            class="inline-flex min-h-[24px] items-center gap-1 rounded-full bg-accent-soft px-2 py-1 text-[11px] font-medium text-accent hover:opacity-80"
             :title="t('masterPlan.editTarget')"
             @click="openEditTarget(section)"
           >

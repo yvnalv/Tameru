@@ -1,15 +1,20 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, useId } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { X, Upload, Download, Check, AlertTriangle } from 'lucide-vue-next';
 import { parseCsv } from '@/lib/csvParse';
 import { downloadTemplate, type ImportConfig } from '@/lib/import';
 import { errorMessage } from '@/lib/errorMessage';
+import { useFocusTrap } from '@/composables/useFocusTrap';
 import AppButton from '@/components/ui/AppButton.vue';
 
 const props = defineProps<{ title: string; config: ImportConfig }>();
 const emit = defineEmits<{ close: []; done: [] }>();
 const { t, te } = useI18n();
+
+const dialog = ref<HTMLElement | null>(null);
+const titleId = useId();
+useFocusTrap(dialog);
 
 type Row = { record: Record<string, string>; error: string | null };
 
@@ -66,10 +71,23 @@ function reset(): void {
 <template>
   <Teleport to="body">
     <div class="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-0 sm:items-center sm:p-4" @click.self="emit('close')">
-      <div class="flex max-h-[90vh] w-full max-w-2xl flex-col rounded-t-card border border-border bg-surface shadow-lift sm:rounded-card" role="dialog" aria-modal="true">
+      <div
+        ref="dialog"
+        class="flex max-h-[90vh] w-full max-w-2xl flex-col rounded-t-card border border-border bg-surface shadow-lift sm:rounded-card"
+        role="dialog"
+        aria-modal="true"
+        :aria-labelledby="titleId"
+        tabindex="-1"
+      >
         <header class="flex items-center justify-between border-b border-border px-5 py-4">
-          <h2 class="text-base font-semibold">{{ title }}</h2>
-          <button class="rounded-control p-1 text-text-muted hover:bg-surface-2 hover:text-text" @click="emit('close')"><X :size="18" /></button>
+          <h2 :id="titleId" class="text-base font-semibold">{{ title }}</h2>
+          <button
+            class="rounded-control p-1 text-text-muted hover:bg-surface-2 hover:text-text"
+            :aria-label="t('common.close')"
+            @click="emit('close')"
+          >
+            <X :size="18" />
+          </button>
         </header>
 
         <div class="scroll-slim flex-1 overflow-y-auto px-5 py-4">

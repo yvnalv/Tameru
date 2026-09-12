@@ -19,12 +19,17 @@
   --surface-2: #26282b;
   --sidebar: #0f1011;
   --border: #2b2e31;
+  /* Boundary of interactive controls (inputs, selects). Must clear 3:1 against --surface
+     for WCAG 1.4.11; the subtler --border stays for decorative card/table dividers. */
+  --border-strong: #6b727b;
   --text: #f4f5f6;
   --text-muted: #8a9097;
 
   /* Semantic — distinct from the accent */
   --positive: #35d07a;
   --negative: #ff5b60;
+  /* Text/icon colour placed on a --negative fill (mirrors --accent-contrast on --accent). */
+  --negative-contrast: #0b0f0c;
   --warning: #ffb020;
   --info: #4c9aff;
 

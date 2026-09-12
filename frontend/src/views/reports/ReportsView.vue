@@ -8,6 +8,7 @@ import type { Category } from '@/types/api';
 import { displayName } from '@/lib/seededNames';
 import AppCard from '@/components/ui/AppCard.vue';
 import SpendBar from '@/components/ui/SpendBar.vue';
+import { spectrumColor } from '@/lib/spectrum';
 import Skeleton from '@/components/ui/Skeleton.vue';
 import Money from '@/components/ui/Money.vue';
 
@@ -130,9 +131,8 @@ onMounted(async () => {
 </script>
 
 <template>
+  <!-- The page title lives in the top bar (one <h1> per page). -->
   <div class="space-y-4">
-    <h1 class="text-lg font-semibold">{{ t('reports.title') }}</h1>
-
     <AppCard>
       <!-- Header: title + granularity toggle + (daily) month nav -->
       <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -145,6 +145,8 @@ onMounted(async () => {
             <button
               v-for="g in (['yearly', 'monthly', 'daily'] as Granularity[])"
               :key="g"
+              type="button"
+              :aria-pressed="granularity === g"
               class="rounded-[9px] px-3 py-1 text-[13px] font-medium capitalize"
               :class="granularity === g ? 'bg-accent-soft text-accent' : 'text-text-muted hover:text-text'"
               @click="setGranularity(g)"
@@ -174,10 +176,18 @@ onMounted(async () => {
       <template v-else-if="matrix && matrix.rows.length">
         <!-- Top categories summary -->
         <div class="mb-5">
-          <SpendBar :segments="segments" />
+          <SpendBar :segments="segments" :label="t('reports.tracker')" />
           <ul class="mt-3 grid grid-cols-2 gap-x-6 gap-y-1.5 sm:grid-cols-3">
-            <li v-for="c in topCategories" :key="c.categoryId" class="flex items-center justify-between text-[13px]">
-              <span class="truncate text-text-muted">{{ catName(c.categoryId) }}</span>
+            <li v-for="(c, i) in topCategories" :key="c.categoryId" class="flex items-center justify-between text-[13px]">
+              <span class="flex min-w-0 items-center gap-2">
+                <!-- Colour key: without it the bar's segments cannot be mapped to a category. -->
+                <span
+                  class="h-2.5 w-2.5 shrink-0 rounded-full"
+                  :style="{ backgroundColor: spectrumColor(i) }"
+                  aria-hidden="true"
+                />
+                <span class="truncate text-text-muted">{{ catName(c.categoryId) }}</span>
+              </span>
               <Money :value="c.total" class="ml-2 shrink-0 font-medium" />
             </li>
           </ul>

@@ -22,7 +22,7 @@ defineEmits<{ 'update:modelValue': [value: string] }>();
     :required="required"
     :aria-invalid="invalid || undefined"
     class="h-10 w-full min-w-0 rounded-control border bg-surface px-3 text-sm text-text placeholder:text-text-muted focus:border-accent"
-    :class="invalid ? 'border-negative' : 'border-border'"
+    :class="invalid ? 'border-negative' : 'border-border-strong'"
     @input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)"
   />
 </template>

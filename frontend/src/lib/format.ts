@@ -45,3 +45,17 @@ export function formatShortDate(iso: string, locale = 'id'): string {
   const d = new Date(`${iso}T00:00:00`);
   return d.toLocaleDateString(locale, { day: '2-digit', month: 'short' });
 }
+
+/**
+ * Date for ledger rows. The year is appended only when the row is not from the current year, so a
+ * list spanning several years stays unambiguous without repeating "2026" on every line.
+ */
+export function formatRowDate(iso: string, locale = 'id', today: Date = new Date()): string {
+  const d = new Date(`${iso}T00:00:00`);
+  const sameYear = d.getFullYear() === today.getFullYear();
+  return d.toLocaleDateString(locale, {
+    day: '2-digit',
+    month: 'short',
+    ...(sameYear ? {} : { year: 'numeric' }),
+  });
+}

@@ -1,0 +1,400 @@
+[
+  {
+    "route": "dashboard",
+    "width": 1440,
+    "theme": "dark",
+    "logs": [],
+    "overflow": {
+      "docW": 1440,
+      "winW": 1440,
+      "offenders": []
+    }
+  },
+  {
+    "route": "transactions",
+    "width": 1440,
+    "theme": "dark",
+    "logs": [],
+    "overflow": {
+      "docW": 1440,
+      "winW": 1440,
+      "offenders": []
+    }
+  },
+  {
+    "route": "accounts",
+    "width": 1440,
+    "theme": "dark",
+    "logs": [],
+    "overflow": {
+      "docW": 1440,
+      "winW": 1440,
+      "offenders": []
+    }
+  },
+  {
+    "route": "reports",
+    "width": 1440,
+    "theme": "dark",
+    "logs": [],
+    "overflow": {
+      "docW": 1440,
+      "winW": 1440,
+      "offenders": []
+    }
+  },
+  {
+    "route": "budget",
+    "width": 1440,
+    "theme": "dark",
+    "logs": [
+      "[error] Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ],
+    "overflow": {
+      "docW": 1440,
+      "winW": 1440,
+      "offenders": []
+    }
+  },
+  {
+    "route": "master-plan",
+    "width": 1440,
+    "theme": "dark",
+    "logs": [],
+    "overflow": {
+      "docW": 1440,
+      "winW": 1440,
+      "offenders": []
+    }
+  },
+  {
+    "route": "categories",
+    "width": 1440,
+    "theme": "dark",
+    "logs": [],
+    "overflow": {
+      "docW": 1440,
+      "winW": 1440,
+      "offenders": []
+    }
+  },
+  {
+    "route": "dashboard",
+    "width": 768,
+    "theme": "dark",
+    "logs": [],
+    "overflow": {
+      "docW": 768,
+      "winW": 768,
+      "offenders": []
+    }
+  },
+  {
+    "route": "transactions",
+    "width": 768,
+    "theme": "dark",
+    "logs": [],
+    "overflow": {
+      "docW": 768,
+      "winW": 768,
+      "offenders": []
+    }
+  },
+  {
+    "route": "accounts",
+    "width": 768,
+    "theme": "dark",
+    "logs": [],
+    "overflow": {
+      "docW": 768,
+      "winW": 768,
+      "offenders": []
+    }
+  },
+  {
+    "route": "reports",
+    "width": 768,
+    "theme": "dark",
+    "logs": [],
+    "overflow": {
+      "docW": 768,
+      "winW": 768,
+      "offenders": [
+        "table.w-full.min-w-[640px].border-separate",
+        "thead",
+        "tr.text-[12px].uppercase.text-text-muted",
+        "th.px-2.py-2.text-right",
+        "th.px-2.py-2.text-right",
+        "th.px-2.py-2.text-right",
+        "th.px-2.py-2.text-right",
+        "th.px-2.py-2.text-right"
+      ]
+    }
+  },
+  {
+    "route": "budget",
+    "width": 768,
+    "theme": "dark",
+    "logs": [
+      "[error] Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ],
+    "overflow": {
+      "docW": 768,
+      "winW": 768,
+      "offenders": []
+    }
+  },
+  {
+    "route": "master-plan",
+    "width": 768,
+    "theme": "dark",
+    "logs": [],
+    "overflow": {
+      "docW": 768,
+      "winW": 768,
+      "offenders": [
+        "table.w-full.text-sm.sm:min-w-[560px]",
+        "thead",
+        "tr.text-left.text-[12px].uppercase",
+        "th.px-5.py-2",
+        "tbody",
+        "tr.border-t.border-border",
+        "td.px-5.py-2.5",
+        "div.flex.items-center.justify-end"
+      ]
+    }
+  },
+  {
+    "route": "categories",
+    "width": 768,
+    "theme": "dark",
+    "logs": [],
+    "overflow": {
+      "docW": 768,
+      "winW": 768,
+      "offenders": []
+    }
+  },
+  {
+    "route": "dashboard",
+    "width": 375,
+    "theme": "dark",
+    "logs": [],
+    "overflow": {
+      "docW": 375,
+      "winW": 375,
+      "offenders": [
+        "a.flex.flex-col.items-center"
+      ]
+    }
+  },
+  {
+    "route": "transactions",
+    "width": 375,
+    "theme": "dark",
+    "logs": [],
+    "overflow": {
+      "docW": 375,
+      "winW": 375,
+      "offenders": [
+        "a.flex.flex-col.items-center"
+      ]
+    }
+  },
+  {
+    "route": "accounts",
+    "width": 375,
+    "theme": "dark",
+    "logs": [],
+    "overflow": {
+      "docW": 375,
+      "winW": 375,
+      "offenders": [
+        "a.flex.flex-col.items-center"
+      ]
+    }
+  },
+  {
+    "route": "reports",
+    "width": 375,
+    "theme": "dark",
+    "logs": [],
+    "overflow": {
+      "docW": 375,
+      "winW": 375,
+      "offenders": [
+        "table.w-full.min-w-[640px].border-separate",
+        "thead",
+        "tr.text-[12px].uppercase.text-text-muted",
+        "th.px-2.py-2.text-right",
+        "th.px-2.py-2.text-right",
+        "th.px-2.py-2.text-right",
+        "th.px-2.py-2.text-right",
+        "th.px-2.py-2.text-right"
+      ]
+    }
+  },
+  {
+    "route": "budget",
+    "width": 375,
+    "theme": "dark",
+    "logs": [
+      "[error] Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ],
+    "overflow": {
+      "docW": 375,
+      "winW": 375,
+      "offenders": [
+        "a.!text-accent.router-link-exact-active.flex"
+      ]
+    }
+  },
+  {
+    "route": "master-plan",
+    "width": 375,
+    "theme": "dark",
+    "logs": [],
+    "overflow": {
+      "docW": 375,
+      "winW": 375,
+      "offenders": [
+        "a.flex.flex-col.items-center"
+      ]
+    }
+  },
+  {
+    "route": "categories",
+    "width": 375,
+    "theme": "dark",
+    "logs": [],
+    "overflow": {
+      "docW": 375,
+      "winW": 375,
+      "offenders": [
+        "a.flex.flex-col.items-center"
+      ]
+    }
+  },
+  {
+    "route": "dashboard",
+    "width": 320,
+    "theme": "dark",
+    "logs": [],
+    "overflow": {
+      "docW": 321,
+      "winW": 321,
+      "offenders": [
+        "a.flex.flex-col.items-center",
+        "svg",
+        "path",
+        "path"
+      ]
+    }
+  },
+  {
+    "route": "transactions",
+    "width": 320,
+    "theme": "dark",
+    "logs": [],
+    "overflow": {
+      "docW": 336,
+      "winW": 336,
+      "offenders": [
+        "a.flex.flex-col.items-center",
+        "svg",
+        "path",
+        "path"
+      ]
+    }
+  },
+  {
+    "route": "accounts",
+    "width": 320,
+    "theme": "dark",
+    "logs": [],
+    "overflow": {
+      "docW": 320,
+      "winW": 320,
+      "offenders": [
+        "a.flex.flex-col.items-center",
+        "svg",
+        "path",
+        "path"
+      ]
+    }
+  },
+  {
+    "route": "reports",
+    "width": 320,
+    "theme": "dark",
+    "logs": [],
+    "overflow": {
+      "docW": 320,
+      "winW": 320,
+      "offenders": [
+        "table.w-full.min-w-[640px].border-separate",
+        "thead",
+        "tr.text-[12px].uppercase.text-text-muted",
+        "th.px-2.py-2.text-right",
+        "th.px-2.py-2.text-right",
+        "th.px-2.py-2.text-right",
+        "th.px-2.py-2.text-right",
+        "th.px-2.py-2.text-right"
+      ]
+    }
+  },
+  {
+    "route": "budget",
+    "width": 320,
+    "theme": "dark",
+    "logs": [
+      "[error] Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ],
+    "overflow": {
+      "docW": 320,
+      "winW": 320,
+      "offenders": [
+        "a.!text-accent.router-link-exact-active.flex",
+        "svg",
+        "path",
+        "path"
+      ]
+    }
+  },
+  {
+    "route": "master-plan",
+    "width": 320,
+    "theme": "dark",
+    "logs": [],
+    "overflow": {
+      "docW": 320,
+      "winW": 320,
+      "offenders": [
+        "table.w-full.text-sm.sm:min-w-[560px]",
+        "thead",
+        "tr.text-left.text-[12px].uppercase",
+        "th.px-5.py-2",
+        "tbody",
+        "tr.border-t.border-border",
+        "td.px-5.py-2.5",
+        "div.flex.items-center.justify-end"
+      ]
+    }
+  },
+  {
+    "route": "categories",
+    "width": 320,
+    "theme": "dark",
+    "logs": [],
+    "overflow": {
+      "docW": 321,
+      "winW": 321,
+      "offenders": [
+        "a.flex.flex-col.items-center",
+        "svg",
+        "path",
+        "path"
+      ]
+    }
+  }
+]

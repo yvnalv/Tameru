@@ -47,7 +47,8 @@ CSS custom properties at build time so the app stays consistent.
 | `--surface` (card) | `#1C1D1F` | cards, menus, inputs |
 | `--surface-2` | `#26282B` | elevated fills, table header, hover, nav pill |
 | `--sidebar` | `#0F1011` | desktop sidebar / mobile bottom-nav container |
-| `--border` | `#2B2E31` | hairline dividers/borders |
+| `--border` | `#2B2E31` | hairline dividers/borders (**decorative only** — 1.24:1 on `--surface`) |
+| `--border-strong` | `#6B727B` | boundary of **interactive controls** (inputs, selects); 3.47:1 on `--surface`, clearing the 3:1 required by WCAG 1.4.11 |
 | `--text` | `#F4F5F6` | primary |
 | `--text-muted` | `#8A9097` | labels, secondary, timestamps |
 
@@ -56,6 +57,7 @@ CSS custom properties at build time so the app stays consistent.
 |---|---|---|
 | `--positive` | `#35D07A` | income, +delta, cleared, gains (shares the green) |
 | `--negative` | `#FF5B60` | expense/overspend, −delta, validation errors |
+| `--negative-contrast` | `#0B0F0C` | **dark** text/icon on red fills (danger buttons) — 6.36:1; white on `--negative` is only 3.04:1 and fails AA |
 | `--warning` | `#FFB020` | pending / uncleared / due soon |
 | `--info` | `#4C9AFF` | informational |
 

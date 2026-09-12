@@ -136,8 +136,8 @@ onMounted(load);
 
 <template>
   <div class="space-y-4">
-    <div class="flex flex-wrap items-center justify-between gap-3">
-      <h1 class="text-lg font-semibold">{{ t('accounts.title') }}</h1>
+    <!-- The page title lives in the top bar (one <h1> per page); this row holds its actions. -->
+    <div class="flex flex-wrap items-center justify-end gap-3">
       <div class="flex items-center gap-2">
         <AppButton variant="secondary" @click="importOpen = true">
           <Upload :size="16" /><span class="hidden sm:inline">{{ t('import.accounts') }}</span>

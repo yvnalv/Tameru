@@ -3,6 +3,76 @@
 This file is Tameru's immutable historical record. A task is not complete until this file has been
 updated. Newest entries at the top. See `CLAUDE.md` → **CHANGELOG Rules** for the full procedure.
 
+## [2026-09-12 11:59:01 UTC]
+
+CHG-0033 — Implement the UX audit: accessibility, mobile reach, and dead-control fixes
+
+Acts on CHG-0032. 21 of 23 findings implemented; the two exceptions are recorded in
+`design/UX_AUDIT.md` §3a with reasons.
+
+- **Transactions search now works.** It set `filters.q` but never applied it, so typing changed
+  nothing unless another filter was touched afterwards. Now debounced (300ms) and submitted on
+  Enter. Verified live: typing fires `…/transactions?q=Salary` (previously 0 requests).
+- **Master Plan and Categories are reachable on a phone again.** The bottom pill was capped at five
+  items and the sidebar is hidden below `md`, so two modules had no navigation path at all. The pill
+  is now four destinations plus **More**, which opens a sheet with the rest. The pill also no longer
+  overflows a 375px screen (last link ended at 382.7px; now 289.8px).
+- **Dialogs are keyboard- and screen-reader-safe.** New `useFocusTrap` composable, shared by
+  `AppModal`, `ConfirmDialog` (now `role="alertdialog"`) and `ImportModal`: focus moves into the
+  dialog, is trapped while open, and returns to the trigger on close; each dialog is labelled.
+  Previously all 18 tab stops landed on the page behind the modal.
+- **Two contrast failures fixed with new tokens.** `--negative-contrast` `#0B0F0C` for text on red
+  (danger buttons were white on `--negative` at 3.04:1, now 6.36:1), and `--border-strong` `#6B727B`
+  for the boundary of inputs and selects (was `--border` at 1.24:1, now 3.47:1 — WCAG 1.4.11). Both
+  documented in `DESIGN_LANGUAGE.md`.
+- **The wordmark is whole again.** The lockup was an `<img>`-loaded SVG whose "Ta" used
+  `fill="currentColor"`, which in an isolated SVG document resolves to black — so the logo read
+  "meru" on the near-black sidebar. Replaced by `components/brand/LogoLockup.vue`, which renders the
+  wordmark as real HTML text (also removing its dependency on a font the isolated document could
+  never load).
+- **Labels, names and states.** `aria-label` on the six transaction filters; the Budget month
+  buttons now use the labelled `IconButton`; `aria-pressed` on the Reports granularity toggle and the
+  transaction type selector; the Import modal's close button labelled and `'Close'` moved to i18n.
+- **Clarity fixes.** Colour key for the segmented spend bars (Reports legend swatches, and a full
+  legend for the Dashboard net-worth bar, which now excludes non-positive balances); "This month"
+  names the month; transaction rows show the year when it is not the current one; the status chip
+  renders only for non-cleared rows; the amount field starts empty and is prefixed with its currency;
+  closing a part-filled form asks before discarding; one `<h1>` per page instead of a page title
+  duplicating the top bar.
+- **Verified**: `vue-tsc`, 23 Vitest tests (4 new, covering `formatRowDate`), production build,
+  Docker rebuild, and a re-run of the audit tooling — `audit_html.py` now reports **0 errors and 0
+  warnings on all seven screens** (was 8 errors, 6 warnings), with no page-level horizontal overflow
+  at 1440/375/320px.
+
+---
+
+## [2026-09-12 07:38:06 UTC]
+
+CHG-0032 — UI/UX audit of the MVP screens (`design/UX_AUDIT.md`)
+
+- **Full UX + accessibility audit** of the seven authenticated screens, the login screen, and the
+  shared shell, run against the live Docker stack with real seeded data (5 accounts, 822
+  transactions). Audited against Nielsen's heuristics, WCAG 2.2 AA, the `DESIGN_LANGUAGE.md` tokens,
+  and the `CLAUDE.md` non-negotiables. Written to `design/UX_AUDIT.md`; evidence in
+  `design/screenshots/`. **No product code was changed** — the audit proposes a plan, it does not
+  implement it.
+- **23 findings**: 3 critical, 8 major, 9 minor, 3 cosmetic. The critical ones are the Transactions
+  search box never applying its filter, Master Plan + Categories being unreachable below 768px (the
+  mobile nav is capped at five items and the sidebar is hidden), and the modal having no focus
+  trap, initial focus, focus restore, or accessible name on the core money-entry flow.
+- **Measured, not guessed.** Contrast checked across 15 token pairs (13 pass; `--border` fails 1.4.11
+  at 1.24:1 on control boundaries, and the danger button is 3.04:1); `audit_html.py` over the
+  rendered DOM of every screen (8 errors, 6 warnings); target sizes, tab order, and network calls
+  driven live; 28 captures at 1440/768/375/320px.
+- **Recorded strengths** so they are not regressed: token discipline with no hard-coded colour, text
+  contrast well clear of AA, an accessible Reports heat-map (worst cell 5.08:1), deep Indonesian
+  localisation (months, seeded names, `jt`/`rb` suffixes), no page-level horizontal overflow at any
+  width, and consequence-explaining destructive confirmations.
+- Also documents one **non**-defect: a "squeezed" cashflow chart seen during capture was an artifact
+  of CDP viewport emulation, not a product bug — noted so it is not re-reported.
+
+---
+
 ## [2026-07-26 04:57:35 UTC]
 
 CHG-0031 — Publish images to GHCR + shared multi-app VPS deployment
