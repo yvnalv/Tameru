@@ -20,7 +20,7 @@ const variants: Record<string, string> = {
   primary: 'bg-accent text-accent-contrast hover:bg-accent-hover active:bg-accent-active',
   secondary: 'border border-border text-text hover:bg-surface-2',
   ghost: 'text-text-muted hover:text-text hover:bg-surface-2',
-  danger: 'bg-negative text-white hover:opacity-90',
+  danger: 'bg-negative text-negative-contrast hover:opacity-90',
 };
 
 const classes = computed(() => [base, variants[props.variant], props.block ? 'w-full' : '']);

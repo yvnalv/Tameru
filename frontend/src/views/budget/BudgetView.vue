@@ -10,6 +10,7 @@ import { errorMessage } from '@/lib/errorMessage';
 import { displayName } from '@/lib/seededNames';
 import { useToastStore } from '@/stores/toast';
 import AppCard from '@/components/ui/AppCard.vue';
+import IconButton from '@/components/ui/IconButton.vue';
 import LoadingBlock from '@/components/ui/LoadingBlock.vue';
 import AppButton from '@/components/ui/AppButton.vue';
 import AppInput from '@/components/ui/AppInput.vue';
@@ -117,12 +118,12 @@ onMounted(async () => {
 
 <template>
   <div class="space-y-4">
-    <div class="flex flex-wrap items-center justify-between gap-3">
-      <h1 class="text-lg font-semibold">{{ t('budget.title') }}</h1>
+    <!-- The page title lives in the top bar (one <h1> per page); this row holds its actions. -->
+    <div class="flex flex-wrap items-center justify-end gap-3">
       <div class="flex items-center gap-2">
-        <button class="rounded-control border border-border p-2 text-text-muted hover:bg-surface-2 hover:text-text" @click="changeMonth(-1)"><ChevronLeft :size="16" /></button>
+        <IconButton :icon="ChevronLeft" :label="t('budget.previousMonth')" :size="16" @click="changeMonth(-1)" />
         <span class="min-w-[9rem] text-center text-sm font-medium">{{ monthLabel }}</span>
-        <button class="rounded-control border border-border p-2 text-text-muted hover:bg-surface-2 hover:text-text" @click="changeMonth(1)"><ChevronRight :size="16" /></button>
+        <IconButton :icon="ChevronRight" :label="t('budget.nextMonth')" :size="16" @click="changeMonth(1)" />
       </div>
     </div>
 

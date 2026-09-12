@@ -4,8 +4,8 @@
 
 ## Phase
 
-**MVP complete + hardened.** M0–M5 (backend) and M6–M8 (frontend + import/polish) done, followed by
-an M9 UI/UX hardening pass. Quality/ops now in place: **CI** (GitHub Actions) builds and tests both
+**MVP complete + hardened + audited.** M0–M5 (backend) and M6–M8 (frontend + import/polish) done,
+followed by an M9 UI/UX hardening pass and an M10 UX/accessibility audit + fix pass. Quality/ops now in place: **CI** (GitHub Actions) builds and tests both
 sides on every PR; **integration tests** (Testcontainers Postgres) cover the money-critical flows;
 and the Docker stack is **VPS-deploy ready** (env-driven secrets, owner seed, `DEPLOYMENT.md`).
 Remaining is optional polish + the post-MVP roadmap. See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md).
@@ -81,6 +81,18 @@ Remaining is optional polish + the post-MVP roadmap. See [IMPLEMENTATION_PLAN.md
   chunk); **P8** cross-cutting polish — styled **toasts** + a promise-based **confirm dialog**
   (replacing all native `alert`/`confirm`), **loading skeletons** in place of "Loading…" text, and
   **self-hosted Inter** (woff2). The UI/UX hardening pass (M9) is complete.
+
+- ✅ **M10** — UX audit + accessibility pass. A full heuristic/WCAG 2.2 AA audit of every MVP screen
+  against the live Docker stack ([../design/UX_AUDIT.md](../design/UX_AUDIT.md), 23 findings), then
+  21 of them implemented. Headlines: the transactions **search box never applied its filter**;
+  **Master Plan and Categories were unreachable on a phone** (pill capped at five, sidebar hidden
+  below `md`); **dialogs had no focus trap, initial focus or accessible name** on the money-entry
+  flow; and two contrast failures (danger button 3.04:1, control borders 1.24:1) now fixed by the new
+  `--negative-contrast` and `--border-strong` tokens. Also: the brand wordmark rendered as "meru"
+  because an `<img>`-loaded SVG resolves `currentColor` to black. `audit_html.py` went from 8 errors
+  + 6 warnings to **0/0 across all seven screens**. Two items remain open by choice — the Budget
+  empty state still uses a 404 (an API-contract change), and the net-worth bar's use of the semantic
+  green→red spectrum for accounts needs a design-system decision.
 
 ## Deferred (post-MVP)
 

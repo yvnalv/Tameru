@@ -2,8 +2,8 @@
 import { RouterLink } from 'vue-router';
 import { navItems } from '@/components/layout/navItems';
 import { useUiStore } from '@/stores/ui';
-import logoLockup from '@/assets/brand/logo-lockup.svg';
 import logoMark from '@/assets/brand/logo-mark.svg';
+import LogoLockup from '@/components/brand/LogoLockup.vue';
 
 const ui = useUiStore();
 </script>
@@ -15,7 +15,7 @@ const ui = useUiStore();
   >
     <!-- Header: logo only (the collapse toggle lives in the top bar, at a fixed position) -->
     <div class="flex h-16 items-center" :class="ui.sidebarCollapsed ? 'justify-center px-3' : 'px-5'">
-      <img v-if="!ui.sidebarCollapsed" :src="logoLockup" alt="Tameru" class="h-7" />
+      <LogoLockup v-if="!ui.sidebarCollapsed" />
       <img v-else :src="logoMark" alt="Tameru" class="h-8 w-8" />
     </div>
 

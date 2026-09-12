@@ -13,6 +13,7 @@ import { chart } from '@/lib/chartTheme';
 import BalanceCard from '@/components/ui/BalanceCard.vue';
 import AppCard from '@/components/ui/AppCard.vue';
 import SpendBar from '@/components/ui/SpendBar.vue';
+import { spectrumColor } from '@/lib/spectrum';
 import CashflowChart from '@/components/ui/CashflowChart.vue';
 import DonutChart from '@/components/ui/DonutChart.vue';
 import AvatarChip from '@/components/ui/AvatarChip.vue';
@@ -37,7 +38,16 @@ const catName = (id: string | null) =>
 
 const currency = computed(() => netWorth.value?.currencyCode ?? 'IDR');
 const accounts = computed(() => netWorth.value?.accounts ?? []);
-const nwSegments = computed(() => accounts.value.map((a) => ({ label: a.name, value: Math.max(0, a.balance) })));
+// Only accounts that actually contribute a positive share: a zero-width segment with a legend
+// entry would promise a colour the bar never draws.
+const nwSegments = computed(() =>
+  accounts.value.filter((a) => a.balance > 0).map((a) => ({ label: a.name, value: a.balance })),
+);
+
+/** Names the month the "This month" figures belong to — otherwise a fresh month reads as no data. */
+const currentMonthLabel = computed(() =>
+  new Date().toLocaleDateString(locale.value, { month: 'long', year: 'numeric' }),
+);
 
 // Expenses-by-category donut: top 6 + "Others".
 const donutData = computed(() => {
@@ -101,11 +111,34 @@ onMounted(load);
           :currency="currency"
           :caption="t('dashboard.acrossAccounts', { count: accounts.length })"
         >
-          <template #footer><SpendBar v-if="nwSegments.length" :segments="nwSegments" /></template>
+          <template #footer>
+            <div v-if="nwSegments.length">
+              <SpendBar :segments="nwSegments" :label="t('dashboard.netWorth')" />
+              <!-- Colour key: three unexplained segments read as a status (good -> bad) rather than
+                   as each account's share of net worth. -->
+              <ul class="mt-2.5 flex flex-wrap gap-x-4 gap-y-1">
+                <li
+                  v-for="(seg, i) in nwSegments"
+                  :key="seg.label"
+                  class="flex items-center gap-1.5 text-[12px] text-text-muted"
+                >
+                  <span
+                    class="h-2 w-2 shrink-0 rounded-full"
+                    :style="{ backgroundColor: spectrumColor(i) }"
+                    aria-hidden="true"
+                  />
+                  <span class="truncate">{{ seg.label }}</span>
+                </li>
+              </ul>
+            </div>
+          </template>
         </BalanceCard>
 
         <AppCard>
-          <h2 class="text-sm font-semibold">{{ t('dashboard.thisMonth') }}</h2>
+          <div class="flex flex-wrap items-baseline justify-between gap-x-2">
+            <h2 class="text-sm font-semibold">{{ t('dashboard.thisMonth') }}</h2>
+            <span class="text-[12px] text-text-muted">{{ currentMonthLabel }}</span>
+          </div>
           <dl class="mt-3 divide-y divide-border">
             <div class="flex items-center justify-between py-2.5">
               <dt class="text-[13px] text-text-muted">{{ t('dashboard.monthIncome') }}</dt>
@@ -154,7 +187,7 @@ onMounted(load);
         <AppCard :padded="false">
           <div class="flex items-center justify-between px-5 py-4">
             <h2 class="text-sm font-semibold">{{ t('dashboard.recent') }}</h2>
-            <RouterLink :to="{ name: 'transactions' }" class="inline-flex items-center gap-1 text-[13px] font-medium text-accent hover:underline">
+            <RouterLink :to="{ name: 'transactions' }" class="inline-flex min-h-[24px] items-center gap-1 py-1 text-[13px] font-medium text-accent hover:underline">
               {{ t('dashboard.viewAll') }}<ArrowRight :size="14" />
             </RouterLink>
           </div>
@@ -179,7 +212,7 @@ onMounted(load);
         <AppCard :padded="false">
           <div class="flex items-center justify-between px-5 py-4">
             <h2 class="text-sm font-semibold">{{ t('dashboard.accounts') }}</h2>
-            <RouterLink v-if="accounts.length" :to="{ name: 'accounts' }" class="inline-flex items-center gap-1 text-[13px] font-medium text-accent hover:underline">
+            <RouterLink v-if="accounts.length" :to="{ name: 'accounts' }" class="inline-flex min-h-[24px] items-center gap-1 py-1 text-[13px] font-medium text-accent hover:underline">
               {{ t('dashboard.viewAll') }}<ArrowRight :size="14" />
             </RouterLink>
           </div>

@@ -8,7 +8,7 @@ import { ApiClientError } from '@/lib/api';
 import AppButton from '@/components/ui/AppButton.vue';
 import AppInput from '@/components/ui/AppInput.vue';
 import FormField from '@/components/ui/FormField.vue';
-import logoLockup from '@/assets/brand/logo-lockup.svg';
+import LogoLockup from '@/components/brand/LogoLockup.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -45,7 +45,7 @@ async function onSubmit(): Promise<void> {
   <div class="flex min-h-screen flex-col items-center justify-center bg-bg px-4 text-text">
     <div class="w-full max-w-sm">
       <div class="mb-8 flex items-center justify-between">
-        <img :src="logoLockup" alt="Tameru" class="h-8" />
+        <LogoLockup size="md" />
         <button
           class="rounded-control px-2 py-1 text-sm font-medium uppercase text-text-muted hover:bg-surface-2 hover:text-text"
           @click="ui.toggleLocale()"

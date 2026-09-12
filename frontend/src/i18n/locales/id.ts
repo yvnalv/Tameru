@@ -12,6 +12,7 @@ export default {
     budget: 'Anggaran',
     masterPlan: 'Rencana Induk',
     categories: 'Kategori',
+    more: 'Lainnya',
   },
   common: {
     loading: 'Memuat…',
@@ -46,6 +47,9 @@ export default {
     optional: 'opsional',
     delete: 'Hapus',
     system: 'Sistem',
+    discard: 'Buang',
+    discardTitle: 'Buang perubahan?',
+    discardMessage: 'Formulir ini memiliki perubahan yang belum disimpan. Menutupnya akan membuang perubahan tersebut.',
   },
   login: {
     title: 'Masuk',
@@ -97,6 +101,11 @@ export default {
   },
   transactions: {
     title: 'Transaksi',
+    filterType: 'Saring menurut jenis',
+    filterAccount: 'Saring menurut akun',
+    filterStatus: 'Saring menurut status',
+    filterFrom: 'Tanggal mulai',
+    filterTo: 'Tanggal akhir',
     add: 'Tambah transaksi',
     edit: 'Ubah transaksi',
     type: 'Jenis',
@@ -201,6 +210,8 @@ export default {
   },
   budget: {
     title: 'Anggaran',
+    previousMonth: 'Bulan sebelumnya',
+    nextMonth: 'Bulan berikutnya',
     month: 'Bulan',
     plan: 'Rencana',
     actual: 'Aktual',

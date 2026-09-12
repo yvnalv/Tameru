@@ -21,12 +21,16 @@ export default {
         },
         sidebar: 'var(--sidebar)',
         border: 'var(--border)',
+        'border-strong': 'var(--border-strong)',
         text: {
           DEFAULT: 'var(--text)',
           muted: 'var(--text-muted)',
         },
         positive: 'var(--positive)',
-        negative: 'var(--negative)',
+        negative: {
+          DEFAULT: 'var(--negative)',
+          contrast: 'var(--negative-contrast)',
+        },
         warning: 'var(--warning)',
         info: 'var(--info)',
       },

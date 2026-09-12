@@ -12,6 +12,7 @@ export default {
     budget: 'Budget',
     masterPlan: 'Master Plan',
     categories: 'Categories',
+    more: 'More',
   },
   common: {
     loading: 'Loading…',
@@ -46,6 +47,9 @@ export default {
     optional: 'optional',
     delete: 'Delete',
     system: 'System',
+    discard: 'Discard',
+    discardTitle: 'Discard changes?',
+    discardMessage: 'This form has unsaved changes. Closing it will discard them.',
   },
   login: {
     title: 'Sign in',
@@ -97,6 +101,11 @@ export default {
   },
   transactions: {
     title: 'Transactions',
+    filterType: 'Filter by type',
+    filterAccount: 'Filter by account',
+    filterStatus: 'Filter by status',
+    filterFrom: 'From date',
+    filterTo: 'To date',
     add: 'Add transaction',
     edit: 'Edit transaction',
     type: 'Type',
@@ -201,6 +210,8 @@ export default {
   },
   budget: {
     title: 'Budget',
+    previousMonth: 'Previous month',
+    nextMonth: 'Next month',
     month: 'Month',
     plan: 'Plan',
     actual: 'Actual',
