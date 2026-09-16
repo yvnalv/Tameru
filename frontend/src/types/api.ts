@@ -184,6 +184,7 @@ export interface MonthlyCashflow {
   income: number;
   expense: number;
   net: number;
+  savingsRate?: number;
 }
 
 export interface CashflowReport {
@@ -216,10 +217,41 @@ export interface CategoryTrackerRow {
 
 export interface CategoryTrackerReport {
   granularity: string;
+  flow?: string;
   from: string;
   to: string;
   periods: string[];
   categories: CategoryTrackerRow[];
   periodTotals: number[];
   total: number;
+}
+
+export interface FinancialHealthReport {
+  year: number;
+  month: number;
+  savingsRate: number;
+  previousSavingsRate: number | null;
+  runwayMonths: number;
+  trailing3MonthAvgExpense: number;
+  dailyBurnRate: number;
+  projectedMonthEndExpense: number;
+  daysPassed: number;
+  totalDaysInMonth: number;
+  momIncomePercent: number | null;
+  momExpensePercent: number | null;
+  momNetPercent: number | null;
+  healthStatus: 'Excellent' | 'Healthy' | 'Low' | 'Deficit';
+}
+
+export interface EnvelopeItem {
+  budgetCategoryId: string | null;
+  amount: number;
+  percent: number;
+}
+
+export interface EnvelopeReport {
+  year: number;
+  month: number | null;
+  totalExpense: number;
+  envelopes: EnvelopeItem[];
 }

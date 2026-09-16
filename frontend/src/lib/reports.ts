@@ -1,7 +1,7 @@
-// Typed Reporting API module (docs/API_SPEC.md → Reporting, M5).
 import { api } from '@/lib/api';
 import type {
-  CashflowReport, CategoryTrackerReport, NetWorthReport, OverviewReport,
+  CashflowReport, CategoryTrackerReport, EnvelopeReport, FinancialHealthReport,
+  NetWorthReport, OverviewReport,
 } from '@/types/api';
 
 export function getNetWorth(): Promise<NetWorthReport> {
@@ -20,8 +20,21 @@ export function getCategoryTracker(
   granularity: 'monthly' | 'daily',
   from: string,
   to: string,
+  flow?: 'Expense' | 'Income',
 ): Promise<CategoryTrackerReport> {
   return api.get<CategoryTrackerReport>('/reports/category-tracker', {
-    params: { granularity, from, to },
+    params: { granularity, from, to, flow },
+  });
+}
+
+export function getFinancialHealth(year?: number, month?: number): Promise<FinancialHealthReport> {
+  return api.get<FinancialHealthReport>('/reports/financial-health', {
+    params: { year, month },
+  });
+}
+
+export function getEnvelopeReport(year?: number, month?: number): Promise<EnvelopeReport> {
+  return api.get<EnvelopeReport>('/reports/envelopes', {
+    params: { year, month },
   });
 }

@@ -32,7 +32,8 @@ public sealed record CashflowReport(
     IReadOnlyList<MonthlyCashflowDto> Trend);
 
 /// <summary>One month of the cashflow trend.</summary>
-public sealed record MonthlyCashflowDto(int Month, decimal Income, decimal Expense, decimal Net);
+public sealed record MonthlyCashflowDto(
+    int Month, decimal Income, decimal Expense, decimal Net, decimal SavingsRate);
 
 // --- Overview (yearly category × month matrix) ------------------------------
 
@@ -49,11 +50,12 @@ public sealed record OverviewRow(Guid CategoryId, IReadOnlyList<decimal> Months,
 // --- Category tracker (period pivot) ----------------------------------------
 
 /// <summary>
-/// Expense pivot: categories against period buckets over a date range (docs/API_SPEC.md → tracker).
+/// Pivot: categories against period buckets over a date range (docs/API_SPEC.md → tracker).
 /// Only buckets with spend appear in <see cref="Periods"/>; each row aligns to that order.
 /// </summary>
 public sealed record CategoryTrackerReport(
     string Granularity,
+    string Flow,
     DateOnly From,
     DateOnly To,
     IReadOnlyList<DateOnly> Periods,
@@ -63,3 +65,41 @@ public sealed record CategoryTrackerReport(
 
 /// <summary>One category's spend across the tracker's periods (<see cref="Amounts"/> aligns to Periods).</summary>
 public sealed record CategoryTrackerRow(Guid CategoryId, IReadOnlyList<decimal> Amounts, decimal Total);
+
+// --- Financial health & decision support ------------------------------------
+
+/// <summary>
+/// Executive decision support metrics: savings rate, financial runway, daily burn rate,
+/// month-end projection, and Month-over-Month (MoM) deltas.
+/// </summary>
+public sealed record FinancialHealthReport(
+    int Year,
+    int Month,
+    decimal SavingsRate,
+    decimal? PreviousSavingsRate,
+    decimal RunwayMonths,
+    decimal Trailing3MonthAvgExpense,
+    decimal DailyBurnRate,
+    decimal ProjectedMonthEndExpense,
+    int DaysPassed,
+    int TotalDaysInMonth,
+    decimal? MomIncomePercent,
+    decimal? MomExpensePercent,
+    decimal? MomNetPercent,
+    string HealthStatus);
+
+// --- Allocation Envelopes (Needs / Wants / Investment) -----------------------
+
+/// <summary>
+/// Spending distributed by top-level budget envelope (Needs, Wants, Investment, and Unclassified).
+/// </summary>
+public sealed record EnvelopeReport(
+    int Year,
+    int? Month,
+    decimal TotalExpense,
+    IReadOnlyList<EnvelopeItemDto> Envelopes);
+
+public sealed record EnvelopeItemDto(
+    Guid? BudgetCategoryId,
+    decimal Amount,
+    decimal Percent);

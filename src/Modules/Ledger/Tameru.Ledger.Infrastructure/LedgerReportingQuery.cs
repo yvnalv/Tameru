@@ -39,18 +39,24 @@ internal sealed class LedgerReportingQuery : ILedgerReportingQuery
             .ToList();
     }
 
-    public async Task<IReadOnlyList<CategoryPeriodTotal>> GetExpenseTotalsByCategoryAsync(
+    public Task<IReadOnlyList<CategoryPeriodTotal>> GetExpenseTotalsByCategoryAsync(
         DateOnly from, DateOnly to, ReportGranularity granularity,
+        CancellationToken cancellationToken = default) =>
+        GetCategoryTotalsAsync(from, to, ReportFlow.Expense, granularity, cancellationToken);
+
+    public async Task<IReadOnlyList<CategoryPeriodTotal>> GetCategoryTotalsAsync(
+        DateOnly from, DateOnly to, ReportFlow flow, ReportGranularity granularity,
         CancellationToken cancellationToken = default)
     {
-        var expenses = _db.Transactions
-            .Where(t => t.Type == TransactionType.Expense
+        var targetType = flow == ReportFlow.Income ? TransactionType.Income : TransactionType.Expense;
+        var txns = _db.Transactions
+            .Where(t => t.Type == targetType
                 && t.CategoryId != null
                 && t.Date >= from && t.Date <= to);
 
         if (granularity == ReportGranularity.Monthly)
         {
-            var rows = await expenses
+            var rows = await txns
                 .GroupBy(t => new { t.CategoryId, t.Date.Year, t.Date.Month })
                 .Select(g => new { g.Key.CategoryId, g.Key.Year, g.Key.Month, Sum = g.Sum(x => x.Amount) })
                 .ToListAsync(cancellationToken);
@@ -61,13 +67,44 @@ internal sealed class LedgerReportingQuery : ILedgerReportingQuery
                 .ToList();
         }
 
-        var daily = await expenses
+        var daily = await txns
             .GroupBy(t => new { t.CategoryId, t.Date })
             .Select(g => new { g.Key.CategoryId, g.Key.Date, Sum = g.Sum(x => x.Amount) })
             .ToListAsync(cancellationToken);
 
         return daily
             .Select(r => new CategoryPeriodTotal(r.CategoryId!.Value, r.Date, r.Sum))
+            .ToList();
+    }
+
+    public async Task<IReadOnlyList<EnvelopePeriodTotal>> GetEnvelopeTotalsAsync(
+        DateOnly from, DateOnly to, ReportGranularity granularity,
+        CancellationToken cancellationToken = default)
+    {
+        var expenses = _db.Transactions
+            .Where(t => t.Type == TransactionType.Expense
+                && t.Date >= from && t.Date <= to);
+
+        if (granularity == ReportGranularity.Monthly)
+        {
+            var rows = await expenses
+                .GroupBy(t => new { t.BudgetCategoryId, t.Date.Year, t.Date.Month })
+                .Select(g => new { g.Key.BudgetCategoryId, g.Key.Year, g.Key.Month, Sum = g.Sum(x => x.Amount) })
+                .ToListAsync(cancellationToken);
+
+            return rows
+                .Select(r => new EnvelopePeriodTotal(
+                    r.BudgetCategoryId, new DateOnly(r.Year, r.Month, 1), r.Sum))
+                .ToList();
+        }
+
+        var daily = await expenses
+            .GroupBy(t => new { t.BudgetCategoryId, t.Date })
+            .Select(g => new { g.Key.BudgetCategoryId, g.Key.Date, Sum = g.Sum(x => x.Amount) })
+            .ToListAsync(cancellationToken);
+
+        return daily
+            .Select(r => new EnvelopePeriodTotal(r.BudgetCategoryId, r.Date, r.Sum))
             .ToList();
     }
 }

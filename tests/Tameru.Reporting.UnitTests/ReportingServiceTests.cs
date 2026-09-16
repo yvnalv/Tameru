@@ -157,4 +157,74 @@ public class ReportingServiceTests
         result.IsFailure.Should().BeTrue();
         result.Error.Code.Should().Be("validation_error");
     }
+
+    // --- Financial Health ---------------------------------------------------
+
+    [Fact]
+    public async Task FinancialHealth_computes_savings_rate_runway_and_burn_rate()
+    {
+        var accounts = new FakeAccountBalanceDirectory(
+            Account("BCA", 15_000_000m),
+            Account("Cash", 5_000_000m));
+
+        var cashflow = new List<MonthlyCashflow>
+        {
+            new(1, Income: 10_000_000m, Expense: 4_000_000m),
+            new(2, Income: 12_000_000m, Expense: 5_000_000m),
+            new(3, Income: 15_000_000m, Expense: 6_000_000m),
+            new(4, Income: 10_000_000m, Expense: 5_000_000m),
+        };
+        var ledger = new FakeLedgerReportingQuery(cashflow: cashflow);
+        var service = Build(accounts: accounts, ledger: ledger);
+
+        var result = await service.GetFinancialHealthAsync(2026, 4);
+
+        result.IsSuccess.Should().BeTrue();
+        var health = result.Value;
+        health.Year.Should().Be(2026);
+        health.Month.Should().Be(4);
+        health.SavingsRate.Should().Be(50.0m); // (10m - 5m) / 10m = 50%
+        health.HealthStatus.Should().Be("Excellent");
+
+        // Trailing 3 months (Jan, Feb, Mar): expenses 4m, 5m, 6m -> avg 5m
+        health.Trailing3MonthAvgExpense.Should().Be(5_000_000m);
+        // Total balance = 20m -> runway = 20m / 5m = 4.0 months
+        health.RunwayMonths.Should().Be(4.0m);
+
+        // Previous month (Mar): income 15m, expense 6m -> net 9m, savings rate 60%
+        health.PreviousSavingsRate.Should().Be(60.0m);
+        // MoM Income: (10m - 15m) / 15m = -33.3%
+        health.MomIncomePercent.Should().Be(-33.3m);
+        // MoM Expense: (5m - 6m) / 6m = -16.7%
+        health.MomExpensePercent.Should().Be(-16.7m);
+    }
+
+    // --- Envelopes ----------------------------------------------------------
+
+    [Fact]
+    public async Task EnvelopeReport_computes_envelope_shares()
+    {
+        var needsId = Guid.NewGuid();
+        var wantsId = Guid.NewGuid();
+        var envelopes = new List<EnvelopePeriodTotal>
+        {
+            new(needsId, new DateOnly(2026, 3, 1), 6_000_000m),
+            new(wantsId, new DateOnly(2026, 3, 1), 4_000_000m),
+        };
+        var ledger = new FakeLedgerReportingQuery(envelopeTotals: envelopes);
+        var service = Build(ledger: ledger);
+
+        var result = await service.GetEnvelopeReportAsync(2026, 3);
+
+        result.IsSuccess.Should().BeTrue();
+        var report = result.Value;
+        report.TotalExpense.Should().Be(10_000_000m);
+        report.Envelopes.Should().HaveCount(2);
+        report.Envelopes[0].BudgetCategoryId.Should().Be(needsId);
+        report.Envelopes[0].Amount.Should().Be(6_000_000m);
+        report.Envelopes[0].Percent.Should().Be(60.0m);
+        report.Envelopes[1].BudgetCategoryId.Should().Be(wantsId);
+        report.Envelopes[1].Amount.Should().Be(4_000_000m);
+        report.Envelopes[1].Percent.Should().Be(40.0m);
+    }
 }

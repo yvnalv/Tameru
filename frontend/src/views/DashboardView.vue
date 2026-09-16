@@ -2,11 +2,15 @@
 import { onMounted, ref, computed } from 'vue';
 import { RouterLink } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import { Plus, ArrowRight } from 'lucide-vue-next';
-import { getCashflow, getNetWorth, getCategoryTracker } from '@/lib/reports';
+import { Plus, ArrowRight, TrendingUp, ShieldCheck, Sparkles } from 'lucide-vue-next';
+import {
+  getCashflow, getNetWorth, getCategoryTracker, getFinancialHealth, getEnvelopeReport,
+} from '@/lib/reports';
 import { listTransactions } from '@/lib/transactions';
 import { listCategories } from '@/lib/categories';
-import type { CashflowReport, Category, NetWorthReport, Transaction } from '@/types/api';
+import type {
+  CashflowReport, Category, EnvelopeReport, FinancialHealthReport, NetWorthReport, Transaction,
+} from '@/types/api';
 import { displayName } from '@/lib/seededNames';
 import { formatShortDate } from '@/lib/format';
 import { chart } from '@/lib/chartTheme';
@@ -25,11 +29,17 @@ const { t, locale } = useI18n();
 
 const netWorth = ref<NetWorthReport | null>(null);
 const cashflow = ref<CashflowReport | null>(null);
+const health = ref<FinancialHealthReport | null>(null);
+const envelopes = ref<EnvelopeReport | null>(null);
 const categories = ref<Category[]>([]);
 const monthSpend = ref<{ categoryId: string; total: number }[]>([]);
+const monthIncome = ref<{ categoryId: string; total: number }[]>([]);
 const recent = ref<Transaction[]>([]);
 const loading = ref(true);
 const failed = ref(false);
+
+const cashflowMode = ref<'cashflow' | 'savings'>('cashflow');
+const donutMode = ref<'category' | 'envelope' | 'income'>('category');
 
 const now = new Date();
 const pad = (n: number) => String(n).padStart(2, '0');
@@ -38,30 +48,105 @@ const catName = (id: string | null) =>
 
 const currency = computed(() => netWorth.value?.currencyCode ?? 'IDR');
 const accounts = computed(() => netWorth.value?.accounts ?? []);
-// Only accounts that actually contribute a positive share: a zero-width segment with a legend
-// entry would promise a colour the bar never draws.
+
 const nwSegments = computed(() =>
   accounts.value.filter((a) => a.balance > 0).map((a) => ({ label: a.name, value: a.balance })),
 );
 
-/** Names the month the "This month" figures belong to — otherwise a fresh month reads as no data. */
 const currentMonthLabel = computed(() =>
   new Date().toLocaleDateString(locale.value, { month: 'long', year: 'numeric' }),
 );
 
-// Expenses-by-category donut: top 6 + "Others".
+// Dynamic Donut data based on chosen distribution mode
 const donutData = computed(() => {
+  if (donutMode.value === 'envelope') {
+    if (!envelopes.value?.envelopes.length) return [];
+    return envelopes.value.envelopes.map((e) => ({
+      name: catName(e.budgetCategoryId),
+      value: e.amount,
+    }));
+  }
+
+  if (donutMode.value === 'income') {
+    if (!monthIncome.value.length) return [];
+    const sorted = [...monthIncome.value].sort((a, b) => b.total - a.total);
+    const top = sorted.slice(0, 5).map((s) => ({ name: catName(s.categoryId), value: s.total }));
+    const rest = sorted.slice(5).reduce((sum, s) => sum + s.total, 0);
+    if (rest > 0) top.push({ name: t('dashboard.others'), value: rest });
+    return top;
+  }
+
+  // Default: Expenses by Category
   const sorted = [...monthSpend.value].sort((a, b) => b.total - a.total);
   const top = sorted.slice(0, 6).map((s) => ({ name: catName(s.categoryId), value: s.total }));
   const rest = sorted.slice(6).reduce((sum, s) => sum + s.total, 0);
   if (rest > 0) top.push({ name: t('dashboard.others'), value: rest });
   return top;
 });
+
 const donutColor = (i: number) => chart.spectrum[i % chart.spectrum.length];
 
 function signedAmount(tx: Transaction): number {
   return tx.type === 'Expense' ? -tx.amount : tx.amount;
 }
+
+// Decision support insights derived from real numbers
+const insights = computed(() => {
+  const list: { icon: 'trend' | 'shield' | 'sparkle'; text: string; type: 'positive' | 'neutral' | 'warning' }[] = [];
+  if (!health.value) return list;
+
+  // 1. Savings insight
+  const rate = health.value.savingsRate;
+  if (rate >= 20) {
+    list.push({
+      icon: 'trend',
+      text: t('dashboard.insightHealthySavings', { rate }),
+      type: 'positive',
+    });
+  } else if (rate >= 0) {
+    list.push({
+      icon: 'trend',
+      text: t('dashboard.insightLowSavings', { rate }),
+      type: 'neutral',
+    });
+  } else {
+    const deficit = (cashflow.value?.expense ?? 0) - (cashflow.value?.income ?? 0);
+    list.push({
+      icon: 'trend',
+      text: t('dashboard.insightDeficit', {
+        amount: new Intl.NumberFormat(locale.value, { style: 'currency', currency: currency.value, maximumFractionDigits: 0 }).format(deficit),
+      }),
+      type: 'warning',
+    });
+  }
+
+  // 2. Runway insight
+  if (health.value.runwayMonths >= 6) {
+    list.push({
+      icon: 'shield',
+      text: t('dashboard.insightRunwaySafe', { months: health.value.runwayMonths }),
+      type: 'positive',
+    });
+  }
+
+  // 3. Top expense category insight
+  if (monthSpend.value.length) {
+    const top = monthSpend.value.slice().sort((a, b) => b.total - a.total)[0];
+    const totalExp = cashflow.value?.expense ?? 1;
+    const pct = Math.round((top.total / (totalExp || 1)) * 100);
+    list.push({
+      icon: 'sparkle',
+      text: t('dashboard.insightTopCategory', {
+        name: catName(top.categoryId),
+        amount: new Intl.NumberFormat(locale.value, { style: 'currency', currency: currency.value, maximumFractionDigits: 0 }).format(top.total),
+        percent: pct,
+      }),
+      type: 'neutral',
+    });
+  }
+
+  return list;
+});
 
 async function load(): Promise<void> {
   loading.value = true;
@@ -70,17 +155,23 @@ async function load(): Promise<void> {
     const y = now.getFullYear();
     const m = now.getMonth() + 1;
     const dim = new Date(y, m, 0).getDate();
-    const [nw, cf, cats, spend, txns] = await Promise.all([
+    const [nw, cf, fh, env, cats, spend, income, txns] = await Promise.all([
       getNetWorth(),
       getCashflow(y, m),
+      getFinancialHealth(y, m),
+      getEnvelopeReport(y, m),
       listCategories({ includeInactive: true }),
-      getCategoryTracker('monthly', `${y}-${pad(m)}-01`, `${y}-${pad(m)}-${pad(dim)}`),
+      getCategoryTracker('monthly', `${y}-${pad(m)}-01`, `${y}-${pad(m)}-${pad(dim)}`, 'Expense'),
+      getCategoryTracker('monthly', `${y}-${pad(m)}-01`, `${y}-${pad(m)}-${pad(dim)}`, 'Income'),
       listTransactions({ page: 1, pageSize: 10 }),
     ]);
     netWorth.value = nw;
     cashflow.value = cf;
+    health.value = fh;
+    envelopes.value = env;
     categories.value = cats;
     monthSpend.value = spend.categories.map((c) => ({ categoryId: c.categoryId, total: c.total }));
+    monthIncome.value = income.categories.map((c) => ({ categoryId: c.categoryId, total: c.total }));
     recent.value = txns.items;
   } catch {
     failed.value = true;
@@ -102,7 +193,7 @@ onMounted(load);
     </div>
 
     <div v-else class="space-y-4">
-      <!-- Net worth + this-month -->
+      <!-- 1. Net worth hero + this-month -->
       <div class="grid gap-4 lg:grid-cols-3">
         <BalanceCard
           class="lg:col-span-2"
@@ -114,8 +205,6 @@ onMounted(load);
           <template #footer>
             <div v-if="nwSegments.length">
               <SpendBar :segments="nwSegments" :label="t('dashboard.netWorth')" />
-              <!-- Colour key: three unexplained segments read as a status (good -> bad) rather than
-                   as each account's share of net worth. -->
               <ul class="mt-2.5 flex flex-wrap gap-x-4 gap-y-1">
                 <li
                   v-for="(seg, i) in nwSegments"
@@ -156,18 +245,142 @@ onMounted(load);
         </AppCard>
       </div>
 
-      <!-- Cashflow trend + expenses donut -->
-      <div class="grid gap-4 lg:grid-cols-3">
-        <AppCard class="lg:col-span-2">
-          <div class="mb-2 flex items-baseline justify-between">
-            <h2 class="text-sm font-semibold">{{ t('dashboard.cashflow') }}</h2>
-            <span class="tnum text-[13px] text-text-muted">{{ cashflow?.year }}</span>
+      <!-- 2. Decision Support KPI Strip (3 core financial health pillars) -->
+      <div class="grid gap-4 sm:grid-cols-3">
+        <!-- Savings Rate Pillar -->
+        <AppCard>
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-medium text-text-muted">{{ t('dashboard.savingsRate') }}</span>
+            <span
+              v-if="health"
+              class="rounded px-2 py-0.5 text-[11px] font-semibold"
+              :class="{
+                'bg-accent-soft text-accent': health.healthStatus === 'Excellent' || health.healthStatus === 'Healthy',
+                'bg-amber-400/10 text-amber-400': health.healthStatus === 'Low',
+                'bg-negative/15 text-negative': health.healthStatus === 'Deficit',
+              }"
+            >
+              {{ t(`dashboard.status${health.healthStatus}`) }}
+            </span>
           </div>
-          <CashflowChart :months="cashflow?.trend ?? []" :currency="currency" />
+          <div class="mt-2 flex items-baseline gap-2">
+            <span class="tnum text-2xl font-bold tracking-tight" :class="health && health.savingsRate >= 0 ? 'text-text' : 'text-negative'">
+              {{ health?.savingsRate ?? 0 }}%
+            </span>
+            <span class="text-[12px] text-text-muted">{{ t('dashboard.savingsTarget') }}</span>
+          </div>
+          <p v-if="health?.momExpensePercent !== null" class="mt-1 text-[12px] text-text-muted">
+            <span v-if="health?.previousSavingsRate !== null" class="tnum">
+              {{ health?.previousSavingsRate }}% {{ t('reports.worstMonth').toLowerCase() }}
+            </span>
+          </p>
         </AppCard>
 
+        <!-- Financial Runway Pillar -->
         <AppCard>
-          <h2 class="text-sm font-semibold">{{ t('dashboard.expenses') }}</h2>
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-medium text-text-muted">{{ t('dashboard.runway') }}</span>
+            <ShieldCheck :size="16" class="text-accent" />
+          </div>
+          <div class="mt-2 flex items-baseline gap-1.5">
+            <span class="tnum text-2xl font-bold tracking-tight text-text">
+              {{ health?.runwayMonths ?? 0 }}
+            </span>
+            <span class="text-sm font-medium text-text-muted">{{ t('dashboard.runwayMonths', { months: '' }).trim() }}</span>
+          </div>
+          <p class="mt-1 truncate text-[12px] text-text-muted">
+            {{ t('dashboard.avgBurn', { amount: new Intl.NumberFormat(locale, { notation: 'compact', maximumFractionDigits: 1 }).format(health?.trailing3MonthAvgExpense ?? 0) }) }}
+          </p>
+        </AppCard>
+
+        <!-- Burn Pace & Projected Month End -->
+        <AppCard>
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-medium text-text-muted">{{ t('dashboard.dailyBurn') }}</span>
+            <span class="tnum text-[11px] text-text-muted">
+              {{ t('dashboard.pacePassed', { day: health?.daysPassed ?? 1, total: health?.totalDaysInMonth ?? 30, percent: Math.round(((health?.daysPassed ?? 1) / (health?.totalDaysInMonth ?? 30)) * 100) }) }}
+            </span>
+          </div>
+          <div class="mt-2 flex items-baseline gap-2">
+            <span class="tnum text-2xl font-bold tracking-tight text-text">
+              <Money :value="health?.dailyBurnRate ?? 0" :currency="currency" />
+            </span>
+            <span class="text-[12px] text-text-muted">/ {{ t('reports.daily').toLowerCase() }}</span>
+          </div>
+          <p class="mt-1 truncate text-[12px] text-text-muted">
+            {{ t('dashboard.projectedMonthEnd') }}: <Money :value="health?.projectedMonthEndExpense ?? 0" :currency="currency" class="font-medium text-text" />
+          </p>
+        </AppCard>
+      </div>
+
+      <!-- 3. Cashflow Trend (with toggle) + Multi-mode Donut -->
+      <div class="grid gap-4 lg:grid-cols-3">
+        <AppCard class="lg:col-span-2">
+          <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-3">
+              <h2 class="text-sm font-semibold">{{ t('dashboard.cashflow') }}</h2>
+              <span class="tnum text-[12px] text-text-muted">{{ cashflow?.year }}</span>
+            </div>
+            <!-- View switch: Cashflow bars vs Savings rate trend -->
+            <div class="flex rounded-control border border-border p-0.5">
+              <button
+                type="button"
+                :aria-pressed="cashflowMode === 'cashflow'"
+                class="rounded-[9px] px-2.5 py-0.5 text-xs font-medium transition"
+                :class="cashflowMode === 'cashflow' ? 'bg-accent-soft text-accent' : 'text-text-muted hover:text-text'"
+                @click="cashflowMode = 'cashflow'"
+              >
+                {{ t('dashboard.viewCashflow') }}
+              </button>
+              <button
+                type="button"
+                :aria-pressed="cashflowMode === 'savings'"
+                class="rounded-[9px] px-2.5 py-0.5 text-xs font-medium transition"
+                :class="cashflowMode === 'savings' ? 'bg-accent-soft text-accent' : 'text-text-muted hover:text-text'"
+                @click="cashflowMode = 'savings'"
+              >
+                {{ t('dashboard.viewSavingsRate') }}
+              </button>
+            </div>
+          </div>
+          <CashflowChart :months="cashflow?.trend ?? []" :currency="currency" :mode="cashflowMode" />
+        </AppCard>
+
+        <!-- Donut with distribution switch -->
+        <AppCard>
+          <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <h2 class="text-sm font-semibold">{{ t('dashboard.distribution') }}</h2>
+            <div class="flex rounded-control border border-border p-0.5 text-xs">
+              <button
+                type="button"
+                :aria-pressed="donutMode === 'category'"
+                class="rounded-[9px] px-2 py-0.5 font-medium transition"
+                :class="donutMode === 'category' ? 'bg-accent-soft text-accent' : 'text-text-muted hover:text-text'"
+                @click="donutMode = 'category'"
+              >
+                {{ t('dashboard.byCategory') }}
+              </button>
+              <button
+                type="button"
+                :aria-pressed="donutMode === 'envelope'"
+                class="rounded-[9px] px-2 py-0.5 font-medium transition"
+                :class="donutMode === 'envelope' ? 'bg-accent-soft text-accent' : 'text-text-muted hover:text-text'"
+                @click="donutMode = 'envelope'"
+              >
+                {{ t('dashboard.byEnvelope') }}
+              </button>
+              <button
+                type="button"
+                :aria-pressed="donutMode === 'income'"
+                class="rounded-[9px] px-2 py-0.5 font-medium transition"
+                :class="donutMode === 'income' ? 'bg-accent-soft text-accent' : 'text-text-muted hover:text-text'"
+                @click="donutMode = 'income'"
+              >
+                {{ t('dashboard.byIncome') }}
+              </button>
+            </div>
+          </div>
+
           <template v-if="donutData.length">
             <DonutChart :data="donutData" :currency="currency" />
             <ul class="mt-2 space-y-1.5">
@@ -182,7 +395,34 @@ onMounted(load);
         </AppCard>
       </div>
 
-      <!-- Recent transactions + accounts -->
+      <!-- 4. Intelligent Decision Support Insights -->
+      <AppCard v-if="insights.length">
+        <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-text-muted">
+          <Sparkles :size="14" class="text-accent" />
+          {{ t('dashboard.insightsTitle') }}
+        </div>
+        <div class="mt-3 grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
+          <div
+            v-for="(insight, i) in insights"
+            :key="i"
+            class="flex items-start gap-2.5 rounded-control border border-border bg-surface-2 p-3 text-[13px]"
+          >
+            <component
+              :is="insight.icon === 'trend' ? TrendingUp : (insight.icon === 'shield' ? ShieldCheck : Sparkles)"
+              :size="16"
+              class="mt-0.5 shrink-0"
+              :class="{
+                'text-accent': insight.type === 'positive',
+                'text-text-muted': insight.type === 'neutral',
+                'text-negative': insight.type === 'warning',
+              }"
+            />
+            <span class="text-text">{{ insight.text }}</span>
+          </div>
+        </div>
+      </AppCard>
+
+      <!-- 5. Recent transactions + accounts -->
       <div class="grid gap-4 lg:grid-cols-2">
         <AppCard :padded="false">
           <div class="flex items-center justify-between px-5 py-4">

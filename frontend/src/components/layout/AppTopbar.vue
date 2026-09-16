@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
-import { LogOut, Languages, Rows2, Rows3, PanelLeftClose, PanelLeftOpen, Eye, EyeOff } from 'lucide-vue-next';
+import { LogOut, Languages, Rows2, Rows3, PanelLeftClose, PanelLeftOpen, Eye, EyeOff, Plus } from 'lucide-vue-next';
 import { useAuthStore } from '@/stores/auth';
 import { useUiStore } from '@/stores/ui';
+import { useTransactionModalStore } from '@/stores/transactionModal';
 import { useDensity } from '@/composables/useDensity';
 import IconButton from '@/components/ui/IconButton.vue';
 import AvatarChip from '@/components/ui/AvatarChip.vue';
@@ -11,6 +12,7 @@ const router = useRouter();
 const auth = useAuthStore();
 const ui = useUiStore();
 const density = useDensity();
+const transactionModal = useTransactionModalStore();
 
 async function signOut(): Promise<void> {
   await auth.logout();
@@ -33,6 +35,16 @@ async function signOut(): Promise<void> {
       <h1 class="text-base font-semibold">
         {{ $t(`nav.${(router.currentRoute.value.name as string) || 'dashboard'}`) }}
       </h1>
+      <!-- Omnipresent Quick Add Button -->
+      <button
+        type="button"
+        class="ml-2 inline-flex items-center gap-1.5 rounded-control bg-accent px-2.5 py-1 text-xs font-semibold text-bg transition-opacity hover:opacity-90 sm:ml-4"
+        :title="$t('transactions.quickAdd')"
+        @click="transactionModal.openCreate()"
+      >
+        <Plus :size="15" :stroke-width="2.5" />
+        <span class="hidden sm:inline">{{ $t('transactions.quickAdd') }}</span>
+      </button>
     </div>
 
     <div class="flex items-center gap-1">
