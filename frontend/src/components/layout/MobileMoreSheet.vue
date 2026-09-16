@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
 import { RouterLink } from 'vue-router';
-import { X } from 'lucide-vue-next';
+import { X, Plus } from 'lucide-vue-next';
 import { mobileMoreItems } from '@/components/layout/navItems';
 import { useFocusTrap } from '@/composables/useFocusTrap';
+import { useTransactionModalStore } from '@/stores/transactionModal';
 
 const emit = defineEmits<{ close: [] }>();
+const transactionModal = useTransactionModalStore();
 
 // Mounted only while open, so the trap's lifecycle matches the sheet's.
 const sheet = ref<HTMLElement | null>(null);
@@ -38,6 +40,16 @@ onUnmounted(() => document.removeEventListener('keydown', onKey));
           <X :size="18" />
         </button>
       </header>
+      <div class="px-3 pt-3">
+        <button
+          type="button"
+          class="flex w-full items-center justify-center gap-2 rounded-control bg-accent py-2.5 text-sm font-semibold text-bg transition-opacity hover:opacity-90"
+          @click="emit('close'); transactionModal.openCreate()"
+        >
+          <Plus :size="16" :stroke-width="2.5" />
+          <span>{{ $t('transactions.add') }}</span>
+        </button>
+      </div>
       <ul class="p-2">
         <li v-for="item in mobileMoreItems" :key="item.key">
           <RouterLink

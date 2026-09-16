@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { onMounted, ref, reactive, computed } from 'vue';
+import { onMounted, ref, reactive, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Plus, CircleCheck, RotateCcw, Ban, ArrowRight, Download, Upload } from 'lucide-vue-next';
 import {
-  listTransactions, createTransaction, updateTransaction, clearTransaction, unclearTransaction, voidTransaction,
-  type TransactionFilter, type TransactionInput,
+  listTransactions, clearTransaction, unclearTransaction, voidTransaction,
+  type TransactionFilter,
 } from '@/lib/transactions';
 import { listAccounts } from '@/lib/accounts';
-import { listCategories, flowAccepts } from '@/lib/categories';
+import { listCategories } from '@/lib/categories';
 import type { Account, Category, Paged, Transaction } from '@/types/api';
 import { errorMessage } from '@/lib/errorMessage';
 import { formatRowDate } from '@/lib/format';
@@ -16,14 +16,13 @@ import { transactionsImportConfig } from '@/lib/importConfigs';
 import { useDensity } from '@/composables/useDensity';
 import { useToastStore } from '@/stores/toast';
 import { useConfirmStore } from '@/stores/confirm';
+import { useTransactionModalStore } from '@/stores/transactionModal';
 import ImportModal from '@/components/ui/ImportModal.vue';
 import LoadingBlock from '@/components/ui/LoadingBlock.vue';
 import AppCard from '@/components/ui/AppCard.vue';
 import AppButton from '@/components/ui/AppButton.vue';
-import AppModal from '@/components/ui/AppModal.vue';
 import AppInput from '@/components/ui/AppInput.vue';
 import AppSelect from '@/components/ui/AppSelect.vue';
-import FormField from '@/components/ui/FormField.vue';
 import StatusChip from '@/components/ui/StatusChip.vue';
 import IconButton from '@/components/ui/IconButton.vue';
 import Money from '@/components/ui/Money.vue';
@@ -159,134 +158,25 @@ async function exportCsv(): Promise<void> {
   }
 }
 
-// --- create modal -----------------------------------------------------------
-const modalOpen = ref(false);
-const editingId = ref<string | null>(null);
-const saving = ref(false);
-const formError = ref('');
-const today = new Date().toISOString().slice(0, 10);
-
-const form = reactive({
-  type: 'Expense',
-  date: today,
-  title: '',
-  amount: 0,
-  accountId: '',
-  toAccountId: '',
-  budgetCategoryId: '',
-  categoryId: '',
-  status: 'Uncleared',
-  description: '',
-});
-
-// Snapshot taken whenever the modal opens, so "dirty" means the user actually changed something.
-const formSnapshot = ref('');
-const formDirty = computed(() => JSON.stringify(form) !== formSnapshot.value);
-
-/** Currency of the account the amount will be posted to (money always carries its currency). */
-const amountCurrency = computed(
-  () => accounts.value.find((a) => a.id === form.accountId)?.currencyCode ?? 'IDR',
-);
-
-const accountOptions = computed(() => accounts.value.map((a) => ({ value: a.id, label: a.name })));
-const budgetOptions = computed(() => [
-  { value: '', label: t('transactions.noCategory') },
-  ...categories.value
-    .filter((c) => c.level === 'Budget' && c.isActive && flowAccepts(c.flow, form.type))
-    .map((c) => ({ value: c.id, label: c.name })),
-]);
-const categoryOptions = computed(() => [
-  { value: '', label: t('transactions.noCategory') },
-  ...categories.value
-    .filter((c) => c.level === 'Category' && c.isActive && flowAccepts(c.flow, form.type))
-    .map((c) => ({ value: c.id, label: c.name })),
-]);
-const statusOptions = computed(() => [
-  { value: 'Uncleared', label: t('enums.transactionStatus.Uncleared') },
-  { value: 'Cleared', label: t('enums.transactionStatus.Cleared') },
-]);
+// --- modal integration ------------------------------------------------------
+const transactionModal = useTransactionModalStore();
 
 function openCreate(): void {
-  editingId.value = null;
-  Object.assign(form, {
-    type: 'Expense', date: today, title: '', amount: 0,
-    accountId: accounts.value[0]?.id ?? '', toAccountId: accounts.value[1]?.id ?? '',
-    budgetCategoryId: '', categoryId: '', status: 'Uncleared', description: '',
-  });
-  formError.value = '';
-  formSnapshot.value = JSON.stringify(form);
-  modalOpen.value = true;
+  transactionModal.openCreate();
 }
 
 function openEdit(tx: Transaction): void {
-  editingId.value = tx.id;
-  Object.assign(form, {
-    type: tx.type,
-    date: tx.date,
-    title: tx.title,
-    amount: tx.amount,
-    accountId: tx.accountId,
-    toAccountId: tx.toAccountId ?? '',
-    budgetCategoryId: tx.budgetCategoryId ?? '',
-    categoryId: tx.categoryId ?? '',
-    status: tx.status,
-    description: tx.description ?? '',
-  });
-  formError.value = '';
-  formSnapshot.value = JSON.stringify(form);
-  modalOpen.value = true;
+  transactionModal.openEdit(tx);
 }
 
-function setType(type: string): void {
-  if (editingId.value) return; // type is immutable on an existing transaction
-  form.type = type;
-  form.budgetCategoryId = '';
-  form.categoryId = '';
-}
-
-async function save(): Promise<void> {
-  saving.value = true;
-  formError.value = '';
-  const input: TransactionInput = {
-    type: form.type,
-    date: form.date,
-    title: form.title,
-    amount: Number(form.amount),
-    accountId: form.accountId,
-    status: form.status,
-    description: form.description || null,
-  };
-  if (form.type === 'Transfer') {
-    input.toAccountId = form.toAccountId;
-  } else {
-    input.budgetCategoryId = form.budgetCategoryId || null;
-    input.categoryId = form.categoryId || null;
-  }
-  try {
-    if (editingId.value) {
-      await updateTransaction(editingId.value, {
-        date: input.date,
-        title: input.title,
-        amount: input.amount,
-        accountId: input.accountId,
-        toAccountId: input.toAccountId ?? null,
-        budgetCategoryId: input.budgetCategoryId ?? null,
-        categoryId: input.categoryId ?? null,
-        status: input.status,
-        description: input.description ?? null,
-      });
-      toast.success(t('common.done'));
-    } else {
-      await createTransaction(input);
-    }
-    modalOpen.value = false;
-    await Promise.all([loadPage(), loadRefs()]);
-  } catch (error) {
-    formError.value = errorMessage(t, te, error);
-  } finally {
-    saving.value = false;
-  }
-}
+// Refresh table whenever any transaction is created or updated
+watch(
+  () => transactionModal.lastEventTimestamp,
+  () => {
+    loadPage();
+    loadRefs();
+  },
+);
 
 // --- row actions ------------------------------------------------------------
 async function toggleClear(tx: Transaction): Promise<void> {
@@ -447,88 +337,6 @@ onMounted(async () => {
         </div>
       </div>
     </template>
-
-    <!-- Create / edit modal -->
-    <AppModal
-      v-if="modalOpen"
-      :title="editingId ? t('transactions.edit') : t('transactions.add')"
-      :dirty="formDirty"
-      @close="modalOpen = false"
-    >
-      <form class="space-y-4" @submit.prevent="save">
-        <div class="grid grid-cols-3 gap-2">
-          <button
-            v-for="ty in TX_TYPES"
-            :key="ty"
-            type="button"
-            :disabled="!!editingId"
-            :aria-pressed="form.type === ty"
-            class="rounded-control border px-3 py-2 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-50"
-            :class="form.type === ty ? 'border-accent bg-accent-soft text-accent' : 'border-border text-text-muted hover:bg-surface-2'"
-            @click="setType(ty)"
-          >
-            {{ t(`enums.transactionType.${ty}`) }}
-          </button>
-        </div>
-
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <FormField :label="t('transactions.date')" for-id="tx-date">
-            <AppInput id="tx-date" v-model="form.date" type="date" />
-          </FormField>
-          <FormField :label="t('transactions.amount')" for-id="tx-amount">
-            <div class="relative">
-              <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-sm text-text-muted">
-                {{ amountCurrency }}
-              </span>
-              <AppInput
-                id="tx-amount"
-                type="number"
-                class="pl-10"
-                placeholder="0"
-                :model-value="form.amount === 0 ? '' : String(form.amount)"
-                @update:model-value="form.amount = Number($event || 0)"
-              />
-            </div>
-          </FormField>
-        </div>
-
-        <FormField :label="t('transactions.titleField')" for-id="tx-title">
-          <AppInput id="tx-title" v-model="form.title" required />
-        </FormField>
-
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <FormField :label="t('transactions.account')" for-id="tx-account">
-            <AppSelect id="tx-account" v-model="form.accountId" :options="accountOptions" />
-          </FormField>
-          <FormField v-if="form.type === 'Transfer'" :label="t('transactions.toAccount')" for-id="tx-to">
-            <AppSelect id="tx-to" v-model="form.toAccountId" :options="accountOptions" />
-          </FormField>
-          <FormField v-else :label="t('transactions.status')" for-id="tx-status">
-            <AppSelect id="tx-status" v-model="form.status" :options="statusOptions" />
-          </FormField>
-        </div>
-
-        <div v-if="form.type !== 'Transfer'" class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <FormField :label="t('transactions.budget')" for-id="tx-budget">
-            <AppSelect id="tx-budget" v-model="form.budgetCategoryId" :options="budgetOptions" />
-          </FormField>
-          <FormField :label="t('transactions.category')" for-id="tx-category">
-            <AppSelect id="tx-category" v-model="form.categoryId" :options="categoryOptions" />
-          </FormField>
-        </div>
-
-        <FormField v-if="form.type === 'Transfer'" :label="t('transactions.status')" for-id="tx-status2">
-          <AppSelect id="tx-status2" v-model="form.status" :options="statusOptions" />
-        </FormField>
-
-        <p v-if="formError" class="text-[13px] text-negative" role="alert">{{ formError }}</p>
-      </form>
-
-      <template #footer>
-        <AppButton variant="secondary" @click="modalOpen = false">{{ t('common.cancel') }}</AppButton>
-        <AppButton :loading="saving" @click="save">{{ saving ? t('common.saving') : t('common.save') }}</AppButton>
-      </template>
-    </AppModal>
 
     <ImportModal
       v-if="importOpen"

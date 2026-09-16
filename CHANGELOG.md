@@ -3,6 +3,20 @@
 This file is Tameru's immutable historical record. A task is not complete until this file has been
 updated. Newest entries at the top. See `CLAUDE.md` → **CHANGELOG Rules** for the full procedure.
 
+## [2026-09-16 15:17:00 UTC]
+
+CHG-0035 — Frictionless transaction input UX with live IDR formatting, smart payee autocomplete, and omnipresent quick-add
+
+- **IDR denomination shortcuts & math parser (`moneyParser.ts`):** Added smart shorthand parsing (`50k`/`50rb` → `50.000`, `1.5jt`/`1.5m` → `1.500.000`), live formatted thousand dots, and inline arithmetic evaluation (`25k + 15k` → `40.000`).
+- **Tactile amount input (`MoneyInput.vue`):** Dedicated amount input with live formatted dots, dynamic expression preview, and quick increment chips (`+10k`, `+20k`, `+50k`, `+100k`).
+- **Payee autocomplete & auto-categorization (`PayeeInput.vue`):** Smart title input that learns from recent transactions. Selecting a suggested merchant automatically pre-populates category, budget envelope, and payment account.
+- **Quick date chips & frequent categories:** 1-tap toggles for "Hari ini" (Today) and "Kemarin" (Yesterday), plus top 5 frequently used category chips for single-tap selection without dropdown scrolling.
+- **Continuous batch logging ("Save & Add Another"):** Added secondary save action (`Ctrl+Enter` / `Cmd+Enter`) that posts the transaction, preserves date & account, clears title & amount, and focuses the amount input for the next receipt.
+- **Omnipresent Global Quick-Add:** Added `+ Transaksi` / `+ Transaction` button in desktop top bar, quick action in mobile sheet, global keyboard shortcut (`n` or `t` anywhere outside text fields), and central Pinia store (`transactionModal.ts`).
+- **Verified:** 29 Vitest tests passed (including new `moneyParser.spec.ts` and strict i18n parity), `vue-tsc --noEmit` clean, production bundle built, and local Docker stack rebuilt and deployed live.
+
+---
+
 ## [2026-09-16 14:09:36 UTC]
 
 CHG-0034 — Enrich Dashboard and Reports with decision support metrics and multi-dimensional analysis
