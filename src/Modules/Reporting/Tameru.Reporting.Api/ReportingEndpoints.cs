@@ -29,13 +29,27 @@ public static class ReportingEndpoints
             return (await service.GetOverviewAsync(year ?? currentYear, ct)).ToHttp();
         });
 
+        group.MapGet("/financial-health", async (
+            int? year, int? month, ReportingService service, CancellationToken ct) =>
+        {
+            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+            return (await service.GetFinancialHealthAsync(year ?? today.Year, month ?? today.Month, ct)).ToHttp();
+        });
+
+        group.MapGet("/envelopes", async (
+            int? year, int? month, ReportingService service, CancellationToken ct) =>
+        {
+            var currentYear = DateTime.UtcNow.Year;
+            return (await service.GetEnvelopeReportAsync(year ?? currentYear, month, ct)).ToHttp();
+        });
+
         group.MapGet("/category-tracker", async (
-            string? granularity, DateOnly? from, DateOnly? to, ReportingService service, CancellationToken ct) =>
+            string? granularity, string? flow, DateOnly? from, DateOnly? to, ReportingService service, CancellationToken ct) =>
         {
             var today = DateOnly.FromDateTime(DateTime.UtcNow);
             var start = from ?? new DateOnly(today.Year, today.Month, 1);
             var end = to ?? today;
-            return (await service.GetCategoryTrackerAsync(granularity, start, end, ct)).ToHttp();
+            return (await service.GetCategoryTrackerAsync(granularity, start, end, flow, ct)).ToHttp();
         });
 
         return app;

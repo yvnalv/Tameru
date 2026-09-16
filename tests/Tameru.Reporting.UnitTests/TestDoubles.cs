@@ -25,13 +25,16 @@ internal sealed class FakeLedgerReportingQuery : ILedgerReportingQuery
 {
     private readonly IReadOnlyList<MonthlyCashflow> _cashflow;
     private readonly IReadOnlyList<CategoryPeriodTotal> _categoryTotals;
+    private readonly IReadOnlyList<EnvelopePeriodTotal> _envelopeTotals;
 
     public FakeLedgerReportingQuery(
         IReadOnlyList<MonthlyCashflow>? cashflow = null,
-        IReadOnlyList<CategoryPeriodTotal>? categoryTotals = null)
+        IReadOnlyList<CategoryPeriodTotal>? categoryTotals = null,
+        IReadOnlyList<EnvelopePeriodTotal>? envelopeTotals = null)
     {
         _cashflow = cashflow ?? Enumerable.Range(1, 12).Select(m => new MonthlyCashflow(m, 0, 0)).ToList();
         _categoryTotals = categoryTotals ?? [];
+        _envelopeTotals = envelopeTotals ?? [];
     }
 
     public Task<IReadOnlyList<MonthlyCashflow>> GetMonthlyCashflowAsync(
@@ -40,9 +43,24 @@ internal sealed class FakeLedgerReportingQuery : ILedgerReportingQuery
 
     public Task<IReadOnlyList<CategoryPeriodTotal>> GetExpenseTotalsByCategoryAsync(
         DateOnly from, DateOnly to, ReportGranularity granularity,
+        CancellationToken cancellationToken = default) =>
+        GetCategoryTotalsAsync(from, to, ReportFlow.Expense, granularity, cancellationToken);
+
+    public Task<IReadOnlyList<CategoryPeriodTotal>> GetCategoryTotalsAsync(
+        DateOnly from, DateOnly to, ReportFlow flow, ReportGranularity granularity,
         CancellationToken cancellationToken = default)
     {
         IReadOnlyList<CategoryPeriodTotal> result = _categoryTotals
+            .Where(t => t.PeriodStart >= from && t.PeriodStart <= to)
+            .ToList();
+        return Task.FromResult(result);
+    }
+
+    public Task<IReadOnlyList<EnvelopePeriodTotal>> GetEnvelopeTotalsAsync(
+        DateOnly from, DateOnly to, ReportGranularity granularity,
+        CancellationToken cancellationToken = default)
+    {
+        IReadOnlyList<EnvelopePeriodTotal> result = _envelopeTotals
             .Where(t => t.PeriodStart >= from && t.PeriodStart <= to)
             .ToList();
         return Task.FromResult(result);

@@ -3,6 +3,31 @@
 This file is Tameru's immutable historical record. A task is not complete until this file has been
 updated. Newest entries at the top. See `CLAUDE.md` → **CHANGELOG Rules** for the full procedure.
 
+## [2026-09-16 14:09:36 UTC]
+
+CHG-0034 — Enrich Dashboard and Reports with decision support metrics and multi-dimensional analysis
+
+- **Decision support KPI strip (Dashboard):** Added 3 dedicated financial health pillars alongside Net Worth:
+  - **Savings Rate:** Computes current month % of retained income, health status rating (Excellent/Healthy/Low/Deficit), and MoM delta.
+  - **Financial Runway:** Computes emergency runway in months by dividing active account balances by trailing 3-month average monthly expenses.
+  - **Burn Pace & Month-End Projection:** Displays daily spending velocity and estimated end-of-month total expenses vs pacing.
+- **Interactive trend and multi-perspective distribution charts:**
+  - `CashflowChart` now supports toggling between **Cashflow** (Income vs Expense bars) and **Savings Rate Trajectory** (% line with 20% target mark line).
+  - Donut chart gained a distribution mode switcher: **Categories** (top expense categories), **Envelopes** (Needs/Wants/Investment), and **Income Sources**.
+- **Intelligent Financial Decision Insights:** Dynamic rule-based insights highlighting savings momentum, emergency buffer safety, and top spending drivers.
+- **Reports transformed into a Decision Support Hub:**
+  - **Category Tracker Pivot:** Enhanced with an **Expenses vs Income** flow switcher.
+  - **Cashflow & Trajectory Tab:** 12-month performance analysis table with MoM deltas, annual totals (Total Earned, Total Spent, Net Wealth Added, Avg Monthly Burn, Avg Savings Rate), and dual-mode chart.
+  - **Allocation Analysis Tab (50/40/10):** Real-time comparison of actual spending against the Master Plan's 50/40/10 allocation formula (Needs 50%, Investment 40%, Wants 10%) with variance indicators.
+- **Backend contracts & queries:**
+  - Extended `ILedgerReportingQuery` with `GetCategoryTotalsAsync` (supporting flow) and `GetEnvelopeTotalsAsync`.
+  - Implemented in `LedgerReportingQuery` using EF Core aggregations over non-voided ledger transactions.
+  - Added `ReportingService.GetFinancialHealthAsync` and `ReportingService.GetEnvelopeReportAsync`.
+  - Exposed `/api/v1/reports/financial-health` and `/api/v1/reports/envelopes`.
+- **Verified:** 101 backend unit and architecture tests passed (`dotnet test`), 23 frontend Vitest tests passed (including strict i18n parity), `vue-tsc --noEmit` clean, and production bundle built successfully.
+
+---
+
 ## [2026-09-12 11:59:01 UTC]
 
 CHG-0033 — Implement the UX audit: accessibility, mobile reach, and dead-control fixes
