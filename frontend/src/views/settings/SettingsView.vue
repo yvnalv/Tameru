@@ -211,20 +211,69 @@ async function exportTransactionsCsv(): Promise<void> {
 </script>
 
 <template>
-  <div class="space-y-6 max-w-5xl mx-auto">
-    <!-- Header -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-border pb-5">
-      <div>
-        <h1 class="text-2xl font-bold tracking-tight text-text">
-          {{ t('settings.title') }}
-        </h1>
-        <p class="text-xs text-text-muted mt-1">
-          {{ t('settings.subtitle') }}
-        </p>
+  <div class="space-y-4">
+    <!-- Action Bar & Categorized Segmented Tabs (matches Design System) -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div class="inline-flex rounded-xl bg-surface border border-border p-1 shadow-sm overflow-x-auto max-w-full">
+        <button
+          type="button"
+          class="flex items-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-all whitespace-nowrap"
+          :class="
+            activeTab === 'financial-cycle'
+              ? 'bg-accent text-accent-contrast shadow-sm font-bold'
+              : 'text-text-muted hover:text-text'
+          "
+          @click="setTab('financial-cycle')"
+        >
+          <Calendar :size="15" />
+          {{ t('settings.tabs.cycle') }}
+        </button>
+
+        <button
+          type="button"
+          class="flex items-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-all whitespace-nowrap"
+          :class="
+            activeTab === 'appearance'
+              ? 'bg-accent text-accent-contrast shadow-sm font-bold'
+              : 'text-text-muted hover:text-text'
+          "
+          @click="setTab('appearance')"
+        >
+          <Palette :size="15" />
+          {{ t('settings.tabs.appearance') }}
+        </button>
+
+        <button
+          type="button"
+          class="flex items-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-all whitespace-nowrap"
+          :class="
+            activeTab === 'profile'
+              ? 'bg-accent text-accent-contrast shadow-sm font-bold'
+              : 'text-text-muted hover:text-text'
+          "
+          @click="setTab('profile')"
+        >
+          <UserIcon :size="15" />
+          {{ t('settings.tabs.profile') }}
+        </button>
+
+        <button
+          type="button"
+          class="flex items-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-all whitespace-nowrap"
+          :class="
+            activeTab === 'data'
+              ? 'bg-accent text-accent-contrast shadow-sm font-bold'
+              : 'text-text-muted hover:text-text'
+          "
+          @click="setTab('data')"
+        >
+          <Database :size="15" />
+          {{ t('settings.tabs.data') }}
+        </button>
       </div>
 
       <!-- Quick Status Badges -->
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-2 shrink-0">
         <span class="inline-flex items-center gap-1.5 rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-accent">
           <Sparkles :size="13" />
           {{ t('settings.cycleActiveBadge', { day: auth.user?.budgetCycleStartDay ?? 1 }) }}
@@ -235,69 +284,10 @@ async function exportTransactionsCsv(): Promise<void> {
       </div>
     </div>
 
-    <!-- Tab Navigation Bar -->
-    <div class="flex flex-wrap gap-1.5 border-b border-border pb-1">
-      <button
-        type="button"
-        class="flex items-center gap-2 rounded-t-lg border-b-2 px-4 py-2.5 text-xs font-semibold transition-all"
-        :class="
-          activeTab === 'financial-cycle'
-            ? 'border-accent bg-surface text-accent shadow-xs'
-            : 'border-transparent text-text-muted hover:bg-surface-2 hover:text-text'
-        "
-        @click="setTab('financial-cycle')"
-      >
-        <Calendar :size="15" />
-        {{ t('settings.tabs.cycle') }}
-      </button>
-
-      <button
-        type="button"
-        class="flex items-center gap-2 rounded-t-lg border-b-2 px-4 py-2.5 text-xs font-semibold transition-all"
-        :class="
-          activeTab === 'appearance'
-            ? 'border-accent bg-surface text-accent shadow-xs'
-            : 'border-transparent text-text-muted hover:bg-surface-2 hover:text-text'
-        "
-        @click="setTab('appearance')"
-      >
-        <Palette :size="15" />
-        {{ t('settings.tabs.appearance') }}
-      </button>
-
-      <button
-        type="button"
-        class="flex items-center gap-2 rounded-t-lg border-b-2 px-4 py-2.5 text-xs font-semibold transition-all"
-        :class="
-          activeTab === 'profile'
-            ? 'border-accent bg-surface text-accent shadow-xs'
-            : 'border-transparent text-text-muted hover:bg-surface-2 hover:text-text'
-        "
-        @click="setTab('profile')"
-      >
-        <UserIcon :size="15" />
-        {{ t('settings.tabs.profile') }}
-      </button>
-
-      <button
-        type="button"
-        class="flex items-center gap-2 rounded-t-lg border-b-2 px-4 py-2.5 text-xs font-semibold transition-all"
-        :class="
-          activeTab === 'data'
-            ? 'border-accent bg-surface text-accent shadow-xs'
-            : 'border-transparent text-text-muted hover:bg-surface-2 hover:text-text'
-        "
-        @click="setTab('data')"
-      >
-        <Database :size="15" />
-        {{ t('settings.tabs.data') }}
-      </button>
-    </div>
-
     <!-- ===================================================================== -->
     <!-- TAB 1: Financial Cycle & Starting Day                                  -->
     <!-- ===================================================================== -->
-    <div v-if="activeTab === 'financial-cycle'" class="space-y-6">
+    <div v-if="activeTab === 'financial-cycle'" class="space-y-4">
       <!-- Main Starting Day Card -->
       <AppCard>
         <div class="flex items-start justify-between gap-4">
@@ -475,7 +465,7 @@ async function exportTransactionsCsv(): Promise<void> {
     <!-- ===================================================================== -->
     <!-- TAB 2: Appearance & Display                                            -->
     <!-- ===================================================================== -->
-    <div v-else-if="activeTab === 'appearance'" class="space-y-6">
+    <div v-else-if="activeTab === 'appearance'" class="space-y-4">
       <AppCard>
         <h2 class="text-base font-bold text-text">
           {{ t('settings.themeHeading') }}
@@ -548,18 +538,18 @@ async function exportTransactionsCsv(): Promise<void> {
               <button
                 type="button"
                 class="rounded-lg px-3 py-1.5 text-xs font-semibold transition-all"
-                :class="ui.density === 'comfortable' ? 'bg-accent text-accent-contrast shadow-xs' : 'text-text-muted hover:text-text'"
+                :class="ui.density === 'comfortable' ? 'bg-accent text-accent-contrast shadow-xs font-bold' : 'text-text-muted hover:text-text'"
                 @click="ui.setDensity('comfortable')"
               >
-                {{ t('density.comfortable') }}
+                {{ t('settings.densityComfortable') }}
               </button>
               <button
                 type="button"
                 class="rounded-lg px-3 py-1.5 text-xs font-semibold transition-all"
-                :class="ui.density === 'compact' ? 'bg-accent text-accent-contrast shadow-xs' : 'text-text-muted hover:text-text'"
+                :class="ui.density === 'compact' ? 'bg-accent text-accent-contrast shadow-xs font-bold' : 'text-text-muted hover:text-text'"
                 @click="ui.setDensity('compact')"
               >
-                {{ t('density.compact') }}
+                {{ t('settings.densityCompact') }}
               </button>
             </div>
           </div>
@@ -605,7 +595,7 @@ async function exportTransactionsCsv(): Promise<void> {
     <!-- ===================================================================== -->
     <!-- TAB 3: Account & Profile                                               -->
     <!-- ===================================================================== -->
-    <div v-else-if="activeTab === 'profile'" class="space-y-6">
+    <div v-else-if="activeTab === 'profile'" class="space-y-4">
       <AppCard>
         <div class="flex items-center gap-4">
           <AvatarChip :name="auth.user?.displayName || auth.user?.email || 'User'" />
@@ -674,7 +664,7 @@ async function exportTransactionsCsv(): Promise<void> {
     <!-- ===================================================================== -->
     <!-- TAB 4: Data & Backup                                                   -->
     <!-- ===================================================================== -->
-    <div v-else-if="activeTab === 'data'" class="space-y-6">
+    <div v-else-if="activeTab === 'data'" class="space-y-4">
       <AppCard>
         <div class="flex items-start justify-between">
           <div>
@@ -706,38 +696,42 @@ async function exportTransactionsCsv(): Promise<void> {
         </div>
       </AppCard>
 
-      <!-- System Architecture & Environment Card -->
+      <!-- Application Version & Release Card -->
       <AppCard>
-        <h2 class="text-base font-bold text-text">
-          {{ t('settings.systemHeading') }}
-        </h2>
-        <p class="text-xs text-text-muted mt-1">
-          {{ t('settings.systemDescription') }}
-        </p>
+        <div class="flex items-start justify-between">
+          <div>
+            <h2 class="text-base font-bold text-text">
+              {{ t('settings.aboutHeading') }}
+            </h2>
+            <p class="text-xs text-text-muted mt-1">
+              {{ t('settings.aboutDescription') }}
+            </p>
+          </div>
+          <span class="rounded-control bg-accent-soft p-2 text-accent">
+            <Sparkles :size="20" />
+          </span>
+        </div>
 
-        <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-          <div class="rounded-control border border-border bg-surface-2 p-3">
-            <span class="text-[11px] text-text-muted font-medium">{{ t('settings.appVersion') }}</span>
-            <p class="text-sm font-bold text-text mt-0.5">Tameru v0.1</p>
-            <span class="text-xs text-accent font-medium">{{ t('settings.upToDate') }}</span>
+        <div class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div class="rounded-control border border-border bg-surface-2 p-3.5 space-y-1">
+            <span class="text-[11px] text-text-muted font-medium">{{ t('settings.currentVersion') }}</span>
+            <p class="text-sm font-bold text-text">Tameru v0.1.0</p>
+            <span class="text-xs text-text-muted font-mono">Build 2026.09</span>
           </div>
 
-          <div class="rounded-control border border-border bg-surface-2 p-3">
-            <span class="text-[11px] text-text-muted font-medium">{{ t('settings.backendStack') }}</span>
-            <p class="text-sm font-bold text-text mt-0.5">.NET 8 Web API</p>
-            <span class="text-xs text-text-muted">Modular Monolith</span>
+          <div class="rounded-control border border-border bg-surface-2 p-3.5 space-y-1">
+            <span class="text-[11px] text-text-muted font-medium">{{ t('settings.latestVersion') }}</span>
+            <p class="text-sm font-bold text-text">v0.1.0</p>
+            <span class="inline-flex items-center gap-1 text-xs text-positive font-semibold">
+              <Check :size="13" />
+              {{ t('settings.releaseStatus') }}
+            </span>
           </div>
 
-          <div class="rounded-control border border-border bg-surface-2 p-3">
-            <span class="text-[11px] text-text-muted font-medium">{{ t('settings.databaseEngine') }}</span>
-            <p class="text-sm font-bold text-text mt-0.5">PostgreSQL 16</p>
-            <span class="text-xs text-text-muted">Self-Hosted</span>
-          </div>
-
-          <div class="rounded-control border border-border bg-surface-2 p-3">
-            <span class="text-[11px] text-text-muted font-medium">{{ t('settings.frontendStack') }}</span>
-            <p class="text-sm font-bold text-text mt-0.5">Vue 3 + Vite</p>
-            <span class="text-xs text-text-muted">Modern Cobalt DS</span>
+          <div class="rounded-control border border-border bg-surface-2 p-3.5 space-y-1">
+            <span class="text-[11px] text-text-muted font-medium">{{ t('settings.releaseChannel') }}</span>
+            <p class="text-sm font-bold text-text">Stable</p>
+            <span class="text-xs text-text-muted">Self-Hosted Community</span>
           </div>
         </div>
       </AppCard>

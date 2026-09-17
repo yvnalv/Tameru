@@ -3,6 +3,24 @@
 This file is Tameru's immutable historical record. A task is not complete until this file has been
 updated. Newest entries at the top. See `CLAUDE.md` → **CHANGELOG Rules** for the full procedure.
 
+## [2026-09-17 13:25:00 UTC]
+
+CHG-0038 — Align Settings page container with design system, fix density translations, and simplify app versioning
+
+- **Container & Layout Design System Alignment (`SettingsView.vue`):**
+  - Removed restrictive `max-w-5xl mx-auto` centering container to match full viewport container grid used across `DashboardView`, `TransactionsView`, `BudgetView`, and `AccountsView`.
+  - Replaced underline tab bar with design system's segmented control tabs (`inline-flex rounded-xl bg-surface border border-border p-1 shadow-sm`) with active cobalt accent highlight.
+  - Eliminated duplicate `<h1>` and subheader, aligning with topbar page title conventions.
+- **Fixed Unreadable Density Labels:**
+  - Added `densityComfortable` and `densityCompact` to `en.ts` ("Comfortable" / "Compact") and `id.ts` ("Lapang" / "Padat").
+  - Fixed raw key references `density.comfortable` and `density.compact` in `SettingsView.vue`.
+- **Application Versioning Card:**
+  - Removed technical runtime infrastructure breakdown (backend stack, database engine, web client).
+  - Streamlined Tab 4 to **Data & Backup** (`dataHeading` / `aboutHeading`) displaying installed version (`Tameru v0.1.0`), latest release version (`v0.1.0`), and release channel (`Stable Self-Hosted`).
+- **Verified:** 44 Vitest tests passing, `vue-tsc --noEmit` clean, production bundle built, and local Docker web container recreated and running at [http://localhost:8091](http://localhost:8091).
+
+---
+
 ## [2026-09-17 13:15:00 UTC]
 
 CHG-0037 — Configurable financial cycle starting day (payday on 25th) and dedicated tabbed Settings page
