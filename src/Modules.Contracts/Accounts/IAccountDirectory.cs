@@ -10,4 +10,9 @@ public interface IAccountDirectory
 
     /// <summary>The account's currency code, or <c>null</c> if the account does not exist.</summary>
     Task<string?> GetCurrencyAsync(Guid accountId, CancellationToken cancellationToken = default);
+
+    /// <summary>Returns minimal active accounts for matching accounts during ingestion.</summary>
+    Task<IReadOnlyList<AccountRef>> ListActiveAccountsAsync(CancellationToken cancellationToken = default);
 }
+
+public sealed record AccountRef(Guid Id, string Name, string Type, string CurrencyCode);

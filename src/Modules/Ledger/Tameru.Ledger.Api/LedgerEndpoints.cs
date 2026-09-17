@@ -44,6 +44,45 @@ public static class LedgerEndpoints
         group.MapPost("/{id:guid}/void", async (Guid id, LedgerService service, CancellationToken ct) =>
             (await service.VoidAsync(id, ct)).ToHttp());
 
+        // --- Rules Management -----------------------------------------------
+        var rulesGroup = app.MapGroup("/api/v1/rules").WithTags("Rules").RequireAuthorization();
+
+        rulesGroup.MapGet("/", async (RuleService service, bool? activeOnly, CancellationToken ct) =>
+            (await service.ListAsync(activeOnly ?? false, ct)).ToHttp());
+
+        rulesGroup.MapPost("/", async (CreateRuleRequest request, RuleService service, CancellationToken ct) =>
+            (await service.CreateAsync(request, ct)).ToHttp());
+
+        rulesGroup.MapPut("/{id:guid}", async (Guid id, UpdateRuleRequest request, RuleService service, CancellationToken ct) =>
+            (await service.UpdateAsync(id, request, ct)).ToHttp());
+
+        rulesGroup.MapDelete("/{id:guid}", async (Guid id, RuleService service, CancellationToken ct) =>
+            (await service.DeleteAsync(id, ct)).ToHttp());
+
+        // --- Ingestion Webhook / Quick-Log -----------------------------------
+        app.MapPost("/api/v1/ingest/transaction", async (
+            IngestTransactionRequest request,
+            HttpContext httpContext,
+            IngestionService ingestion,
+            Tameru.Modules.Contracts.Identity.IApiTokenValidator tokenValidator,
+            CancellationToken ct) =>
+        {
+            var isAuthenticated = httpContext.User.Identity?.IsAuthenticated == true;
+            if (!isAuthenticated)
+            {
+                var tokenHeader = httpContext.Request.Headers["X-Tameru-Token"].ToString();
+                if (string.IsNullOrWhiteSpace(tokenHeader) || !await tokenValidator.ValidateAsync(tokenHeader, ct))
+                {
+                    return Results.Json(
+                        Tameru.Web.Common.Contracts.ApiResponse.Fail(
+                            "Unauthorized ingestion token.", new Tameru.Web.Common.Contracts.ApiError { Code = "unauthorized" }),
+                        statusCode: StatusCodes.Status401Unauthorized);
+                }
+            }
+
+            return (await ingestion.IngestAsync(request, ct)).ToHttp();
+        }).WithTags("Ingestion").AllowAnonymous();
+
         return app;
     }
 }

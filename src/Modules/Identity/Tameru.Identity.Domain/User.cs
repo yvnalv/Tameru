@@ -38,6 +38,16 @@ public sealed class User : AuditableEntity
     /// <summary>Starting day of month for the financial/budget cycle (1..28, e.g. 25 for payday).</summary>
     public int BudgetCycleStartDay { get; private set; } = DefaultBudgetCycleStartDay;
 
+    /// <summary>Personal ingestion API token for webhook triggers (Telegram bot, iOS shortcuts, etc.).</summary>
+    public string? ApiToken { get; private set; }
+
+    public string GenerateApiToken()
+    {
+        var tokenBytes = System.Security.Cryptography.RandomNumberGenerator.GetBytes(32);
+        ApiToken = "tmr_" + Convert.ToHexString(tokenBytes).ToLowerInvariant();
+        return ApiToken;
+    }
+
     public static User Create(string email, string passwordHash, string displayName, string? locale = null, int? budgetCycleStartDay = null)
     {
         if (string.IsNullOrWhiteSpace(email))
@@ -56,13 +66,15 @@ public sealed class User : AuditableEntity
             throw new DomainRuleException("budget_cycle_start_day_invalid", "Cycle start day must be between 1 and 28.");
         }
 
-        return new User(
+        var user = new User(
             Guid.NewGuid(),
             Normalize(email),
             passwordHash,
             string.IsNullOrWhiteSpace(displayName) ? Normalize(email) : displayName.Trim(),
             NormalizeLocale(locale),
             startDay);
+        user.GenerateApiToken();
+        return user;
     }
 
     public void SetPasswordHash(string passwordHash)

@@ -13,7 +13,7 @@ public sealed record LogoutRequest(string RefreshToken);
 public sealed record UpdateProfileRequest(string? DisplayName, string? Locale, int? BudgetCycleStartDay = null);
 
 /// <summary>The authenticated owner, as returned to the client.</summary>
-public sealed record UserDto(Guid Id, string Email, string DisplayName, string Locale, int BudgetCycleStartDay);
+public sealed record UserDto(Guid Id, string Email, string DisplayName, string Locale, int BudgetCycleStartDay, string? ApiToken = null);
 
 /// <summary>A successful authentication: access token (+ expiry), refresh token, and the user.</summary>
 public sealed record AuthResponse(

@@ -22,4 +22,12 @@ internal sealed class AccountDirectory : IAccountDirectory
             .Where(a => a.Id == accountId)
             .Select(a => a.CurrencyCode)
             .FirstOrDefaultAsync(cancellationToken);
+
+    public async Task<IReadOnlyList<AccountRef>> ListActiveAccountsAsync(CancellationToken cancellationToken = default) =>
+        await _db.Accounts
+            .AsNoTracking()
+            .Where(a => a.IsActive)
+            .OrderBy(a => a.SortOrder)
+            .Select(a => new AccountRef(a.Id, a.Name, a.Type.ToString(), a.CurrencyCode))
+            .ToListAsync(cancellationToken);
 }

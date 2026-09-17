@@ -50,6 +50,16 @@ public static class IdentityEndpoints
             return (await auth.UpdateMeAsync(userId, request, ct)).ToHttp();
         }).RequireAuthorization();
 
+        group.MapPost("/token/regenerate", async (ClaimsPrincipal principal, AuthService auth, CancellationToken ct) =>
+        {
+            if (!TryGetUserId(principal, out var userId))
+            {
+                return Unauthenticated();
+            }
+
+            return (await auth.RegenerateApiTokenAsync(userId, ct)).ToHttp();
+        }).RequireAuthorization();
+
         return app;
     }
 

@@ -18,5 +18,7 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(u => u.DisplayName).HasMaxLength(200).IsRequired();
         builder.Property(u => u.Locale).HasMaxLength(5).IsRequired();
         builder.Property(u => u.BudgetCycleStartDay).HasDefaultValue(1).IsRequired();
+        builder.Property(u => u.ApiToken).HasMaxLength(100);
+        builder.HasIndex(u => u.ApiToken).IsUnique();
     }
 }

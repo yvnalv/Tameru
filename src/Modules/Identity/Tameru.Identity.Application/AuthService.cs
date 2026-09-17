@@ -95,7 +95,28 @@ public sealed class AuthService
     public async Task<Result<UserDto>> GetMeAsync(Guid userId, CancellationToken ct = default)
     {
         var user = await _users.GetByIdAsync(userId, ct);
-        return user is null ? IdentityErrors.UserNotFound : Map(user);
+        if (user is null) return IdentityErrors.UserNotFound;
+
+        if (string.IsNullOrEmpty(user.ApiToken))
+        {
+            user.GenerateApiToken();
+            await _unitOfWork.SaveChangesAsync(ct);
+        }
+
+        return Map(user);
+    }
+
+    public async Task<Result<UserDto>> RegenerateApiTokenAsync(Guid userId, CancellationToken ct = default)
+    {
+        var user = await _users.GetByIdAsync(userId, ct);
+        if (user is null)
+        {
+            return IdentityErrors.UserNotFound;
+        }
+
+        user.GenerateApiToken();
+        await _unitOfWork.SaveChangesAsync(ct);
+        return Map(user);
     }
 
     public async Task<Result<UserDto>> UpdateMeAsync(
@@ -123,5 +144,5 @@ public sealed class AuthService
         return new AuthResponse(access.Token, access.ExpiresAt, refresh.Raw, Map(user));
     }
 
-    private static UserDto Map(User user) => new(user.Id, user.Email, user.DisplayName, user.Locale, user.BudgetCycleStartDay);
+    private static UserDto Map(User user) => new(user.Id, user.Email, user.DisplayName, user.Locale, user.BudgetCycleStartDay, user.ApiToken);
 }

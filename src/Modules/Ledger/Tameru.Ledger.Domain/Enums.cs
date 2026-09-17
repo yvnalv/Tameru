@@ -19,3 +19,19 @@ public enum TransactionStatus
     Uncleared = 0,
     Cleared = 1,
 }
+
+/// <summary>Field targeted by a categorization rule.</summary>
+public enum RuleMatchField
+{
+    Payee = 0,
+    Description = 1,
+}
+
+/// <summary>Condition operator for matching a rule against transaction fields.</summary>
+public enum RuleMatchOperator
+{
+    Contains = 0,
+    Equals = 1,
+    StartsWith = 2,
+    Regex = 3,
+}

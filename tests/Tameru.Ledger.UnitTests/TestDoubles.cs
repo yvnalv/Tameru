@@ -56,6 +56,9 @@ internal sealed class FakeAccountDirectory : IAccountDirectory
 
     public Task<string?> GetCurrencyAsync(Guid accountId, CancellationToken ct = default) =>
         Task.FromResult<string?>(_active.Contains(accountId) ? "IDR" : null);
+
+    public Task<IReadOnlyList<AccountRef>> ListActiveAccountsAsync(CancellationToken ct = default) =>
+        Task.FromResult<IReadOnlyList<AccountRef>>(_active.Select(id => new AccountRef(id, "Test Account", "Bank", "IDR")).ToList());
 }
 
 internal sealed class FakeLedgerUnitOfWork : ILedgerUnitOfWork
@@ -67,4 +70,26 @@ internal sealed class FakeLedgerUnitOfWork : ILedgerUnitOfWork
         SaveCalls++;
         return Task.FromResult(1);
     }
+}
+
+internal sealed class FakeCategorizationRuleRepository : ICategorizationRuleRepository
+{
+    public List<CategorizationRule> Items { get; } = new();
+
+    public Task<IReadOnlyList<CategorizationRule>> ListAsync(bool activeOnly = false, CancellationToken cancellationToken = default)
+    {
+        var list = activeOnly ? Items.Where(r => r.IsActive).OrderByDescending(r => r.Priority).ToList() : Items.ToList();
+        return Task.FromResult<IReadOnlyList<CategorizationRule>>(list);
+    }
+
+    public Task<CategorizationRule?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) =>
+        Task.FromResult(Items.FirstOrDefault(r => r.Id == id));
+
+    public Task AddAsync(CategorizationRule rule, CancellationToken cancellationToken = default)
+    {
+        Items.Add(rule);
+        return Task.CompletedTask;
+    }
+
+    public void Remove(CategorizationRule rule) => Items.Remove(rule);
 }

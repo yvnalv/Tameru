@@ -68,9 +68,11 @@ export interface Transaction {
   amount: number;
   currencyCode: string;
   accountId: string;
+  accountName?: string | null;
   toAccountId: string | null;
   budgetCategoryId: string | null;
   categoryId: string | null;
+  categoryName?: string | null;
   subCategoryId: string | null;
   status: string;
   description: string | null;
@@ -156,6 +158,70 @@ export interface AuthUser {
   displayName: string;
   locale: string;
   budgetCycleStartDay?: number;
+  apiToken?: string | null;
+}
+
+// --- Automations & Rules ----------------------------------------------------
+
+export type RuleMatchField = 'Payee' | 'Description';
+export type RuleMatchOperator = 'Contains' | 'Equals' | 'StartsWith' | 'Regex';
+
+export interface RuleDto {
+  id: string;
+  name: string;
+  pattern: string;
+  matchField: RuleMatchField;
+  matchOperator: RuleMatchOperator;
+  targetCategoryId: string | null;
+  targetBudgetCategoryId: string | null;
+  targetSubCategoryId: string | null;
+  targetStatus: string | null;
+  priority: number;
+  isActive: boolean;
+}
+
+export interface CreateRuleRequest {
+  name: string;
+  pattern: string;
+  matchField?: RuleMatchField;
+  matchOperator?: RuleMatchOperator;
+  targetCategoryId?: string | null;
+  targetBudgetCategoryId?: string | null;
+  targetSubCategoryId?: string | null;
+  targetStatus?: string | null;
+  priority?: number;
+  isActive?: boolean;
+}
+
+export interface UpdateRuleRequest {
+  name: string;
+  pattern: string;
+  matchField: RuleMatchField;
+  matchOperator: RuleMatchOperator;
+  targetCategoryId: string | null;
+  targetBudgetCategoryId: string | null;
+  targetSubCategoryId: string | null;
+  targetStatus: string | null;
+  priority: number;
+  isActive: boolean;
+}
+
+export interface IngestTransactionRequest {
+  text?: string;
+  amount?: number;
+  title?: string;
+  type?: TransactionType;
+  accountName?: string;
+  accountId?: string;
+  categoryId?: string;
+  date?: string;
+  description?: string;
+}
+
+export interface IngestResultDto {
+  transaction: Transaction;
+  formattedConfirmation: string;
+  appliedRuleName: string | null;
 }
 
 export interface AuthTokens {

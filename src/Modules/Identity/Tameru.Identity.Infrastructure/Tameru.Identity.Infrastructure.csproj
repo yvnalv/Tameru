@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\BuildingBlocks\Tameru.SharedKernel\Tameru.SharedKernel.csproj" />
@@ -6,6 +6,7 @@
     <ProjectReference Include="..\..\..\BuildingBlocks\Tameru.Infrastructure.Common\Tameru.Infrastructure.Common.csproj" />
     <ProjectReference Include="..\Tameru.Identity.Application\Tameru.Identity.Application.csproj" />
     <ProjectReference Include="..\Tameru.Identity.Domain\Tameru.Identity.Domain.csproj" />
+    <ProjectReference Include="..\..\..\Modules.Contracts\Tameru.Modules.Contracts.csproj" />
   </ItemGroup>
 
   <ItemGroup>

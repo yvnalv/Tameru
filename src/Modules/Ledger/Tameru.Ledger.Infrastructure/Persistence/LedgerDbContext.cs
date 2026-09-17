@@ -19,11 +19,13 @@ public sealed class LedgerDbContext : BaseDbContext, ILedgerUnitOfWork
     }
 
     public DbSet<Transaction> Transactions => Set<Transaction>();
+    public DbSet<CategorizationRule> CategorizationRules => Set<CategorizationRule>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasDefaultSchema(Schema);
         modelBuilder.ApplyConfiguration(new TransactionConfiguration());
+        modelBuilder.ApplyConfiguration(new CategorizationRuleConfiguration());
 
         ApplySoftDeleteFilter(modelBuilder);
         base.OnModelCreating(modelBuilder);

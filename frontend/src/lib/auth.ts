@@ -27,3 +27,7 @@ export interface UpdateProfileInput {
 export function updateProfile(input: UpdateProfileInput): Promise<AuthUser> {
   return api.patch<AuthUser>('/auth/me', input);
 }
+
+export function regenerateApiToken(): Promise<{ apiToken: string }> {
+  return api.post<{ apiToken: string }>('/auth/token/regenerate', {});
+}

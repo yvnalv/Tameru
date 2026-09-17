@@ -5,7 +5,7 @@
 ## Phase
 
 **MVP complete + hardened + audited.** M0–M5 (backend) and M6–M8 (frontend + import/polish) done,
-followed by an M9 UI/UX hardening pass and an M10 UX/accessibility audit + fix pass. Quality/ops now in place: **CI** (GitHub Actions) builds and tests both
+followed by an M9 UI/UX hardening pass, an M10 UX/accessibility audit + fix pass, and an M11 Ingestion Speed & Categorization Engine pass. Quality/ops now in place: **CI** (GitHub Actions) builds and tests both
 sides on every PR; **integration tests** (Testcontainers Postgres) cover the money-critical flows;
 and the Docker stack is **VPS-deploy ready** (env-driven secrets, owner seed, `DEPLOYMENT.md`).
 Remaining is optional polish + the post-MVP roadmap. See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md).

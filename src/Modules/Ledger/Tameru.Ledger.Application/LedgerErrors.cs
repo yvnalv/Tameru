@@ -21,4 +21,6 @@ public static class LedgerErrors
 
     public static readonly Error CategoryFlowMismatch =
         new("category_flow_mismatch", "The category does not apply to this transaction type.");
+
+    public static readonly Error RuleNotFound = Error.NotFound("Categorization rule not found.");
 }
