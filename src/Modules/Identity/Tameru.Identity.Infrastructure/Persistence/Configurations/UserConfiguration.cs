@@ -17,5 +17,6 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(u => u.PasswordHash).HasMaxLength(512).IsRequired();
         builder.Property(u => u.DisplayName).HasMaxLength(200).IsRequired();
         builder.Property(u => u.Locale).HasMaxLength(5).IsRequired();
+        builder.Property(u => u.BudgetCycleStartDay).HasDefaultValue(1).IsRequired();
     }
 }

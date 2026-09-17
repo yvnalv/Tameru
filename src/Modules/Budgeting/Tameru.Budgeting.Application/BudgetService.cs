@@ -35,10 +35,11 @@ public sealed class BudgetService
         return periods.Select(p => new BudgetPeriodSummaryDto(p.Id, p.Year, p.Month, p.Note)).ToList();
     }
 
-    public async Task<Result<BudgetPeriodDto>> GetPeriodAsync(int year, int month, CancellationToken ct = default)
+    public async Task<Result<BudgetPeriodDto>> GetPeriodAsync(
+        int year, int month, int? startDay = null, CancellationToken ct = default)
     {
         var period = await _budgets.GetPeriodAsync(year, month, ct);
-        return period is null ? BudgetingErrors.PeriodNotFound : await BuildAsync(period, ct);
+        return period is null ? BudgetingErrors.PeriodNotFound : await BuildAsync(period, startDay, ct);
     }
 
     public async Task<Result<BudgetPeriodSummaryDto>> CreatePeriodAsync(
@@ -56,7 +57,7 @@ public sealed class BudgetService
     }
 
     public async Task<Result<BudgetPeriodDto>> UpsertLinesAsync(
-        Guid periodId, UpsertBudgetLinesRequest request, CancellationToken ct = default)
+        Guid periodId, UpsertBudgetLinesRequest request, int? startDay = null, CancellationToken ct = default)
     {
         var period = await _budgets.GetPeriodByIdAsync(periodId, ct);
         if (period is null)
@@ -85,13 +86,30 @@ public sealed class BudgetService
         }
 
         await _unitOfWork.SaveChangesAsync(ct);
-        return await BuildAsync(period, ct);
+        return await BuildAsync(period, startDay, ct);
     }
 
-    private async Task<BudgetPeriodDto> BuildAsync(BudgetPeriod period, CancellationToken ct)
+    private async Task<BudgetPeriodDto> BuildAsync(BudgetPeriod period, int? startDay, CancellationToken ct)
     {
         var lines = await _budgets.ListLinesAsync(period.Id, ct);
-        var actuals = await _spend.GetExpenseTotalsByCategoryAsync(period.Year, period.Month, ct);
+        var day = Math.Clamp(startDay ?? 1, 1, 28);
+
+        DateOnly first;
+        DateOnly last;
+        if (day == 1)
+        {
+            first = new DateOnly(period.Year, period.Month, 1);
+            last = first.AddMonths(1).AddDays(-1);
+        }
+        else
+        {
+            var clampedDay = Math.Min(day, DateTime.DaysInMonth(period.Year, period.Month));
+            first = new DateOnly(period.Year, period.Month, clampedDay);
+            var nextMonth = first.AddMonths(1);
+            last = nextMonth.AddDays(-1);
+        }
+
+        var actuals = await _spend.GetExpenseTotalsByCategoryAsync(first, last, ct);
         var categories = await _categories.ListAsync(null, null, null, includeInactive: true, ct);
         var names = categories.ToDictionary(c => c.Id, c => c.Name);
 
@@ -108,6 +126,7 @@ public sealed class BudgetService
         var totalActual = lineDtos.Sum(l => l.Actual);
         return new BudgetPeriodDto(
             period.Id, period.Year, period.Month, period.Note,
-            lineDtos, totalPlan, totalActual, totalPlan - totalActual);
+            lineDtos, totalPlan, totalActual, totalPlan - totalActual,
+            first, last);
     }
 }

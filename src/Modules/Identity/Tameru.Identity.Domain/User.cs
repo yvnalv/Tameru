@@ -9,18 +9,20 @@ namespace Tameru.Identity.Domain;
 public sealed class User : AuditableEntity
 {
     public const string DefaultLocale = "en";
+    public const int DefaultBudgetCycleStartDay = 1;
 
     private User()
     {
     }
 
-    private User(Guid id, string email, string passwordHash, string displayName, string locale)
+    private User(Guid id, string email, string passwordHash, string displayName, string locale, int budgetCycleStartDay = DefaultBudgetCycleStartDay)
         : base(id)
     {
         Email = email;
         PasswordHash = passwordHash;
         DisplayName = displayName;
         Locale = locale;
+        BudgetCycleStartDay = budgetCycleStartDay;
     }
 
     /// <summary>Login identifier, stored normalized (trimmed, lower-case).</summary>
@@ -33,7 +35,10 @@ public sealed class User : AuditableEntity
     /// <summary>UI language preference: <c>en</c> or <c>id</c>.</summary>
     public string Locale { get; private set; } = DefaultLocale;
 
-    public static User Create(string email, string passwordHash, string displayName, string? locale = null)
+    /// <summary>Starting day of month for the financial/budget cycle (1..28, e.g. 25 for payday).</summary>
+    public int BudgetCycleStartDay { get; private set; } = DefaultBudgetCycleStartDay;
+
+    public static User Create(string email, string passwordHash, string displayName, string? locale = null, int? budgetCycleStartDay = null)
     {
         if (string.IsNullOrWhiteSpace(email))
         {
@@ -45,12 +50,19 @@ public sealed class User : AuditableEntity
             throw new DomainRuleException("password_required", "Password hash is required.");
         }
 
+        var startDay = budgetCycleStartDay ?? DefaultBudgetCycleStartDay;
+        if (startDay is < 1 or > 28)
+        {
+            throw new DomainRuleException("budget_cycle_start_day_invalid", "Cycle start day must be between 1 and 28.");
+        }
+
         return new User(
             Guid.NewGuid(),
             Normalize(email),
             passwordHash,
             string.IsNullOrWhiteSpace(displayName) ? Normalize(email) : displayName.Trim(),
-            NormalizeLocale(locale));
+            NormalizeLocale(locale),
+            startDay);
     }
 
     public void SetPasswordHash(string passwordHash)
@@ -63,7 +75,7 @@ public sealed class User : AuditableEntity
         PasswordHash = passwordHash;
     }
 
-    public void UpdateProfile(string? displayName, string? locale)
+    public void UpdateProfile(string? displayName, string? locale, int? budgetCycleStartDay = null)
     {
         if (!string.IsNullOrWhiteSpace(displayName))
         {
@@ -73,6 +85,15 @@ public sealed class User : AuditableEntity
         if (!string.IsNullOrWhiteSpace(locale))
         {
             Locale = NormalizeLocale(locale);
+        }
+
+        if (budgetCycleStartDay.HasValue)
+        {
+            if (budgetCycleStartDay.Value is < 1 or > 28)
+            {
+                throw new DomainRuleException("budget_cycle_start_day_invalid", "Cycle start day must be between 1 and 28.");
+            }
+            BudgetCycleStartDay = budgetCycleStartDay.Value;
         }
     }
 

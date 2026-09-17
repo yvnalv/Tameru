@@ -119,8 +119,14 @@ async function signOut(): Promise<void> {
         @click="signOut"
       />
 
-      <!-- Logged-in owner Profile Pill -->
-      <div v-if="auth.user" class="ml-1 hidden items-center gap-2 border-l border-border pl-3 sm:flex">
+      <!-- Logged-in owner Profile Pill (Clickable -> Settings) -->
+      <button
+        v-if="auth.user"
+        type="button"
+        class="ml-1 hidden items-center gap-2 border-l border-border pl-3 sm:flex rounded-control p-1 hover:bg-surface-2 transition-colors text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+        :title="$t('nav.settings')"
+        @click="router.push({ name: 'settings' })"
+      >
         <AvatarChip :name="auth.user.displayName || auth.user.email" />
         <div class="hidden leading-tight lg:block">
           <p class="max-w-[8.5rem] truncate text-xs font-semibold text-text">
@@ -130,7 +136,7 @@ async function signOut(): Promise<void> {
             {{ auth.user.email }}
           </p>
         </div>
-      </div>
+      </button>
     </div>
   </header>
 </template>

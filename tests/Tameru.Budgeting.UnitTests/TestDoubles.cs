@@ -115,6 +115,10 @@ internal sealed class StubCategorySpendQuery : ICategorySpendQuery
     public Task<IReadOnlyDictionary<Guid, decimal>> GetExpenseTotalsByCategoryAsync(
         int year, int month, CancellationToken ct = default) =>
         Task.FromResult<IReadOnlyDictionary<Guid, decimal>>(_totals);
+
+    public Task<IReadOnlyDictionary<Guid, decimal>> GetExpenseTotalsByCategoryAsync(
+        DateOnly from, DateOnly to, CancellationToken ct = default) =>
+        Task.FromResult<IReadOnlyDictionary<Guid, decimal>>(_totals);
 }
 
 internal sealed class FakeBudgetingUnitOfWork : IBudgetingUnitOfWork

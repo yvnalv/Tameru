@@ -35,3 +35,7 @@ export function clearSession(): void {
   localStorage.removeItem(REFRESH_KEY);
   localStorage.removeItem(USER_KEY);
 }
+
+export function setUserSession(user: AuthUser): void {
+  localStorage.setItem(USER_KEY, JSON.stringify(user));
+}

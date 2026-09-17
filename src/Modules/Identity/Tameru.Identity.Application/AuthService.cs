@@ -107,7 +107,7 @@ public sealed class AuthService
             return IdentityErrors.UserNotFound;
         }
 
-        user.UpdateProfile(request.DisplayName, request.Locale);
+        user.UpdateProfile(request.DisplayName, request.Locale, request.BudgetCycleStartDay);
         await _unitOfWork.SaveChangesAsync(ct);
         return Map(user);
     }
@@ -123,5 +123,5 @@ public sealed class AuthService
         return new AuthResponse(access.Token, access.ExpiresAt, refresh.Raw, Map(user));
     }
 
-    private static UserDto Map(User user) => new(user.Id, user.Email, user.DisplayName, user.Locale);
+    private static UserDto Map(User user) => new(user.Id, user.Email, user.DisplayName, user.Locale, user.BudgetCycleStartDay);
 }

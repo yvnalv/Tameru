@@ -48,15 +48,15 @@ public static class BudgetingEndpoints
                 await service.ListPeriodsAsync(year, ct))));
 
         group.MapGet("/{year:int}/{month:int}", async (
-            int year, int month, BudgetService service, CancellationToken ct) =>
-            (await service.GetPeriodAsync(year, month, ct)).ToHttp());
+            int year, int month, int? startDay, BudgetService service, CancellationToken ct) =>
+            (await service.GetPeriodAsync(year, month, startDay, ct)).ToHttp());
 
         group.MapPost("/", async (CreateBudgetPeriodRequest request, BudgetService service, CancellationToken ct) =>
             (await service.CreatePeriodAsync(request, ct)).ToHttp());
 
         group.MapPut("/{id:guid}/lines", async (
-            Guid id, UpsertBudgetLinesRequest request, BudgetService service, CancellationToken ct) =>
-            (await service.UpsertLinesAsync(id, request, ct)).ToHttp());
+            Guid id, int? startDay, UpsertBudgetLinesRequest request, BudgetService service, CancellationToken ct) =>
+            (await service.UpsertLinesAsync(id, request, startDay, ct)).ToHttp());
     }
 
     private static void MapMasterPlan(IEndpointRouteBuilder app)

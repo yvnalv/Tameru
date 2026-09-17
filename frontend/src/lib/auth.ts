@@ -17,3 +17,13 @@ export function logout(refreshToken: string): Promise<void> {
 export function me(): Promise<AuthUser> {
   return api.get<AuthUser>('/auth/me');
 }
+
+export interface UpdateProfileInput {
+  displayName?: string;
+  locale?: string;
+  budgetCycleStartDay?: number;
+}
+
+export function updateProfile(input: UpdateProfileInput): Promise<AuthUser> {
+  return api.patch<AuthUser>('/auth/me', input);
+}

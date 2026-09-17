@@ -16,14 +16,19 @@ internal sealed class CategorySpendQuery : ICategorySpendQuery
 
     public CategorySpendQuery(LedgerDbContext db) => _db = db;
 
-    public async Task<IReadOnlyDictionary<Guid, decimal>> GetExpenseTotalsByCategoryAsync(
+    public Task<IReadOnlyDictionary<Guid, decimal>> GetExpenseTotalsByCategoryAsync(
         int year, int month, CancellationToken cancellationToken = default)
     {
         var first = new DateOnly(year, month, 1);
         var last = first.AddMonths(1).AddDays(-1);
+        return GetExpenseTotalsByCategoryAsync(first, last, cancellationToken);
+    }
 
+    public async Task<IReadOnlyDictionary<Guid, decimal>> GetExpenseTotalsByCategoryAsync(
+        DateOnly from, DateOnly to, CancellationToken cancellationToken = default)
+    {
         var expenses = _db.Transactions
-            .Where(t => t.Type == TransactionType.Expense && t.Date >= first && t.Date <= last);
+            .Where(t => t.Type == TransactionType.Expense && t.Date >= from && t.Date <= to);
 
         var totals = new Dictionary<Guid, decimal>();
 

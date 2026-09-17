@@ -20,6 +20,7 @@ import type { BudgetLine, BudgetPeriod, Category } from '@/types/api';
 import { errorMessage } from '@/lib/errorMessage';
 import { displayName } from '@/lib/seededNames';
 import { useToastStore } from '@/stores/toast';
+import { useAuthStore } from '@/stores/auth';
 import AppCard from '@/components/ui/AppCard.vue';
 import IconButton from '@/components/ui/IconButton.vue';
 import LoadingBlock from '@/components/ui/LoadingBlock.vue';
@@ -29,10 +30,23 @@ import Money from '@/components/ui/Money.vue';
 
 const { t, te, locale } = useI18n();
 const toast = useToastStore();
+const auth = useAuthStore();
 
-const now = new Date();
-const year = ref(now.getFullYear());
-const month = ref(now.getMonth() + 1);
+const budgetCycleStartDay = computed(() => auth.user?.budgetCycleStartDay ?? 1);
+
+function getInitialPeriod(): { y: number; m: number } {
+  const n = new Date();
+  const startDay = auth.user?.budgetCycleStartDay ?? 1;
+  if (startDay > 1 && n.getDate() < startDay) {
+    const prev = new Date(n.getFullYear(), n.getMonth() - 1, 1);
+    return { y: prev.getFullYear(), m: prev.getMonth() + 1 };
+  }
+  return { y: n.getFullYear(), m: n.getMonth() + 1 };
+}
+
+const initialPeriod = getInitialPeriod();
+const year = ref(initialPeriod.y);
+const month = ref(initialPeriod.m);
 
 const period = ref<BudgetPeriod | null>(null);
 const categories = ref<Category[]>([]);
@@ -54,28 +68,76 @@ const monthLabel = computed(() =>
   }),
 );
 
+const cycleDateRangeLabel = computed(() => {
+  if (period.value?.startDate && period.value?.endDate) {
+    const s = new Date(period.value.startDate + 'T00:00:00');
+    const e = new Date(period.value.endDate + 'T00:00:00');
+    const startStr = s.toLocaleDateString(locale.value, { day: 'numeric', month: 'short' });
+    const endStr = e.toLocaleDateString(locale.value, { day: 'numeric', month: 'short', year: 'numeric' });
+    return `${startStr} – ${endStr}`;
+  }
+  const sDay = Math.min(budgetCycleStartDay.value, new Date(year.value, month.value, 0).getDate());
+  if (budgetCycleStartDay.value === 1) {
+    const lastDay = new Date(year.value, month.value, 0).getDate();
+    return `1 – ${lastDay} ${new Date(year.value, month.value - 1, 1).toLocaleDateString(locale.value, { month: 'short', year: 'numeric' })}`;
+  }
+  const s = new Date(year.value, month.value - 1, sDay);
+  const next = new Date(year.value, month.value, sDay);
+  const e = new Date(next.getTime() - 24 * 60 * 60 * 1000);
+  const startStr = s.toLocaleDateString(locale.value, { day: 'numeric', month: 'short' });
+  const endStr = e.toLocaleDateString(locale.value, { day: 'numeric', month: 'short', year: 'numeric' });
+  return `${startStr} – ${endStr}`;
+});
+
 const expenseCats = computed(() =>
   categories.value.filter(
     (c) => c.level === 'Category' && c.isActive && (c.flow === 'Any' || c.flow === 'Expense'),
   ),
 );
 
-// Pacing calculations
-const daysInMonth = computed(() => new Date(year.value, month.value, 0).getDate());
-const isCurrentMonth = computed(() => {
+// Pacing calculations with financial cycle support
+const cycleTotalDays = computed(() => {
+  if (period.value?.startDate && period.value?.endDate) {
+    const s = new Date(period.value.startDate + 'T00:00:00');
+    const e = new Date(period.value.endDate + 'T00:00:00');
+    return Math.max(1, Math.round((e.getTime() - s.getTime()) / (1000 * 60 * 60 * 24)) + 1);
+  }
+  return new Date(year.value, month.value, 0).getDate();
+});
+
+const isCurrentCycle = computed(() => {
+  if (period.value?.startDate && period.value?.endDate) {
+    const s = new Date(period.value.startDate + 'T00:00:00');
+    const e = new Date(period.value.endDate + 'T23:59:59');
+    const n = new Date();
+    return n >= s && n <= e;
+  }
   const n = new Date();
   return year.value === n.getFullYear() && month.value === n.getMonth() + 1;
 });
+
 const currentDay = computed(() => {
-  if (isCurrentMonth.value) {
-    return Math.min(daysInMonth.value, new Date().getDate());
+  if (period.value?.startDate && period.value?.endDate) {
+    const s = new Date(period.value.startDate + 'T00:00:00');
+    const e = new Date(period.value.endDate + 'T23:59:59');
+    const n = new Date();
+    if (n < s) return 0;
+    if (n > e) return cycleTotalDays.value;
+    const diff = n.getTime() - s.getTime();
+    return Math.min(cycleTotalDays.value, Math.max(1, Math.floor(diff / (1000 * 60 * 60 * 24)) + 1));
   }
+  if (isCurrentCycle.value) {
+    return Math.min(cycleTotalDays.value, new Date().getDate());
+  }
+  const now = new Date();
   const periodDate = new Date(year.value, month.value - 1, 1);
   const nowDate = new Date(now.getFullYear(), now.getMonth(), 1);
-  return periodDate < nowDate ? daysInMonth.value : 0;
+  return periodDate < nowDate ? cycleTotalDays.value : 0;
 });
-const daysRemaining = computed(() => Math.max(1, daysInMonth.value - currentDay.value));
-const monthPacingPercent = computed(() => Math.round((currentDay.value / daysInMonth.value) * 100));
+
+const daysInMonth = computed(() => cycleTotalDays.value);
+const daysRemaining = computed(() => Math.max(1, cycleTotalDays.value - currentDay.value));
+const monthPacingPercent = computed(() => Math.round((currentDay.value / cycleTotalDays.value) * 100));
 
 const dailyAllowance = computed(() => {
   if (!period.value) return 0;
@@ -92,7 +154,7 @@ async function loadPeriod(): Promise<void> {
   failed.value = false;
   editing.value = false;
   try {
-    period.value = await getBudgetPeriod(year.value, month.value);
+    period.value = await getBudgetPeriod(year.value, month.value, budgetCycleStartDay.value);
   } catch (error) {
     if (error instanceof ApiClientError && error.code === 'not_found') {
       period.value = null;
@@ -237,7 +299,7 @@ async function copyFromLastMonth(): Promise<void> {
   const prevYear = d.getFullYear();
   const prevMonth = d.getMonth() + 1;
   try {
-    const prev = await getBudgetPeriod(prevYear, prevMonth);
+    const prev = await getBudgetPeriod(prevYear, prevMonth, budgetCycleStartDay.value);
     if (!prev || !prev.lines.length) {
       toast.error(t('budget.noPreviousBudget'));
       return;
@@ -267,7 +329,7 @@ async function savePlans(): Promise<void> {
       categoryId: c.id,
       planAmount: Number(planDraft[c.id] || 0),
     }));
-    period.value = await upsertBudgetLines(period.value.id, lines);
+    period.value = await upsertBudgetLines(period.value.id, lines, budgetCycleStartDay.value);
     editing.value = false;
     toast.success(t('common.done'));
   } catch (error) {
@@ -287,7 +349,7 @@ onMounted(async () => {
   <div class="space-y-4">
     <!-- Month Navigation & View Actions -->
     <div class="flex flex-wrap items-center justify-between gap-3">
-      <!-- Month switcher -->
+      <!-- Month switcher with Cycle Date Range -->
       <div class="flex items-center gap-2">
         <IconButton
           :icon="ChevronLeft"
@@ -295,13 +357,23 @@ onMounted(async () => {
           :size="16"
           @click="changeMonth(-1)"
         />
-        <span class="min-w-[9rem] text-center text-sm font-semibold">{{ monthLabel }}</span>
+        <div class="flex flex-col items-center min-w-[10rem]">
+          <span class="text-sm font-bold text-text tracking-tight">{{ monthLabel }}</span>
+          <span class="text-[11px] font-medium text-text-muted mt-0.5">{{ cycleDateRangeLabel }}</span>
+        </div>
         <IconButton
           :icon="ChevronRight"
           :label="t('budget.nextMonth')"
           :size="16"
           @click="changeMonth(1)"
         />
+        <span
+          v-if="budgetCycleStartDay > 1"
+          class="hidden sm:inline-flex items-center rounded-full bg-accent-soft px-2 py-0.5 text-[11px] font-semibold text-accent"
+          :title="t('settings.cycleActiveBadge', { day: budgetCycleStartDay })"
+        >
+          {{ t('settings.cycleDayShort', { day: budgetCycleStartDay }) }}
+        </span>
       </div>
 
       <!-- View layout toggle (Grouped vs Flat) when viewing -->

@@ -10,8 +10,10 @@ export function listBudgetPeriods(year?: number): Promise<BudgetPeriodSummary[]>
   return api.get<BudgetPeriodSummary[]>('/budget-periods', { params: year ? { year } : {} });
 }
 
-export function getBudgetPeriod(year: number, month: number): Promise<BudgetPeriod> {
-  return api.get<BudgetPeriod>(`/budget-periods/${year}/${month}`);
+export function getBudgetPeriod(year: number, month: number, startDay?: number): Promise<BudgetPeriod> {
+  return api.get<BudgetPeriod>(`/budget-periods/${year}/${month}`, {
+    params: startDay ? { startDay } : {},
+  });
 }
 
 export function createBudgetPeriod(year: number, month: number, note?: string): Promise<BudgetPeriod> {
@@ -23,8 +25,10 @@ export interface BudgetLineInput {
   planAmount: number;
 }
 
-export function upsertBudgetLines(periodId: string, lines: BudgetLineInput[]): Promise<BudgetPeriod> {
-  return api.put<BudgetPeriod>(`/budget-periods/${periodId}/lines`, { lines });
+export function upsertBudgetLines(periodId: string, lines: BudgetLineInput[], startDay?: number): Promise<BudgetPeriod> {
+  return api.put<BudgetPeriod>(`/budget-periods/${periodId}/lines`, { lines }, {
+    params: startDay ? { startDay } : {},
+  });
 }
 
 // --- Master Plan ------------------------------------------------------------

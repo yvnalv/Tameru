@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import * as authApi from '@/lib/auth';
-import { clearSession, getRefreshToken, getUser, setSession } from '@/lib/session';
+import { clearSession, getRefreshToken, getUser, setSession, setUserSession } from '@/lib/session';
 import { setLocale, type AppLocale } from '@/i18n';
 import type { AuthUser } from '@/types/api';
 
@@ -35,11 +35,21 @@ export const useAuthStore = defineStore('auth', () => {
     user.value = null;
   }
 
+  async function updateProfile(data: authApi.UpdateProfileInput): Promise<AuthUser> {
+    const updated = await authApi.updateProfile(data);
+    user.value = updated;
+    setUserSession(updated);
+    if (data.locale) {
+      applyUserLocale(updated);
+    }
+    return updated;
+  }
+
   /** Drop the local session without a server round-trip (used on hard 401). */
   function endSession(): void {
     clearSession();
     user.value = null;
   }
 
-  return { user, isAuthenticated, login, logout, endSession };
+  return { user, isAuthenticated, login, logout, updateProfile, endSession };
 });
