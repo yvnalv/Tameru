@@ -1,31 +1,54 @@
 <script setup lang="ts">
-import { onMounted, ref, computed } from 'vue';
+import { onMounted, ref, computed, watch } from 'vue';
 import { RouterLink } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import { Plus, ArrowRight, TrendingUp, ShieldCheck, Sparkles } from 'lucide-vue-next';
 import {
-  getCashflow, getNetWorth, getCategoryTracker, getFinancialHealth, getEnvelopeReport,
+  Plus,
+  ArrowRight,
+  TrendingUp,
+  ShieldCheck,
+  Sparkles,
+  ArrowDownLeft,
+  ArrowUpRight,
+  ArrowLeftRight,
+  Wallet,
+  Building2,
+  CreditCard,
+  BarChart3,
+  PieChart,
+} from 'lucide-vue-next';
+import {
+  getCashflow,
+  getNetWorth,
+  getCategoryTracker,
+  getFinancialHealth,
+  getEnvelopeReport,
 } from '@/lib/reports';
 import { listTransactions } from '@/lib/transactions';
 import { listCategories } from '@/lib/categories';
 import type {
-  CashflowReport, Category, EnvelopeReport, FinancialHealthReport, NetWorthReport, Transaction,
+  CashflowReport,
+  Category,
+  EnvelopeReport,
+  FinancialHealthReport,
+  NetWorthReport,
+  Transaction,
 } from '@/types/api';
 import { displayName } from '@/lib/seededNames';
 import { formatShortDate } from '@/lib/format';
-import { chart } from '@/lib/chartTheme';
-import BalanceCard from '@/components/ui/BalanceCard.vue';
-import AppCard from '@/components/ui/AppCard.vue';
+import { getChartTheme } from '@/lib/chartTheme';
+import { useThemeStore } from '@/stores/theme';
+import { useTransactionModalStore } from '@/stores/transactionModal';
 import SpendBar from '@/components/ui/SpendBar.vue';
-import { spectrumColor } from '@/lib/spectrum';
 import CashflowChart from '@/components/ui/CashflowChart.vue';
 import DonutChart from '@/components/ui/DonutChart.vue';
-import AvatarChip from '@/components/ui/AvatarChip.vue';
 import Money from '@/components/ui/Money.vue';
 import AppButton from '@/components/ui/AppButton.vue';
 import LoadingBlock from '@/components/ui/LoadingBlock.vue';
 
 const { t, locale } = useI18n();
+const themeStore = useThemeStore();
+const transactionModal = useTransactionModalStore();
 
 const netWorth = ref<NetWorthReport | null>(null);
 const cashflow = ref<CashflowReport | null>(null);
@@ -48,6 +71,13 @@ const catName = (id: string | null) =>
 
 const currency = computed(() => netWorth.value?.currencyCode ?? 'IDR');
 const accounts = computed(() => netWorth.value?.accounts ?? []);
+
+// Active account tab in the decorative/functional card
+const selectedAccountId = ref<string | null>(null);
+const activeAccount = computed(() => {
+  if (!accounts.value.length) return null;
+  return accounts.value.find((a) => a.accountId === selectedAccountId.value) ?? accounts.value[0];
+});
 
 const nwSegments = computed(() =>
   accounts.value.filter((a) => a.balance > 0).map((a) => ({ label: a.name, value: a.balance })),
@@ -84,10 +114,26 @@ const donutData = computed(() => {
   return top;
 });
 
-const donutColor = (i: number) => chart.spectrum[i % chart.spectrum.length];
+const donutColor = (i: number) => {
+  const ct = getChartTheme(themeStore.isDark);
+  return ct.spectrum[i % ct.spectrum.length];
+};
 
 function signedAmount(tx: Transaction): number {
   return tx.type === 'Expense' ? -tx.amount : tx.amount;
+}
+
+// Quick action shortcuts
+function onSend(): void {
+  transactionModal.openCreate({ type: 'Expense', accountId: activeAccount.value?.accountId });
+}
+
+function onReceive(): void {
+  transactionModal.openCreate({ type: 'Income', accountId: activeAccount.value?.accountId });
+}
+
+function onAddRecord(): void {
+  transactionModal.openCreate({ accountId: activeAccount.value?.accountId });
 }
 
 // Decision support insights derived from real numbers
@@ -173,6 +219,10 @@ async function load(): Promise<void> {
     monthSpend.value = spend.categories.map((c) => ({ categoryId: c.categoryId, total: c.total }));
     monthIncome.value = income.categories.map((c) => ({ categoryId: c.categoryId, total: c.total }));
     recent.value = txns.items;
+
+    if (!selectedAccountId.value && nw.accounts.length > 0) {
+      selectedAccountId.value = nw.accounts[0].accountId;
+    }
   } catch {
     failed.value = true;
   } finally {
@@ -180,11 +230,19 @@ async function load(): Promise<void> {
   }
 }
 
+// Auto-reload when transactions are created or updated
+watch(
+  () => transactionModal.lastEventTimestamp,
+  () => {
+    load();
+  },
+);
+
 onMounted(load);
 </script>
 
 <template>
-  <div>
+  <div class="space-y-6">
     <LoadingBlock v-if="loading" />
 
     <div v-else-if="failed" class="py-24 text-center">
@@ -192,286 +250,505 @@ onMounted(load);
       <AppButton class="mt-4" variant="secondary" @click="load">{{ t('common.retry') }}</AppButton>
     </div>
 
-    <div v-else class="space-y-4">
-      <!-- 1. Net worth hero + this-month -->
-      <div class="grid gap-4 lg:grid-cols-3">
-        <BalanceCard
-          class="lg:col-span-2"
-          :label="t('dashboard.netWorth')"
-          :value="netWorth?.total ?? 0"
-          :currency="currency"
-          :caption="t('dashboard.acrossAccounts', { count: accounts.length })"
-        >
-          <template #footer>
-            <div v-if="nwSegments.length">
-              <SpendBar :segments="nwSegments" :label="t('dashboard.netWorth')" />
-              <ul class="mt-2.5 flex flex-wrap gap-x-4 gap-y-1">
-                <li
-                  v-for="(seg, i) in nwSegments"
-                  :key="seg.label"
-                  class="flex items-center gap-1.5 text-[12px] text-text-muted"
-                >
-                  <span
-                    class="h-2 w-2 shrink-0 rounded-full"
-                    :style="{ backgroundColor: spectrumColor(i) }"
-                    aria-hidden="true"
-                  />
-                  <span class="truncate">{{ seg.label }}</span>
-                </li>
-              </ul>
+    <div v-else class="space-y-6">
+      <!-- 1. Top Row: 3-Tier KPI Summary Row (Modern Reference Specification) -->
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <!-- Net Worth / Total Balance Card -->
+        <div class="rounded-card border border-border bg-surface p-5 shadow-card transition-all">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold uppercase tracking-wider text-text-muted">{{ t('dashboard.netWorth') }}</span>
+            <div class="flex h-8 w-8 items-center justify-center rounded-full bg-accent/15 text-accent">
+              <Wallet :size="16" />
             </div>
-          </template>
-        </BalanceCard>
-
-        <AppCard>
-          <div class="flex flex-wrap items-baseline justify-between gap-x-2">
-            <h2 class="text-sm font-semibold">{{ t('dashboard.thisMonth') }}</h2>
-            <span class="text-[12px] text-text-muted">{{ currentMonthLabel }}</span>
           </div>
-          <dl class="mt-3 divide-y divide-border">
-            <div class="flex items-center justify-between py-2.5">
-              <dt class="text-[13px] text-text-muted">{{ t('dashboard.monthIncome') }}</dt>
-              <dd><Money :value="cashflow?.income ?? 0" :currency="currency" colored class="text-sm font-medium" /></dd>
+          <div class="mt-3 flex items-baseline justify-between">
+            <span class="tnum text-2xl font-bold tracking-tight text-text sm:text-3xl">
+              <Money :value="netWorth?.total ?? 0" :currency="currency" />
+            </span>
+            <span class="rounded-full bg-surface-2 px-2 py-0.5 text-[11px] font-semibold text-text-muted">
+              {{ t('dashboard.acrossAccounts', { count: accounts.length }) }}
+            </span>
+          </div>
+          <div class="mt-3 flex items-center justify-between border-t border-border pt-2.5 text-xs text-text-muted">
+            <span>{{ t('dashboard.thisMonth') }}</span>
+            <span class="font-semibold text-positive" v-if="(cashflow?.net ?? 0) >= 0">
+              +<Money :value="cashflow?.net ?? 0" :currency="currency" />
+            </span>
+            <span class="font-semibold text-negative" v-else>
+              <Money :value="cashflow?.net ?? 0" :currency="currency" />
+            </span>
+          </div>
+        </div>
+
+        <!-- Monthly Inflow (Income) Card -->
+        <div class="rounded-card border border-border bg-surface p-5 shadow-card transition-all">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold uppercase tracking-wider text-text-muted">{{ t('dashboard.monthIncome') }}</span>
+            <div class="flex h-8 w-8 items-center justify-center rounded-full bg-positive/15 text-positive">
+              <ArrowDownLeft :size="16" />
             </div>
-            <div class="flex items-center justify-between py-2.5">
-              <dt class="text-[13px] text-text-muted">{{ t('dashboard.monthExpense') }}</dt>
-              <dd><Money :value="-(cashflow?.expense ?? 0)" :currency="currency" colored class="text-sm font-medium" /></dd>
+          </div>
+          <div class="mt-3 flex items-baseline justify-between">
+            <span class="tnum text-2xl font-bold tracking-tight text-positive sm:text-3xl">
+              +<Money :value="cashflow?.income ?? 0" :currency="currency" />
+            </span>
+            <span class="rounded-full bg-positive/15 px-2 py-0.5 text-[11px] font-bold text-positive">
+              {{ currentMonthLabel }}
+            </span>
+          </div>
+          <div class="mt-3 flex items-center justify-between border-t border-border pt-2.5 text-xs text-text-muted">
+            <span>{{ t('dashboard.savingsRate') }}</span>
+            <span class="font-semibold text-text tnum">{{ health?.savingsRate ?? 0 }}%</span>
+          </div>
+        </div>
+
+        <!-- Monthly Outflow (Expense) Card -->
+        <div class="rounded-card border border-border bg-surface p-5 shadow-card transition-all sm:col-span-2 lg:col-span-1">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold uppercase tracking-wider text-text-muted">{{ t('dashboard.monthExpense') }}</span>
+            <div class="flex h-8 w-8 items-center justify-center rounded-full bg-negative/15 text-negative">
+              <ArrowUpRight :size="16" />
             </div>
-            <div class="flex items-center justify-between py-2.5">
-              <dt class="text-[13px] font-medium">{{ t('dashboard.monthNet') }}</dt>
-              <dd><Money :value="cashflow?.net ?? 0" :currency="currency" colored class="text-sm font-semibold" /></dd>
-            </div>
-          </dl>
-        </AppCard>
+          </div>
+          <div class="mt-3 flex items-baseline justify-between">
+            <span class="tnum text-2xl font-bold tracking-tight text-negative sm:text-3xl">
+              -<Money :value="cashflow?.expense ?? 0" :currency="currency" />
+            </span>
+            <span class="rounded-full bg-negative/15 px-2 py-0.5 text-[11px] font-bold text-negative">
+              {{ t('dashboard.dailyBurn') }}: <Money :value="health?.dailyBurnRate ?? 0" :currency="currency" />
+            </span>
+          </div>
+          <div class="mt-3 flex items-center justify-between border-t border-border pt-2.5 text-xs text-text-muted">
+            <span>{{ t('dashboard.projectedMonthEnd') }}</span>
+            <span class="font-semibold text-text tnum">
+              <Money :value="health?.projectedMonthEndExpense ?? 0" :currency="currency" />
+            </span>
+          </div>
+        </div>
       </div>
 
-      <!-- 2. Decision Support KPI Strip (3 core financial health pillars) -->
+      <!-- 2. Second Row: Active Account & Balance Card + Statistics Cashflow Chart -->
+      <div class="grid grid-cols-1 gap-6 lg:grid-cols-12">
+        <!-- Reference Active Account Card (5 Cols) -->
+        <div class="rounded-card border border-border bg-surface p-6 shadow-card lg:col-span-5 flex flex-col justify-between space-y-4">
+          <div>
+            <div class="flex items-center justify-between">
+              <h3 class="text-sm font-bold flex items-center gap-2">
+                <Building2 :size="16" class="text-accent" />
+                <span>{{ t('dashboard.accounts') }}</span>
+              </h3>
+              <RouterLink
+                :to="{ name: 'accounts' }"
+                class="text-xs font-semibold text-accent hover:underline flex items-center gap-1"
+              >
+                {{ t('dashboard.viewAll') }}
+                <ArrowRight :size="12" />
+              </RouterLink>
+            </div>
+
+            <!-- Account Switcher Tabs -->
+            <div v-if="accounts.length" class="mt-3 flex flex-wrap gap-1 rounded-full border border-border bg-surface-2 p-1 text-xs">
+              <button
+                v-for="acc in accounts.slice(0, 4)"
+                :key="acc.accountId"
+                type="button"
+                class="flex-1 rounded-full py-1 px-2.5 font-medium transition-all text-center truncate"
+                :class="
+                  (activeAccount?.accountId === acc.accountId)
+                    ? 'bg-surface text-text shadow-sm font-bold'
+                    : 'text-text-muted hover:text-text'
+                "
+                @click="selectedAccountId = acc.accountId"
+              >
+                {{ acc.name }}
+              </button>
+            </div>
+
+            <!-- Modern Cobalt Account Balance Card -->
+            <div class="mt-4 rounded-2xl bg-accent p-5 text-accent-contrast shadow-card relative overflow-hidden">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <Building2 :size="18" />
+                  <span class="text-xs font-semibold uppercase tracking-wider opacity-90">
+                    {{ activeAccount?.name ?? 'Main Account' }}
+                  </span>
+                </div>
+                <CreditCard :size="20" class="opacity-80" />
+              </div>
+
+              <div class="mt-6">
+                <div class="text-xs opacity-80 font-medium">Available Balance</div>
+                <div class="text-2xl font-bold tnum tracking-tight mt-0.5">
+                  <Money :value="activeAccount?.balance ?? 0" :currency="activeAccount?.currencyCode ?? currency" />
+                </div>
+              </div>
+
+              <div class="mt-5 flex items-center justify-between text-xs opacity-80 font-mono">
+                <div>**** {{ activeAccount?.accountId?.slice(-4) ?? '2026' }}</div>
+                <div class="text-[11px] font-sans font-medium uppercase">
+                  {{ t(`enums.accountType.${activeAccount?.type ?? 'Bank'}`) }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Action Buttons Row -->
+          <div class="grid grid-cols-3 gap-2.5 pt-1">
+            <button
+              type="button"
+              class="flex flex-col items-center justify-center rounded-control border border-border bg-surface-2 py-2 text-[11px] font-semibold text-text transition-colors hover:bg-surface-2/70 active:scale-95"
+              @click="onSend"
+            >
+              <ArrowUpRight :size="15" class="mb-1 text-negative" />
+              <span>Send</span>
+            </button>
+            <button
+              type="button"
+              class="flex flex-col items-center justify-center rounded-control border border-border bg-surface-2 py-2 text-[11px] font-semibold text-text transition-colors hover:bg-surface-2/70 active:scale-95"
+              @click="onReceive"
+            >
+              <ArrowDownLeft :size="15" class="mb-1 text-positive" />
+              <span>Receive</span>
+            </button>
+            <button
+              type="button"
+              class="flex flex-col items-center justify-center rounded-control border border-border bg-surface-2 py-2 text-[11px] font-semibold text-text transition-colors hover:bg-surface-2/70 active:scale-95"
+              @click="onAddRecord"
+            >
+              <Plus :size="15" class="mb-1 text-accent" />
+              <span>Record</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Statistics & Cashflow Chart Card (7 Cols) -->
+        <div class="rounded-card border border-border bg-surface p-6 shadow-card lg:col-span-7 flex flex-col justify-between space-y-4">
+          <div>
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border pb-3">
+              <div>
+                <h3 class="text-sm font-bold flex items-center gap-2">
+                  <BarChart3 :size="16" class="text-accent" />
+                  <span>{{ t('dashboard.cashflow') }}</span>
+                </h3>
+                <p class="text-xs text-text-muted">{{ t('dashboard.monthIncome') }} vs {{ t('dashboard.monthExpense') }} ({{ cashflow?.year }})</p>
+              </div>
+
+              <!-- View Switcher -->
+              <div class="inline-flex rounded-full border border-border bg-surface-2 p-0.5 text-xs">
+                <button
+                  type="button"
+                  class="rounded-full px-2.5 py-0.5 font-medium transition-all"
+                  :class="cashflowMode === 'cashflow' ? 'bg-surface text-text font-bold shadow-sm' : 'text-text-muted hover:text-text'"
+                  @click="cashflowMode = 'cashflow'"
+                >
+                  {{ t('dashboard.viewCashflow') }}
+                </button>
+                <button
+                  type="button"
+                  class="rounded-full px-2.5 py-0.5 font-medium transition-all"
+                  :class="cashflowMode === 'savings' ? 'bg-surface text-text font-bold shadow-sm' : 'text-text-muted hover:text-text'"
+                  @click="cashflowMode = 'savings'"
+                >
+                  {{ t('dashboard.viewSavingsRate') }}
+                </button>
+              </div>
+            </div>
+
+            <div class="pt-2">
+              <CashflowChart :months="cashflow?.trend ?? []" :currency="currency" :mode="cashflowMode" />
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between border-t border-border pt-3 text-xs text-text-muted">
+            <span class="flex items-center gap-2">
+              <span class="h-2 w-2 rounded-full bg-positive"></span>
+              <span>Inflow: <strong class="text-text font-mono"><Money :value="cashflow?.income ?? 0" :currency="currency" /></strong></span>
+              <span class="text-border-strong">·</span>
+              <span class="h-2 w-2 rounded-full bg-negative"></span>
+              <span>Outflow: <strong class="text-text font-mono"><Money :value="cashflow?.expense ?? 0" :currency="currency" /></strong></span>
+            </span>
+            <span class="font-bold text-positive">Net: <Money :value="cashflow?.net ?? 0" :currency="currency" colored /></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Third Row: 3 Financial Health Pillars -->
       <div class="grid gap-4 sm:grid-cols-3">
         <!-- Savings Rate Pillar -->
-        <AppCard>
+        <div class="rounded-card border border-border bg-surface p-5 shadow-card">
           <div class="flex items-center justify-between">
-            <span class="text-xs font-medium text-text-muted">{{ t('dashboard.savingsRate') }}</span>
+            <span class="text-xs font-semibold uppercase tracking-wider text-text-muted">{{ t('dashboard.savingsRate') }}</span>
             <span
               v-if="health"
-              class="rounded px-2 py-0.5 text-[11px] font-semibold"
+              class="rounded-full px-2.5 py-0.5 text-[11px] font-bold"
               :class="{
-                'bg-accent-soft text-accent': health.healthStatus === 'Excellent' || health.healthStatus === 'Healthy',
-                'bg-amber-400/10 text-amber-400': health.healthStatus === 'Low',
+                'bg-accent/15 text-accent': health.healthStatus === 'Excellent' || health.healthStatus === 'Healthy',
+                'bg-amber-400/15 text-amber-500': health.healthStatus === 'Low',
                 'bg-negative/15 text-negative': health.healthStatus === 'Deficit',
               }"
             >
               {{ t(`dashboard.status${health.healthStatus}`) }}
             </span>
           </div>
-          <div class="mt-2 flex items-baseline gap-2">
-            <span class="tnum text-2xl font-bold tracking-tight" :class="health && health.savingsRate >= 0 ? 'text-text' : 'text-negative'">
+          <div class="mt-3 flex items-baseline gap-2">
+            <span class="tnum text-3xl font-bold tracking-tight" :class="health && health.savingsRate >= 0 ? 'text-text' : 'text-negative'">
               {{ health?.savingsRate ?? 0 }}%
             </span>
-            <span class="text-[12px] text-text-muted">{{ t('dashboard.savingsTarget') }}</span>
+            <span class="text-xs text-text-muted font-medium">{{ t('dashboard.savingsTarget') }}</span>
           </div>
-          <p v-if="health?.momExpensePercent !== null" class="mt-1 text-[12px] text-text-muted">
-            <span v-if="health?.previousSavingsRate !== null" class="tnum">
-              {{ health?.previousSavingsRate }}% {{ t('reports.worstMonth').toLowerCase() }}
-            </span>
+          <p v-if="health?.previousSavingsRate !== null" class="mt-2 text-xs text-text-muted border-t border-border pt-2">
+            <span>{{ t('reports.worstMonth') }}: <strong class="text-text tnum">{{ health?.previousSavingsRate }}%</strong></span>
           </p>
-        </AppCard>
+        </div>
 
         <!-- Financial Runway Pillar -->
-        <AppCard>
+        <div class="rounded-card border border-border bg-surface p-5 shadow-card">
           <div class="flex items-center justify-between">
-            <span class="text-xs font-medium text-text-muted">{{ t('dashboard.runway') }}</span>
-            <ShieldCheck :size="16" class="text-accent" />
+            <span class="text-xs font-semibold uppercase tracking-wider text-text-muted">{{ t('dashboard.runway') }}</span>
+            <div class="flex h-7 w-7 items-center justify-center rounded-full bg-accent/15 text-accent">
+              <ShieldCheck :size="16" />
+            </div>
           </div>
-          <div class="mt-2 flex items-baseline gap-1.5">
-            <span class="tnum text-2xl font-bold tracking-tight text-text">
+          <div class="mt-3 flex items-baseline gap-1.5">
+            <span class="tnum text-3xl font-bold tracking-tight text-text">
               {{ health?.runwayMonths ?? 0 }}
             </span>
-            <span class="text-sm font-medium text-text-muted">{{ t('dashboard.runwayMonths', { months: '' }).trim() }}</span>
+            <span class="text-xs font-medium text-text-muted">{{ t('dashboard.runwayMonths', { months: '' }).trim() }}</span>
           </div>
-          <p class="mt-1 truncate text-[12px] text-text-muted">
+          <p class="mt-2 text-xs text-text-muted border-t border-border pt-2 truncate">
             {{ t('dashboard.avgBurn', { amount: new Intl.NumberFormat(locale, { notation: 'compact', maximumFractionDigits: 1 }).format(health?.trailing3MonthAvgExpense ?? 0) }) }}
           </p>
-        </AppCard>
+        </div>
 
         <!-- Burn Pace & Projected Month End -->
-        <AppCard>
+        <div class="rounded-card border border-border bg-surface p-5 shadow-card">
           <div class="flex items-center justify-between">
-            <span class="text-xs font-medium text-text-muted">{{ t('dashboard.dailyBurn') }}</span>
-            <span class="tnum text-[11px] text-text-muted">
+            <span class="text-xs font-semibold uppercase tracking-wider text-text-muted">{{ t('dashboard.dailyBurn') }}</span>
+            <span class="tnum text-[11px] font-semibold text-text-muted">
               {{ t('dashboard.pacePassed', { day: health?.daysPassed ?? 1, total: health?.totalDaysInMonth ?? 30, percent: Math.round(((health?.daysPassed ?? 1) / (health?.totalDaysInMonth ?? 30)) * 100) }) }}
             </span>
           </div>
-          <div class="mt-2 flex items-baseline gap-2">
-            <span class="tnum text-2xl font-bold tracking-tight text-text">
+          <div class="mt-3 flex items-baseline gap-2">
+            <span class="tnum text-3xl font-bold tracking-tight text-text">
               <Money :value="health?.dailyBurnRate ?? 0" :currency="currency" />
             </span>
-            <span class="text-[12px] text-text-muted">/ {{ t('reports.daily').toLowerCase() }}</span>
+            <span class="text-xs text-text-muted font-medium">/ {{ t('reports.daily').toLowerCase() }}</span>
           </div>
-          <p class="mt-1 truncate text-[12px] text-text-muted">
-            {{ t('dashboard.projectedMonthEnd') }}: <Money :value="health?.projectedMonthEndExpense ?? 0" :currency="currency" class="font-medium text-text" />
+          <p class="mt-2 text-xs text-text-muted border-t border-border pt-2 truncate">
+            {{ t('dashboard.projectedMonthEnd') }}: <strong class="text-text font-bold"><Money :value="health?.projectedMonthEndExpense ?? 0" :currency="currency" /></strong>
           </p>
-        </AppCard>
+        </div>
       </div>
 
-      <!-- 3. Cashflow Trend (with toggle) + Multi-mode Donut -->
-      <div class="grid gap-4 lg:grid-cols-3">
-        <AppCard class="lg:col-span-2">
-          <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
-            <div class="flex items-center gap-3">
-              <h2 class="text-sm font-semibold">{{ t('dashboard.cashflow') }}</h2>
-              <span class="tnum text-[12px] text-text-muted">{{ cashflow?.year }}</span>
+      <!-- 4. Fourth Row: Spending Distribution Donut + Net Worth Asset Allocation -->
+      <div class="grid grid-cols-1 gap-6 lg:grid-cols-12">
+        <!-- Donut with distribution switch (7 Cols) -->
+        <div class="rounded-card border border-border bg-surface p-6 shadow-card lg:col-span-7 flex flex-col justify-between space-y-4">
+          <div>
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border pb-3">
+              <div>
+                <h3 class="text-sm font-bold flex items-center gap-2">
+                  <PieChart :size="16" class="text-accent" />
+                  <span>{{ t('dashboard.distribution') }}</span>
+                </h3>
+                <p class="text-xs text-text-muted">Monthly expenditure allocation</p>
+              </div>
+
+              <!-- Switcher -->
+              <div class="inline-flex rounded-full border border-border bg-surface-2 p-0.5 text-xs">
+                <button
+                  type="button"
+                  class="rounded-full px-2.5 py-0.5 font-medium transition-all"
+                  :class="donutMode === 'category' ? 'bg-surface text-text font-bold shadow-sm' : 'text-text-muted hover:text-text'"
+                  @click="donutMode = 'category'"
+                >
+                  {{ t('dashboard.byCategory') }}
+                </button>
+                <button
+                  type="button"
+                  class="rounded-full px-2.5 py-0.5 font-medium transition-all"
+                  :class="donutMode === 'envelope' ? 'bg-surface text-text font-bold shadow-sm' : 'text-text-muted hover:text-text'"
+                  @click="donutMode = 'envelope'"
+                >
+                  {{ t('dashboard.byEnvelope') }}
+                </button>
+                <button
+                  type="button"
+                  class="rounded-full px-2.5 py-0.5 font-medium transition-all"
+                  :class="donutMode === 'income' ? 'bg-surface text-text font-bold shadow-sm' : 'text-text-muted hover:text-text'"
+                  @click="donutMode = 'income'"
+                >
+                  {{ t('dashboard.byIncome') }}
+                </button>
+              </div>
             </div>
-            <!-- View switch: Cashflow bars vs Savings rate trend -->
-            <div class="flex rounded-control border border-border p-0.5">
-              <button
-                type="button"
-                :aria-pressed="cashflowMode === 'cashflow'"
-                class="rounded-[9px] px-2.5 py-0.5 text-xs font-medium transition"
-                :class="cashflowMode === 'cashflow' ? 'bg-accent-soft text-accent' : 'text-text-muted hover:text-text'"
-                @click="cashflowMode = 'cashflow'"
-              >
-                {{ t('dashboard.viewCashflow') }}
-              </button>
-              <button
-                type="button"
-                :aria-pressed="cashflowMode === 'savings'"
-                class="rounded-[9px] px-2.5 py-0.5 text-xs font-medium transition"
-                :class="cashflowMode === 'savings' ? 'bg-accent-soft text-accent' : 'text-text-muted hover:text-text'"
-                @click="cashflowMode = 'savings'"
-              >
-                {{ t('dashboard.viewSavingsRate') }}
-              </button>
+
+            <template v-if="donutData.length">
+              <div class="pt-2">
+                <DonutChart :data="donutData" :currency="currency" />
+              </div>
+              <ul class="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                <li v-for="(d, i) in donutData" :key="i" class="flex items-center gap-2 rounded-control border border-border bg-surface-2 p-2.5 text-xs">
+                  <span class="h-2.5 w-2.5 shrink-0 rounded-full" :style="{ backgroundColor: donutColor(i) }" />
+                  <span class="truncate text-text font-medium flex-1">{{ d.name }}</span>
+                  <Money :value="d.value" :currency="currency" class="shrink-0 font-bold tnum text-text" />
+                </li>
+              </ul>
+            </template>
+            <p v-else class="py-12 text-center text-xs text-text-muted">{{ t('dashboard.noExpenses') }}</p>
+          </div>
+        </div>
+
+        <!-- Net Worth Asset Breakdown & Insights (5 Cols) -->
+        <div class="rounded-card border border-border bg-surface p-6 shadow-card lg:col-span-5 flex flex-col justify-between space-y-4">
+          <div>
+            <div class="border-b border-border pb-3">
+              <h3 class="text-sm font-bold flex items-center gap-2">
+                <Sparkles :size="16" class="text-accent" />
+                <span>{{ t('dashboard.insightsTitle') }}</span>
+              </h3>
+              <p class="text-xs text-text-muted">Automated financial health audit</p>
+            </div>
+
+            <div class="mt-4 space-y-3">
+              <!-- Asset Spectrum Bar -->
+              <div v-if="nwSegments.length" class="space-y-2">
+                <div class="flex items-center justify-between text-xs">
+                  <span class="font-medium text-text-muted">Asset Allocation</span>
+                  <span class="font-mono text-xs font-bold tnum text-text"><Money :value="netWorth?.total ?? 0" :currency="currency" /></span>
+                </div>
+                <SpendBar :segments="nwSegments" :label="t('dashboard.netWorth')" />
+              </div>
+
+              <!-- Insights List -->
+              <div v-if="insights.length" class="space-y-2.5 pt-2">
+                <div
+                  v-for="(insight, i) in insights"
+                  :key="i"
+                  class="flex items-start gap-2.5 rounded-control border border-border bg-surface-2 p-3 text-xs"
+                >
+                  <component
+                    :is="insight.icon === 'trend' ? TrendingUp : (insight.icon === 'shield' ? ShieldCheck : Sparkles)"
+                    :size="15"
+                    class="mt-0.5 shrink-0"
+                    :class="{
+                      'text-positive': insight.type === 'positive',
+                      'text-accent': insight.type === 'neutral',
+                      'text-negative': insight.type === 'warning',
+                    }"
+                  />
+                  <span class="text-text font-medium leading-relaxed">{{ insight.text }}</span>
+                </div>
+              </div>
             </div>
           </div>
-          <CashflowChart :months="cashflow?.trend ?? []" :currency="currency" :mode="cashflowMode" />
-        </AppCard>
 
-        <!-- Donut with distribution switch -->
-        <AppCard>
-          <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
-            <h2 class="text-sm font-semibold">{{ t('dashboard.distribution') }}</h2>
-            <div class="flex rounded-control border border-border p-0.5 text-xs">
-              <button
-                type="button"
-                :aria-pressed="donutMode === 'category'"
-                class="rounded-[9px] px-2 py-0.5 font-medium transition"
-                :class="donutMode === 'category' ? 'bg-accent-soft text-accent' : 'text-text-muted hover:text-text'"
-                @click="donutMode = 'category'"
-              >
-                {{ t('dashboard.byCategory') }}
-              </button>
-              <button
-                type="button"
-                :aria-pressed="donutMode === 'envelope'"
-                class="rounded-[9px] px-2 py-0.5 font-medium transition"
-                :class="donutMode === 'envelope' ? 'bg-accent-soft text-accent' : 'text-text-muted hover:text-text'"
-                @click="donutMode = 'envelope'"
-              >
-                {{ t('dashboard.byEnvelope') }}
-              </button>
-              <button
-                type="button"
-                :aria-pressed="donutMode === 'income'"
-                class="rounded-[9px] px-2 py-0.5 font-medium transition"
-                :class="donutMode === 'income' ? 'bg-accent-soft text-accent' : 'text-text-muted hover:text-text'"
-                @click="donutMode = 'income'"
-              >
-                {{ t('dashboard.byIncome') }}
-              </button>
-            </div>
+          <div class="border-t border-border pt-3 text-xs text-text-muted flex justify-between">
+            <span>Health Status: <strong class="text-text">{{ health?.healthStatus ?? 'Stable' }}</strong></span>
+            <span class="text-positive font-bold">100% Calculated</span>
           </div>
-
-          <template v-if="donutData.length">
-            <DonutChart :data="donutData" :currency="currency" />
-            <ul class="mt-2 space-y-1.5">
-              <li v-for="(d, i) in donutData" :key="i" class="flex items-center gap-2 text-[13px]">
-                <span class="h-2.5 w-2.5 shrink-0 rounded-sm" :style="{ backgroundColor: donutColor(i) }" />
-                <span class="truncate text-text-muted">{{ d.name }}</span>
-                <Money :value="d.value" :currency="currency" class="ml-auto shrink-0 font-medium" />
-              </li>
-            </ul>
-          </template>
-          <p v-else class="py-12 text-center text-[13px] text-text-muted">{{ t('dashboard.noExpenses') }}</p>
-        </AppCard>
+        </div>
       </div>
 
-      <!-- 4. Intelligent Decision Support Insights -->
-      <AppCard v-if="insights.length">
-        <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-text-muted">
-          <Sparkles :size="14" class="text-accent" />
-          {{ t('dashboard.insightsTitle') }}
-        </div>
-        <div class="mt-3 grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
-          <div
-            v-for="(insight, i) in insights"
-            :key="i"
-            class="flex items-start gap-2.5 rounded-control border border-border bg-surface-2 p-3 text-[13px]"
-          >
-            <component
-              :is="insight.icon === 'trend' ? TrendingUp : (insight.icon === 'shield' ? ShieldCheck : Sparkles)"
-              :size="16"
-              class="mt-0.5 shrink-0"
-              :class="{
-                'text-accent': insight.type === 'positive',
-                'text-text-muted': insight.type === 'neutral',
-                'text-negative': insight.type === 'warning',
-              }"
-            />
-            <span class="text-text">{{ insight.text }}</span>
-          </div>
-        </div>
-      </AppCard>
-
-      <!-- 5. Recent transactions + accounts -->
-      <div class="grid gap-4 lg:grid-cols-2">
-        <AppCard :padded="false">
-          <div class="flex items-center justify-between px-5 py-4">
-            <h2 class="text-sm font-semibold">{{ t('dashboard.recent') }}</h2>
-            <RouterLink :to="{ name: 'transactions' }" class="inline-flex min-h-[24px] items-center gap-1 py-1 text-[13px] font-medium text-accent hover:underline">
-              {{ t('dashboard.viewAll') }}<ArrowRight :size="14" />
+      <!-- 5. Fifth Row: Recent Transactions + Accounts Table -->
+      <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <!-- Recent Transactions -->
+        <div class="rounded-card border border-border bg-surface shadow-card overflow-hidden">
+          <div class="flex items-center justify-between px-6 py-4 border-b border-border">
+            <h3 class="text-sm font-bold">{{ t('dashboard.recent') }}</h3>
+            <RouterLink
+              :to="{ name: 'transactions' }"
+              class="inline-flex items-center gap-1 text-xs font-semibold text-accent hover:underline"
+            >
+              {{ t('dashboard.viewAll') }}
+              <ArrowRight :size="13" />
             </RouterLink>
           </div>
           <ul v-if="recent.length" class="divide-y divide-border">
-            <li v-for="tx in recent" :key="tx.id" class="flex items-center gap-3 px-5 py-2.5">
-              <AvatarChip :name="tx.title" />
-              <div class="min-w-0 flex-1">
-                <p class="truncate text-sm font-medium">{{ tx.title }}</p>
-                <p class="truncate text-[13px] text-text-muted">{{ formatShortDate(tx.date, locale) }} · {{ catName(tx.categoryId) }}</p>
+            <li
+              v-for="tx in recent"
+              :key="tx.id"
+              class="group flex cursor-pointer items-center gap-3 px-6 py-3 transition-colors hover:bg-surface-2/60"
+              @click="transactionModal.openEdit(tx)"
+            >
+              <div
+                class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
+                :class="{
+                  'bg-positive-soft text-positive': tx.type === 'Income',
+                  'bg-negative-soft text-negative': tx.type === 'Expense',
+                  'bg-accent-soft text-accent': tx.type === 'Transfer',
+                }"
+              >
+                <ArrowUpRight v-if="tx.type === 'Income'" :size="18" />
+                <ArrowDownLeft v-else-if="tx.type === 'Expense'" :size="18" />
+                <ArrowLeftRight v-else :size="18" />
               </div>
-              <Money :value="signedAmount(tx)" :currency="tx.currencyCode" :colored="tx.type === 'Income'" class="shrink-0 text-sm font-medium" />
+              <div class="min-w-0 flex-1">
+                <p class="truncate text-sm font-semibold text-text group-hover:text-accent transition-colors">{{ tx.title }}</p>
+                <p class="truncate text-xs text-text-muted">
+                  {{ formatShortDate(tx.date, locale) }} · {{ catName(tx.categoryId) }}
+                </p>
+              </div>
+              <Money
+                :value="signedAmount(tx)"
+                :currency="tx.currencyCode"
+                :colored="tx.type === 'Income'"
+                class="shrink-0 text-sm font-bold tnum"
+              />
             </li>
           </ul>
-          <div v-else class="px-5 py-8 text-center">
-            <p class="text-[13px] text-text-muted">{{ t('dashboard.noTransactions') }}</p>
-            <RouterLink :to="{ name: 'transactions' }" class="mt-4 inline-block">
-              <AppButton variant="secondary"><Plus :size="16" />{{ t('dashboard.addTransaction') }}</AppButton>
-            </RouterLink>
+          <div v-else class="px-6 py-12 text-center">
+            <p class="text-xs text-text-muted">{{ t('dashboard.noTransactions') }}</p>
+            <button
+              type="button"
+              class="mt-4 inline-flex items-center gap-1.5 rounded-control bg-accent px-3 py-1.5 text-xs font-semibold text-accent-contrast shadow-sm"
+              @click="transactionModal.openCreate()"
+            >
+              <Plus :size="14" />
+              {{ t('dashboard.addTransaction') }}
+            </button>
           </div>
-        </AppCard>
+        </div>
 
-        <AppCard :padded="false">
-          <div class="flex items-center justify-between px-5 py-4">
-            <h2 class="text-sm font-semibold">{{ t('dashboard.accounts') }}</h2>
-            <RouterLink v-if="accounts.length" :to="{ name: 'accounts' }" class="inline-flex min-h-[24px] items-center gap-1 py-1 text-[13px] font-medium text-accent hover:underline">
-              {{ t('dashboard.viewAll') }}<ArrowRight :size="14" />
+        <!-- Accounts Overview -->
+        <div class="rounded-card border border-border bg-surface shadow-card overflow-hidden">
+          <div class="flex items-center justify-between px-6 py-4 border-b border-border">
+            <h3 class="text-sm font-bold">{{ t('dashboard.accounts') }}</h3>
+            <RouterLink
+              v-if="accounts.length"
+              :to="{ name: 'accounts' }"
+              class="inline-flex items-center gap-1 text-xs font-semibold text-accent hover:underline"
+            >
+              {{ t('dashboard.viewAll') }}
+              <ArrowRight :size="13" />
             </RouterLink>
           </div>
           <ul v-if="accounts.length" class="divide-y divide-border">
-            <li v-for="account in accounts" :key="account.accountId" class="flex items-center justify-between px-5 py-2.5">
-              <div class="min-w-0">
-                <p class="truncate text-sm font-medium">{{ account.name }}</p>
-                <p class="text-[13px] text-text-muted">{{ t(`enums.accountType.${account.type}`) }}</p>
+            <li
+              v-for="account in accounts"
+              :key="account.accountId"
+              class="flex items-center justify-between px-6 py-3 transition-colors hover:bg-surface-2/60 cursor-pointer"
+              @click="selectedAccountId = account.accountId"
+            >
+              <div class="min-w-0 flex items-center gap-3">
+                <div class="flex h-8 w-8 items-center justify-center rounded-full bg-surface-2 text-text-muted">
+                  <Building2 :size="15" />
+                </div>
+                <div>
+                  <p class="truncate text-sm font-semibold text-text">{{ account.name }}</p>
+                  <p class="text-xs text-text-muted">{{ t(`enums.accountType.${account.type}`) }}</p>
+                </div>
               </div>
-              <Money :value="account.balance" :currency="account.currencyCode" class="shrink-0 text-sm font-medium" />
+              <Money :value="account.balance" :currency="account.currencyCode" class="shrink-0 text-sm font-bold tnum text-text" />
             </li>
           </ul>
-          <div v-else class="px-5 py-8 text-center">
-            <p class="text-[13px] text-text-muted">{{ t('dashboard.noAccounts') }}</p>
+          <div v-else class="px-6 py-12 text-center">
+            <p class="text-xs text-text-muted">{{ t('dashboard.noAccounts') }}</p>
             <RouterLink :to="{ name: 'accounts' }" class="mt-4 inline-block">
               <AppButton variant="secondary"><Plus :size="16" />{{ t('dashboard.addAccount') }}</AppButton>
             </RouterLink>
           </div>
-        </AppCard>
+        </div>
       </div>
     </div>
   </div>

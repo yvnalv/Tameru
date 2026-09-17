@@ -2,7 +2,8 @@
 // bundle small. Imported once from main.ts.
 import { use } from 'echarts/core';
 import { CanvasRenderer } from 'echarts/renderers';
-import { BarChart, PieChart } from 'echarts/charts';
-import { GridComponent, TooltipComponent } from 'echarts/components';
+import { BarChart, PieChart, LineChart, TreemapChart, GaugeChart } from 'echarts/charts';
+import { GridComponent, TooltipComponent, LegendComponent, MarkLineComponent } from 'echarts/components';
 
-use([CanvasRenderer, BarChart, PieChart, GridComponent, TooltipComponent]);
+use([CanvasRenderer, BarChart, PieChart, LineChart, TreemapChart, GaugeChart, GridComponent, TooltipComponent, LegendComponent, MarkLineComponent]);
+

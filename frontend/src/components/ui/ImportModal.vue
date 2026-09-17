@@ -70,19 +70,19 @@ function reset(): void {
 
 <template>
   <Teleport to="body">
-    <div class="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-0 sm:items-center sm:p-4" @click.self="emit('close')">
+    <div class="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm p-0 sm:items-center sm:p-4 transition-all" @click.self="emit('close')">
       <div
         ref="dialog"
-        class="flex max-h-[90vh] w-full max-w-2xl flex-col rounded-t-card border border-border bg-surface shadow-lift sm:rounded-card"
+        class="flex max-h-[90vh] w-full max-w-2xl flex-col rounded-t-card border border-border bg-surface shadow-popover sm:rounded-card"
         role="dialog"
         aria-modal="true"
         :aria-labelledby="titleId"
         tabindex="-1"
       >
         <header class="flex items-center justify-between border-b border-border px-5 py-4">
-          <h2 :id="titleId" class="text-base font-semibold">{{ title }}</h2>
+          <h2 :id="titleId" class="text-base font-bold text-text">{{ title }}</h2>
           <button
-            class="rounded-control p-1 text-text-muted hover:bg-surface-2 hover:text-text"
+            class="rounded-lg p-1.5 text-text-muted hover:bg-surface-2 hover:text-text transition-colors"
             :aria-label="t('common.close')"
             @click="emit('close')"
           >

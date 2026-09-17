@@ -41,21 +41,26 @@ onUnmounted(() => document.removeEventListener('keydown', onKey));
 <template>
   <Teleport to="body">
     <div
-      class="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-0 sm:items-center sm:p-4"
+      class="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm p-0 sm:items-center sm:p-4 transition-all"
       @click.self="requestClose"
     >
       <div
         ref="dialog"
-        class="w-full max-w-lg rounded-t-card border border-border bg-surface shadow-lift sm:rounded-card"
+        class="flex max-h-[92dvh] sm:max-h-[88vh] w-full max-w-xl flex-col rounded-t-2xl border border-border bg-surface shadow-popover sm:rounded-2xl overflow-hidden"
         role="dialog"
         aria-modal="true"
         :aria-labelledby="titleId"
         tabindex="-1"
       >
-        <header class="flex items-center justify-between border-b border-border px-5 py-4">
-          <h2 :id="titleId" class="text-base font-semibold">{{ title }}</h2>
+        <!-- Mobile Drag Handle Indicator -->
+        <div class="sm:hidden pt-2.5 pb-1 flex justify-center shrink-0">
+          <div class="h-1 w-10 rounded-full bg-border"></div>
+        </div>
+
+        <header class="flex shrink-0 items-center justify-between border-b border-border px-5 py-3 sm:py-3.5">
+          <h2 :id="titleId" class="text-base font-bold text-text">{{ title }}</h2>
           <button
-            class="rounded-control p-1 text-text-muted hover:bg-surface-2 hover:text-text"
+            class="rounded-lg p-1.5 text-text-muted hover:bg-surface-2 hover:text-text transition-colors"
             :aria-label="t('common.close')"
             @click="requestClose"
           >
@@ -63,11 +68,14 @@ onUnmounted(() => document.removeEventListener('keydown', onKey));
           </button>
         </header>
 
-        <div class="scroll-slim max-h-[70vh] overflow-y-auto px-5 py-4">
+        <div class="scroll-slim flex-1 min-h-0 overflow-y-auto px-5 py-4">
           <slot />
         </div>
 
-        <footer v-if="$slots.footer" class="flex justify-end gap-2 border-t border-border px-5 py-4">
+        <footer
+          v-if="$slots.footer"
+          class="shrink-0 border-t border-border bg-surface px-5 py-3 sm:py-4 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))]"
+        >
           <slot name="footer" />
         </footer>
       </div>

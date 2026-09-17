@@ -1,7 +1,21 @@
 <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Tameru">
-  <rect width="40" height="40" rx="11" fill="#35D07A"/>
-  <!-- Accumulating bars / stacked coins: rising, flat fills, dark motif -->
-  <rect x="10" y="22" width="6" height="8" rx="2" fill="#0B0F0C"/>
-  <rect x="17" y="17" width="6" height="13" rx="2" fill="#0B0F0C"/>
-  <rect x="24" y="11" width="6" height="19" rx="2" fill="#0B0F0C"/>
+  <defs>
+    <linearGradient id="tameru-grad" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#3B46F1"/>
+      <stop offset="100%" stop-color="#5558F0"/>
+    </linearGradient>
+  </defs>
+  <!-- Modern Cobalt/Indigo Squircle Container -->
+  <rect width="40" height="40" rx="11" fill="url(#tameru-grad)"/>
+
+  <!-- Protective Planning Canopy (Top bar of 'T' representing Budget & Financial Security) -->
+  <rect x="8" y="9" width="24" height="4.5" rx="2.25" fill="#FFFFFF"/>
+
+  <!-- Ascending Savings / Accumulation Pillars -->
+  <!-- Left: Foundation / Regular Savings -->
+  <rect x="9.5" y="23" width="5" height="8" rx="2.5" fill="#FFFFFF" opacity="0.75"/>
+  <!-- Center: Central 'T' Pillar / Long-term Financial Discipline -->
+  <rect x="17.5" y="13.5" width="5" height="17.5" rx="2.5" fill="#FFFFFF"/>
+  <!-- Right: Wealth Target / Growth Momentum -->
+  <rect x="25.5" y="17" width="5" height="14" rx="2.5" fill="#FFFFFF" opacity="0.9"/>
 </svg>

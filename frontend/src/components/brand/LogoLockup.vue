@@ -12,7 +12,7 @@ withDefaults(defineProps<{ size?: 'sm' | 'md' }>(), { size: 'sm' });
 </script>
 
 <template>
-  <span class="inline-flex items-center gap-2 text-text" role="img" aria-label="Tameru">
+  <span class="inline-flex items-center gap-2.5 text-text" role="img" aria-label="Tameru">
     <svg
       :class="size === 'md' ? 'h-8 w-8' : 'h-7 w-7'"
       viewBox="0 0 40 40"
@@ -22,13 +22,15 @@ withDefaults(defineProps<{ size?: 'sm' | 'md' }>(), { size: 'sm' });
       focusable="false"
     >
       <rect width="40" height="40" rx="11" fill="var(--accent)" />
-      <!-- Accumulating bars / stacked coins: rising, flat fills, dark motif -->
-      <rect x="10" y="22" width="6" height="8" rx="2" fill="var(--accent-contrast)" />
-      <rect x="17" y="17" width="6" height="13" rx="2" fill="var(--accent-contrast)" />
-      <rect x="24" y="11" width="6" height="19" rx="2" fill="var(--accent-contrast)" />
+      <!-- Protective Planning Canopy (Top bar of 'T' representing Budget & Financial Security) -->
+      <rect x="8" y="9" width="24" height="4.5" rx="2.25" fill="var(--accent-contrast)" />
+      <!-- Ascending Savings / Accumulation Pillars -->
+      <rect x="9.5" y="23" width="5" height="8" rx="2.5" fill="var(--accent-contrast)" opacity="0.75" />
+      <rect x="17.5" y="13.5" width="5" height="17.5" rx="2.5" fill="var(--accent-contrast)" />
+      <rect x="25.5" y="17" width="5" height="14" rx="2.5" fill="var(--accent-contrast)" opacity="0.9" />
     </svg>
     <span
-      class="font-bold tracking-[-0.01em]"
+      class="font-bold tracking-tight"
       :class="size === 'md' ? 'text-[22px]' : 'text-[19px]'"
       aria-hidden="true"
     >

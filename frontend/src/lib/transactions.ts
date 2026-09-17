@@ -5,6 +5,7 @@ import type { Paged, Transaction } from '@/types/api';
 export interface TransactionFilter {
   type?: string;
   accountId?: string;
+  budgetCategoryId?: string;
   categoryId?: string;
   status?: string;
   from?: string;

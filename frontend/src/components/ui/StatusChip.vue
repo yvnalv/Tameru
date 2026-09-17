@@ -9,8 +9,8 @@ const { t } = useI18n();
 
 const styles = computed(() =>
   props.status === 'Cleared'
-    ? 'text-positive bg-[rgba(53,208,122,0.12)]'
-    : 'text-warning bg-[rgba(255,176,32,0.12)]',
+    ? 'text-positive bg-positive-soft border border-positive/20'
+    : 'text-warning bg-warning-soft border border-warning/20',
 );
 
 const label = computed(() => t(`enums.transactionStatus.${props.status}`));

@@ -31,14 +31,14 @@ const description = computed(() => {
 
 <template>
   <div
-    class="flex h-2.5 w-full overflow-hidden rounded-full bg-surface-2"
+    class="flex h-3.5 w-full overflow-hidden rounded-full bg-surface-2 shadow-inner"
     role="img"
     :aria-label="description"
   >
     <div
       v-for="(part, i) in parts"
       :key="i"
-      class="h-full"
+      class="h-full transition-all duration-300 hover:opacity-85"
       :style="{ width: `${part.pct}%`, backgroundColor: part.color }"
       :title="`${part.label} — ${Math.round(part.pct)}%`"
     />

@@ -5,63 +5,68 @@ import VChart from 'vue-echarts';
 import { useI18n } from 'vue-i18n';
 import type { MonthlyCashflow } from '@/types/api';
 import { formatMoney } from '@/lib/format';
-import { chart, darkTooltip } from '@/lib/chartTheme';
+import { getChartTheme } from '@/lib/chartTheme';
+import { useThemeStore } from '@/stores/theme';
 import { useUiStore } from '@/stores/ui';
 
-// 12-month income vs expense bars or savings rate trend (ECharts, dark theme, solid fills — no gradient).
+// 12-month income vs expense bars or savings rate trend with dynamic Light/Dark theme calibration.
 const props = withDefaults(
-  defineProps<{ months: MonthlyCashflow[]; currency?: string; mode?: 'cashflow' | 'savings' }>(),
+  defineProps<{ months: MonthlyCashflow[]; currency?: string; mode?: 'cashflow' | 'savings' | 'stacked' }>(),
   { currency: 'IDR', mode: 'cashflow' },
 );
 const { t, locale } = useI18n();
 const ui = useUiStore();
+const themeStore = useThemeStore();
 
 const monthLabel = (m: number) => new Date(2020, m - 1, 1).toLocaleString(locale.value, { month: 'short' });
 const compact = (v: number) => new Intl.NumberFormat(locale.value, { notation: 'compact', maximumFractionDigits: 1 }).format(v);
 
 const option = computed(() => {
+  const ct = getChartTheme(themeStore.isDark);
+
   if (props.mode === 'savings') {
     return {
       tooltip: {
         trigger: 'axis',
-        ...darkTooltip,
+        ...ct.tooltip,
         valueFormatter: (v: number) => `${v.toFixed(1)}%`,
       },
       grid: { left: 8, right: 8, top: 16, bottom: 4, containLabel: true },
       xAxis: {
         type: 'category',
         data: props.months.map((m) => monthLabel(m.month)),
-        axisLabel: { color: chart.textMuted, fontSize: 11 },
-        axisLine: { lineStyle: { color: chart.border } },
+        axisLabel: { color: ct.textMuted, fontSize: 11 },
+        axisLine: { lineStyle: { color: ct.border } },
         axisTick: { show: false },
       },
       yAxis: {
         type: 'value',
-        axisLabel: { color: chart.textMuted, fontSize: 11, formatter: '{value}%' },
-        splitLine: { lineStyle: { color: chart.border, type: 'dashed' } },
+        axisLabel: { color: ct.textMuted, fontSize: 11, formatter: '{value}%' },
+        splitLine: { lineStyle: { color: ct.border, type: 'dashed' } },
       },
       series: [
         {
           name: t('dashboard.savingsRate'),
           type: 'line',
+          smooth: true,
           data: props.months.map((m) =>
             m.savingsRate ?? (m.income > 0 ? Math.round(((m.income - m.expense) / m.income) * 1000) / 10 : 0),
           ),
-          itemStyle: { color: chart.accent },
-          lineStyle: { color: chart.accent, width: 2.5 },
+          itemStyle: { color: ct.accent },
+          lineStyle: { color: ct.accent, width: 2.5 },
           symbol: 'circle',
           symbolSize: 6,
           markLine: {
             silent: true,
             symbol: 'none',
-            lineStyle: { color: chart.textMuted, type: 'dashed', width: 1 },
+            lineStyle: { color: ct.textMuted, type: 'dashed', width: 1 },
             data: [
               {
                 yAxis: 20,
                 label: {
                   formatter: '20% Target',
                   position: 'insideEndTop',
-                  color: chart.textMuted,
+                  color: ct.textMuted,
                   fontSize: 10,
                 },
               },
@@ -72,39 +77,43 @@ const option = computed(() => {
     };
   }
 
+  const isStacked = props.mode === 'stacked';
+
   return {
     tooltip: {
       trigger: 'axis',
-      ...darkTooltip,
-      valueFormatter: (v: number) => formatMoney(v, props.currency ?? 'IDR'),
+      ...ct.tooltip,
+      valueFormatter: (v: number) => (ui.amountsHidden ? '••••••' : formatMoney(v, props.currency ?? 'IDR')),
     },
-    grid: { left: 8, right: 8, top: 10, bottom: 4, containLabel: true },
+    grid: { left: 8, right: 8, top: 12, bottom: 4, containLabel: true },
     xAxis: {
       type: 'category',
       data: props.months.map((m) => monthLabel(m.month)),
-      axisLabel: { color: chart.textMuted, fontSize: 11 },
-      axisLine: { lineStyle: { color: chart.border } },
+      axisLabel: { color: ct.textMuted, fontSize: 11 },
+      axisLine: { lineStyle: { color: ct.border } },
       axisTick: { show: false },
     },
     yAxis: {
       type: 'value',
-      axisLabel: { color: chart.textMuted, fontSize: 11, formatter: (v: number) => compact(v) },
-      splitLine: { lineStyle: { color: chart.border, type: 'dashed' } },
+      axisLabel: { color: ct.textMuted, fontSize: 11, formatter: (v: number) => compact(v) },
+      splitLine: { lineStyle: { color: ct.border, type: 'dashed' } },
     },
     series: [
       {
         name: t('enums.transactionType.Income'),
         type: 'bar',
+        stack: isStacked ? 'total' : undefined,
         data: props.months.map((m) => m.income),
-        itemStyle: { color: chart.positive, borderRadius: [3, 3, 0, 0] },
-        barMaxWidth: 14,
+        itemStyle: { color: ct.positive, borderRadius: isStacked ? [0, 0, 0, 0] : [4, 4, 0, 0] },
+        barMaxWidth: isStacked ? 24 : 16,
       },
       {
         name: t('enums.transactionType.Expense'),
         type: 'bar',
+        stack: isStacked ? 'total' : undefined,
         data: props.months.map((m) => m.expense),
-        itemStyle: { color: chart.negative, borderRadius: [3, 3, 0, 0] },
-        barMaxWidth: 14,
+        itemStyle: { color: ct.negative, borderRadius: [4, 4, 0, 0] },
+        barMaxWidth: isStacked ? 24 : 16,
       },
     ],
   };

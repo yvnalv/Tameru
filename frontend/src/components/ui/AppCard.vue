@@ -4,8 +4,8 @@ withDefaults(defineProps<{ padded?: boolean }>(), { padded: true });
 
 <template>
   <section
-    class="rounded-card border border-border bg-surface shadow-lift"
-    :class="padded ? 'p-5' : ''"
+    class="rounded-card border border-border bg-surface shadow-card"
+    :class="padded ? 'p-5 md:p-6' : ''"
   >
     <slot />
   </section>

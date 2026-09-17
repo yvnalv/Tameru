@@ -33,6 +33,11 @@ internal sealed class TransactionRepository : ITransactionRepository
             query = query.Where(t => t.AccountId == accountId || t.ToAccountId == accountId);
         }
 
+        if (filter.BudgetCategoryId is { } budgetCatId)
+        {
+            query = query.Where(t => t.BudgetCategoryId == budgetCatId);
+        }
+
         if (filter.CategoryId is { } categoryId)
         {
             query = query.Where(t =>

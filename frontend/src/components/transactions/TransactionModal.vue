@@ -381,20 +381,28 @@ function onFormKeyDown(e: KeyboardEvent): void {
     @close="store.close()"
   >
     <form class="space-y-4" @submit.prevent="save" @keydown="onFormKeyDown">
-      <!-- Transaction Type Switcher -->
-      <div class="grid grid-cols-3 gap-2">
+      <!-- Transaction Type Switcher with Strict Semantic Coloring -->
+      <div class="inline-flex w-full rounded-xl bg-surface-2 p-1 border border-border shadow-xs">
         <button
           v-for="ty in TX_TYPES"
           :key="ty"
           type="button"
           :disabled="!!store.editingTx"
           :aria-pressed="form.type === ty"
-          class="rounded-control border px-3 py-2 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50"
-          :class="
+          class="flex-1 rounded-lg py-2 text-xs font-semibold transition-all disabled:cursor-not-allowed disabled:opacity-50"
+          :class="[
             form.type === ty
-              ? 'border-accent bg-accent-soft text-accent'
-              : 'border-border text-text-muted hover:bg-surface-2'
-          "
+              ? ty === 'Expense'
+                ? 'bg-negative text-negative-contrast font-bold shadow-sm'
+                : ty === 'Income'
+                  ? 'bg-positive text-positive-contrast font-bold shadow-sm'
+                  : 'bg-accent text-accent-contrast font-bold shadow-sm'
+              : ty === 'Expense'
+                ? 'text-text-muted hover:text-negative'
+                : ty === 'Income'
+                  ? 'text-text-muted hover:text-positive'
+                  : 'text-text-muted hover:text-accent',
+          ]"
           @click="setType(ty)"
         >
           {{ t(`enums.transactionType.${ty}`) }}
@@ -443,11 +451,11 @@ function onFormKeyDown(e: KeyboardEvent): void {
           <div class="flex items-center gap-1">
             <button
               type="button"
-              class="rounded px-2 py-0.5 text-xs font-medium transition-colors"
+              class="rounded-lg px-2.5 py-0.5 text-xs font-semibold transition-all"
               :class="
                 form.date === todayStr
-                  ? 'bg-accent-soft text-accent'
-                  : 'text-text-muted hover:bg-surface-2'
+                  ? 'bg-accent text-accent-contrast shadow-sm'
+                  : 'text-text-muted hover:bg-surface-2 hover:text-text'
               "
               @click="setDatePreset(todayStr)"
             >
@@ -455,11 +463,11 @@ function onFormKeyDown(e: KeyboardEvent): void {
             </button>
             <button
               type="button"
-              class="rounded px-2 py-0.5 text-xs font-medium transition-colors"
+              class="rounded-lg px-2.5 py-0.5 text-xs font-semibold transition-all"
               :class="
                 form.date === yesterdayStr
-                  ? 'bg-accent-soft text-accent'
-                  : 'text-text-muted hover:bg-surface-2'
+                  ? 'bg-accent text-accent-contrast shadow-sm'
+                  : 'text-text-muted hover:bg-surface-2 hover:text-text'
               "
               @click="setDatePreset(yesterdayStr)"
             >
@@ -506,15 +514,15 @@ function onFormKeyDown(e: KeyboardEvent): void {
               v-for="cat in frequentCategories"
               :key="cat.id"
               type="button"
-              class="flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors"
+              class="flex items-center gap-1.5 rounded-lg border px-3 py-1 text-xs font-semibold transition-all"
               :class="
                 form.categoryId === cat.id
-                  ? 'border-accent bg-accent-soft text-accent'
-                  : 'border-border bg-surface-2 text-text-muted hover:border-border-strong hover:text-text'
+                  ? 'border-accent bg-accent text-accent-contrast shadow-sm'
+                  : 'border-border bg-surface text-text-muted hover:border-border-strong hover:text-text'
               "
               @click="selectFrequentCategory(cat)"
             >
-              <Check v-if="form.categoryId === cat.id" :size="12" />
+              <Check v-if="form.categoryId === cat.id" :size="13" />
               <span>{{ cat.name }}</span>
             </button>
           </div>
@@ -543,25 +551,29 @@ function onFormKeyDown(e: KeyboardEvent): void {
     </form>
 
     <template #footer>
-      <div class="flex w-full flex-wrap items-center justify-between gap-2">
-        <div class="hidden text-xs text-text-muted sm:block">
-          <span v-if="!store.editingTx" class="tnum">{{ t('transactions.shortcutHint') }}</span>
+      <div class="flex w-full items-center justify-between gap-3">
+        <div class="hidden text-xs text-text-muted md:flex items-center gap-1.5 shrink-0">
+          <kbd class="rounded border border-border bg-surface px-1.5 py-0.5 text-[10px] font-semibold text-text-muted font-mono">
+            Ctrl+↵
+          </kbd>
+          <span v-if="!store.editingTx">{{ t('transactions.saveAndAnother') }}</span>
         </div>
-        <div class="flex items-center gap-2 ml-auto">
-          <AppButton variant="secondary" @click="store.close()">
+        <div class="flex items-center gap-2 w-full sm:w-auto sm:ml-auto">
+          <AppButton variant="secondary" class="flex-1 sm:flex-initial" @click="store.close()">
             {{ t('common.cancel') }}
           </AppButton>
           <!-- Save & Add Another Button (New entries only) -->
           <AppButton
             v-if="!store.editingTx"
             variant="secondary"
+            class="hidden sm:inline-flex"
             :loading="saving"
             @click="saveAndAnother"
           >
             {{ t('transactions.saveAndAnother') }}
           </AppButton>
           <!-- Primary Save Button -->
-          <AppButton :loading="saving" @click="save">
+          <AppButton class="flex-1 sm:flex-initial" :loading="saving" @click="save">
             {{ saving ? t('common.saving') : t('common.save') }}
           </AppButton>
         </div>

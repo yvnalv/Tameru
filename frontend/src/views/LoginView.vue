@@ -9,6 +9,7 @@ import AppButton from '@/components/ui/AppButton.vue';
 import AppInput from '@/components/ui/AppInput.vue';
 import FormField from '@/components/ui/FormField.vue';
 import LogoLockup from '@/components/brand/LogoLockup.vue';
+import ThemeToggle from '@/components/ui/ThemeToggle.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -42,21 +43,24 @@ async function onSubmit(): Promise<void> {
 </script>
 
 <template>
-  <div class="flex min-h-screen flex-col items-center justify-center bg-bg px-4 text-text">
+  <div class="flex min-h-screen flex-col items-center justify-center bg-bg px-4 text-text transition-colors duration-200">
     <div class="w-full max-w-sm">
-      <div class="mb-8 flex items-center justify-between">
+      <div class="mb-6 flex items-center justify-between">
         <LogoLockup size="md" />
-        <button
-          class="rounded-control px-2 py-1 text-sm font-medium uppercase text-text-muted hover:bg-surface-2 hover:text-text"
-          @click="ui.toggleLocale()"
-        >
-          {{ ui.locale }}
-        </button>
+        <div class="flex items-center gap-2">
+          <ThemeToggle variant="segmented" :size="13" />
+          <button
+            class="rounded-lg border border-border bg-surface px-2.5 py-1 text-xs font-semibold uppercase text-text-muted hover:bg-surface-2 hover:text-text transition-colors"
+            @click="ui.toggleLocale()"
+          >
+            {{ ui.locale }}
+          </button>
+        </div>
       </div>
 
-      <div class="rounded-card border border-border bg-surface p-6 shadow-lift">
-        <h1 class="text-xl font-semibold">{{ t('login.title') }}</h1>
-        <p class="mt-1 text-[13px] text-text-muted">{{ t('login.subtitle') }}</p>
+      <div class="rounded-card border border-border bg-surface p-7 shadow-lift">
+        <h1 class="text-xl font-bold text-text">{{ t('login.title') }}</h1>
+        <p class="mt-1 text-xs text-text-muted">{{ t('login.subtitle') }}</p>
 
         <form class="mt-6 space-y-4" @submit.prevent="onSubmit">
           <FormField :label="t('login.email')" for-id="email">

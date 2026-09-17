@@ -150,11 +150,25 @@ onMounted(load);
     <div v-else class="space-y-4">
       <AppCard v-for="b in budgets" :key="b.id" :padded="false">
         <!-- Budget header -->
-        <div class="flex items-center gap-2 border-b border-border px-5 py-3">
-          <span class="text-sm font-semibold" :class="{ 'opacity-50': !b.isActive }">{{ displayName(b.name, locale) }}</span>
-          <span class="rounded-full bg-surface-2 px-1.5 py-0.5 text-[10px] text-text-muted">{{ t(`enums.categoryFlow.${b.flow}`) }}</span>
-          <span v-if="b.isSystem" class="rounded-full bg-surface-2 px-1.5 py-0.5 text-[10px] text-text-muted">{{ t('common.system') }}</span>
-          <div class="ml-auto flex items-center gap-0.5">
+        <div class="flex items-center gap-2.5 border-b border-border px-5 py-3.5 bg-surface-2/40">
+          <span class="text-sm font-bold uppercase tracking-wider text-text" :class="{ 'opacity-50': !b.isActive }">
+            {{ displayName(b.name, locale) }}
+          </span>
+          <span
+            class="rounded-full px-2.5 py-0.5 text-[10px] font-semibold border"
+            :class="{
+              'bg-negative-soft text-negative border-negative/20': b.flow === 'Expense',
+              'bg-positive-soft text-positive border-positive/20': b.flow === 'Income',
+              'bg-accent-soft text-accent border-accent/20': b.flow === 'Transfer',
+              'bg-surface-2 text-text-muted border-border': b.flow === 'Any',
+            }"
+          >
+            {{ t(`enums.categoryFlow.${b.flow}`) }}
+          </span>
+          <span v-if="b.isSystem" class="rounded-full bg-surface border border-border px-2 py-0.5 text-[10px] font-medium text-text-muted">
+            {{ t('common.system') }}
+          </span>
+          <div class="ml-auto flex items-center gap-1">
             <IconButton :icon="Pencil" :label="t('common.edit')" :size="15" @click="openEdit(b)" />
             <IconButton :icon="Plus" :label="t('categories.addChild')" :size="15" @click="openAdd('Category', b)" />
           </div>
@@ -162,27 +176,32 @@ onMounted(load);
 
         <!-- Categories -->
         <ul class="divide-y divide-border">
-          <li v-for="c in childrenOf(b.id)" :key="c.id" class="px-5">
-            <div class="flex items-center gap-2 py-2.5" :class="{ 'opacity-50': !c.isActive }">
-              <span class="text-sm">{{ displayName(c.name, locale) }}</span>
-              <div class="ml-auto flex items-center gap-0.5">
+          <li v-for="c in childrenOf(b.id)" :key="c.id" class="px-5 py-1">
+            <div class="flex items-center gap-2 py-2 hover:bg-surface-2/40 px-2 rounded-lg transition-colors" :class="{ 'opacity-50': !c.isActive }">
+              <span class="text-sm font-semibold text-text">{{ displayName(c.name, locale) }}</span>
+              <div class="ml-auto flex items-center gap-1">
                 <IconButton :icon="Plus" :label="t('categories.addChild')" :size="14" @click="openAdd('Sub', c)" />
                 <IconButton :icon="Pencil" :label="t('common.edit')" :size="14" @click="openEdit(c)" />
                 <IconButton v-if="!c.isSystem && c.isActive" :icon="Ban" :label="t('categories.deactivate')" :size="14" danger @click="deactivate(c)" />
               </div>
             </div>
             <!-- Subs -->
-            <ul v-if="childrenOf(c.id).length" class="border-l border-border pb-1 pl-4">
-              <li v-for="s in childrenOf(c.id)" :key="s.id" class="flex items-center gap-2 py-2 text-text-muted" :class="{ 'opacity-50': !s.isActive }">
-                <span class="text-[13px]">{{ displayName(s.name, locale) }}</span>
-                <div class="ml-auto flex items-center gap-0.5">
+            <ul v-if="childrenOf(c.id).length" class="border-l-2 border-border/80 my-1 pb-1 pl-4 space-y-0.5">
+              <li
+                v-for="s in childrenOf(c.id)"
+                :key="s.id"
+                class="flex items-center gap-2 py-1.5 px-2 rounded-lg hover:bg-surface-2/40 transition-colors text-text-muted"
+                :class="{ 'opacity-50': !s.isActive }"
+              >
+                <span class="text-xs font-medium">{{ displayName(s.name, locale) }}</span>
+                <div class="ml-auto flex items-center gap-1">
                   <IconButton :icon="Pencil" :label="t('common.edit')" :size="13" @click="openEdit(s)" />
                   <IconButton v-if="!s.isSystem && s.isActive" :icon="Ban" :label="t('categories.deactivate')" :size="13" danger @click="deactivate(s)" />
                 </div>
               </li>
             </ul>
           </li>
-          <li v-if="!childrenOf(b.id).length" class="px-5 py-3 text-[13px] text-text-muted">{{ t('categories.empty') }}</li>
+          <li v-if="!childrenOf(b.id).length" class="px-5 py-4 text-center text-xs text-text-muted">{{ t('categories.empty') }}</li>
         </ul>
       </AppCard>
     </div>

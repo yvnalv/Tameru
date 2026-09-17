@@ -38,8 +38,23 @@ export const useUiStore = defineStore('ui', () => {
     localStorage.setItem(HIDE_AMOUNTS_KEY, amountsHidden.value ? '1' : '0');
   }
 
+  const commandPaletteOpen = ref(false);
+
+  function openCommandPalette(): void {
+    commandPaletteOpen.value = true;
+  }
+
+  function closeCommandPalette(): void {
+    commandPaletteOpen.value = false;
+  }
+
+  function toggleCommandPalette(): void {
+    commandPaletteOpen.value = !commandPaletteOpen.value;
+  }
+
   return {
-    locale, density, sidebarCollapsed, amountsHidden,
+    locale, density, sidebarCollapsed, amountsHidden, commandPaletteOpen,
     changeLocale, toggleLocale, setDensity, toggleSidebar, toggleAmounts,
+    openCommandPalette, closeCommandPalette, toggleCommandPalette,
   };
 });

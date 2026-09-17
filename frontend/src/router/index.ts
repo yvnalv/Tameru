@@ -14,6 +14,12 @@ const routes: RouteRecordRaw[] = [
     meta: { public: true },
   },
   {
+    path: '/design-system',
+    name: 'design-system',
+    component: () => import('@/views/designSystem/DesignSystemView.vue'),
+    meta: { public: true },
+  },
+  {
     path: '/',
     component: () => import('@/layouts/AppShell.vue'),
     children: [

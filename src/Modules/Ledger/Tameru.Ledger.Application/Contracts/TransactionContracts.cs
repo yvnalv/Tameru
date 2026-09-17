@@ -47,6 +47,7 @@ public sealed record UpdateTransactionRequest(
 public sealed record TransactionFilter(
     string? Type = null,
     Guid? AccountId = null,
+    Guid? BudgetCategoryId = null,
     Guid? CategoryId = null,
     string? Status = null,
     DateOnly? From = null,

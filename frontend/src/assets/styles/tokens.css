@@ -1,41 +1,111 @@
 /*
- * Design tokens — the single source of truth for color/radius, mirrored from
- * docs/frontend/DESIGN_LANGUAGE.md (🟢 LOCKED v1). Dark-first; one solid green accent; no gradients.
- * Tailwind (tailwind.config.ts) maps utilities to these variables.
+ * Modern Cobalt/Indigo Design System Tokens — Tameru
+ * Supports both Light Mode (default / :root) and Dark Mode ([data-theme="dark"], .dark).
+ * Accent: Option B Modern Cobalt/Indigo (#3B46F1 in Light, #6366F1 in Dark).
+ * Financial semantics (positive green, negative red) are strictly decoupled from accent.
  */
+
 :root {
+  color-scheme: light;
+
+  /* Accent — Modern Cobalt / Indigo */
+  --accent: #3b46f1;
+  --accent-hover: #2e37d9;
+  --accent-active: #232ab8;
+  --accent-soft: rgba(59, 70, 241, 0.08);
+  --accent-contrast: #ffffff;
+
+  /* Neutrals (Light Mode) */
+  --bg: #f5f6fa;
+  --surface: #ffffff;
+  --surface-2: #eef0f6;
+  --surface-3: #e2e5f0;
+  --sidebar: #ffffff;
+  --border: #eaebf0;
+  /* Control border: passes 3:1 on --surface (#ffffff) for WCAG 1.4.11 */
+  --border-strong: #718096;
+  --text: #111827;
+  --text-muted: #64748b;
+
+  /* Semantic — distinct from accent */
+  --positive: #047857;
+  --positive-hover: #065f46;
+  --positive-soft: rgba(4, 120, 87, 0.12);
+  --positive-contrast: #ffffff;
+
+  --negative: #dc2626;
+  --negative-hover: #b91c1c;
+  --negative-soft: rgba(220, 38, 38, 0.12);
+  --negative-contrast: #ffffff;
+
+  --warning: #f59e0b;
+  --warning-soft: rgba(245, 158, 11, 0.12);
+  --warning-contrast: #0b0f0c;
+
+  --info: #3b82f6;
+  --info-soft: rgba(59, 130, 246, 0.12);
+
+  /* Category spectrum (for segmented spend bars, donuts, and charts) */
+  --cat-1: #3b46f1;
+  --cat-2: #10b981;
+  --cat-3: #f59e0b;
+  --cat-4: #f97316;
+  --cat-5: #ef4444;
+  --cat-6: #06b6d4;
+  --cat-7: #8b5cf6;
+
+  /* Focus ring */
+  --ring: var(--accent);
+
+  /* Elevation Shadows */
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+  --shadow-lift: 0 10px 25px -5px rgba(0, 0, 0, 0.06), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+}
+
+[data-theme='dark'],
+.dark {
   color-scheme: dark;
 
-  /* Accent — solid green, used sparingly */
-  --accent: #35d07a;
-  --accent-hover: #2fbb6d;
-  --accent-active: #29a561;
-  --accent-soft: rgba(53, 208, 122, 0.14);
-  --accent-contrast: #0b0f0c;
+  /* Accent — Vibrant Electric Indigo (>= 4.5:1 with white text) */
+  --accent: #5558f0;
+  --accent-hover: #474ae0;
+  --accent-active: #3b3ed0;
+  --accent-soft: rgba(85, 88, 240, 0.16);
+  --accent-contrast: #ffffff;
 
-  /* Neutrals (dark) */
-  --bg: #131415;
-  --surface: #1c1d1f;
-  --surface-2: #26282b;
-  --sidebar: #0f1011;
-  --border: #2b2e31;
-  /* Boundary of interactive controls (inputs, selects). Must clear 3:1 against --surface
-     for WCAG 1.4.11; the subtler --border stays for decorative card/table dividers. */
-  --border-strong: #6b727b;
-  --text: #f4f5f6;
-  --text-muted: #8a9097;
+  /* Neutrals (Dark Mode) */
+  --bg: #0b0d11;
+  --surface: #14171f;
+  --surface-2: #1d222d;
+  --surface-3: #262d3d;
+  --sidebar: #0e1015;
+  --border: #222631;
+  /* Control border: passes 3:1 on --surface (#14171f) for WCAG 1.4.11 */
+  --border-strong: #64748b;
+  --text: #f8fafc;
+  --text-muted: #94a3b8;
 
-  /* Semantic — distinct from the accent */
+  /* Semantic */
   --positive: #35d07a;
-  --negative: #ff5b60;
-  /* Text/icon colour placed on a --negative fill (mirrors --accent-contrast on --accent). */
-  --negative-contrast: #0b0f0c;
-  --warning: #ffb020;
-  --info: #4c9aff;
+  --positive-hover: #2fbb6d;
+  --positive-soft: rgba(53, 208, 122, 0.14);
+  --positive-contrast: #0b0f0c;
 
-  /* Category spectrum (segmented spend bar / donut) */
-  --cat-1: #35d07a;
-  --cat-2: #9be15d;
+  --negative: #ff5b60;
+  --negative-hover: #e04b50;
+  --negative-soft: rgba(255, 91, 96, 0.14);
+  --negative-contrast: #0b0f0c;
+
+  --warning: #ffb020;
+  --warning-soft: rgba(255, 176, 32, 0.14);
+  --warning-contrast: #0b0f0c;
+
+  --info: #60a5fa;
+  --info-soft: rgba(96, 165, 250, 0.14);
+
+  /* Category spectrum */
+  --cat-1: #6366f1;
+  --cat-2: #35d07a;
   --cat-3: #ffc531;
   --cat-4: #ff8a34;
   --cat-5: #ff5b60;
@@ -44,4 +114,8 @@
 
   /* Focus ring */
   --ring: var(--accent);
+
+  /* Elevation Shadows */
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-lift: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
 }

@@ -6,6 +6,7 @@ import { getCategoryTracker, getCashflow, getEnvelopeReport } from '@/lib/report
 import { listCategories } from '@/lib/categories';
 import type { Category, CashflowReport, EnvelopeReport } from '@/types/api';
 import { displayName } from '@/lib/seededNames';
+import { useThemeStore } from '@/stores/theme';
 import AppCard from '@/components/ui/AppCard.vue';
 import SpendBar from '@/components/ui/SpendBar.vue';
 import { spectrumColor } from '@/lib/spectrum';
@@ -60,11 +61,24 @@ const pad = (n: number) => String(n).padStart(2, '0');
 function compact(value: number): string {
   return value ? new Intl.NumberFormat(locale.value, { notation: 'compact', maximumFractionDigits: 1 }).format(value) : '';
 }
+const themeStore = useThemeStore();
+
 const maxCell = computed(() => Math.max(1, ...(matrix.value?.rows.flatMap((r) => r.amounts) ?? [0])));
 function heat(value: number): Record<string, string> {
   if (value <= 0) return {};
-  const alpha = Math.min(0.5, (value / maxCell.value) * 0.46 + 0.06);
-  return { backgroundColor: `rgba(53,208,122,${alpha.toFixed(3)})` };
+  const ratio = Math.min(1, value / maxCell.value);
+  const alpha = Math.min(0.6, ratio * 0.5 + 0.08);
+  const isIncome = trackerFlow.value === 'Income';
+
+  if (isIncome) {
+    return themeStore.isDark
+      ? { backgroundColor: `rgba(53, 208, 122, ${alpha.toFixed(3)})`, color: alpha > 0.35 ? '#0b0f0c' : 'var(--text)' }
+      : { backgroundColor: `rgba(4, 120, 87, ${alpha.toFixed(3)})`, color: alpha > 0.35 ? '#ffffff' : 'var(--text)' };
+  } else {
+    return themeStore.isDark
+      ? { backgroundColor: `rgba(255, 91, 96, ${alpha.toFixed(3)})`, color: alpha > 0.35 ? '#0b0f0c' : 'var(--text)' }
+      : { backgroundColor: `rgba(220, 38, 38, ${alpha.toFixed(3)})`, color: alpha > 0.35 ? '#ffffff' : 'var(--text)' };
+  }
 }
 
 // Reshape a category-tracker response into fixed columns.
@@ -240,14 +254,14 @@ onMounted(async () => {
   <div class="space-y-4">
     <!-- Top Navigation Tabs for Reports -->
     <div class="flex flex-wrap items-center justify-between gap-3">
-      <div class="flex rounded-control border border-border bg-surface p-0.5">
+      <div class="inline-flex rounded-xl bg-surface border border-border p-1 shadow-sm">
         <button
           v-for="tab in (['tracker', 'cashflow', 'allocation'] as Tab[])"
           :key="tab"
           type="button"
           :aria-pressed="activeTab === tab"
-          class="rounded-[9px] px-3.5 py-1.5 text-xs font-semibold transition"
-          :class="activeTab === tab ? 'bg-accent-soft text-accent' : 'text-text-muted hover:text-text'"
+          class="rounded-lg px-4 py-1.5 text-xs font-semibold transition-all"
+          :class="activeTab === tab ? 'bg-accent text-accent-contrast shadow-sm' : 'text-text-muted hover:text-text'"
           @click="switchTab(tab)"
         >
           {{ t(`reports.tab${tab.charAt(0).toUpperCase() + tab.slice(1)}`) }}
@@ -259,34 +273,42 @@ onMounted(async () => {
     <AppCard v-if="activeTab === 'tracker'">
       <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 class="text-sm font-semibold">{{ t('reports.tracker') }}</h2>
-          <p class="text-[13px] text-text-muted">{{ t('reports.trackerNote') }}</p>
+          <h2 class="text-sm font-semibold text-text">{{ t('reports.tracker') }}</h2>
+          <p class="text-xs text-text-muted">{{ t('reports.trackerNote') }}</p>
         </div>
         <div class="flex flex-wrap items-center gap-2">
           <!-- Flow switch: Expenses vs Income -->
-          <div class="flex rounded-control border border-border p-0.5">
+          <div class="inline-flex rounded-xl bg-surface-2 p-1 border border-border">
             <button
               v-for="f in (['Expense', 'Income'] as Flow[])"
               :key="f"
               type="button"
               :aria-pressed="trackerFlow === f"
-              class="rounded-[9px] px-2.5 py-1 text-[13px] font-medium transition"
-              :class="trackerFlow === f ? 'bg-accent-soft text-accent' : 'text-text-muted hover:text-text'"
+              class="rounded-lg px-3 py-1 text-xs font-semibold transition-all"
+              :class="[
+                trackerFlow === f
+                  ? f === 'Expense'
+                    ? 'bg-negative text-negative-contrast font-bold shadow-sm'
+                    : 'bg-positive text-positive-contrast font-bold shadow-sm'
+                  : f === 'Expense'
+                    ? 'text-text-muted hover:text-negative'
+                    : 'text-text-muted hover:text-positive',
+              ]"
               @click="setFlow(f)"
             >
-              {{ t(`reports.flow${f}s`) }}
+              {{ f === 'Expense' ? t('reports.flowExpenses') : t('reports.flowIncome') }}
             </button>
           </div>
 
           <!-- Granularity toggle -->
-          <div class="flex rounded-control border border-border p-0.5">
+          <div class="inline-flex rounded-xl bg-surface-2 p-1 border border-border">
             <button
               v-for="g in (['yearly', 'monthly', 'daily'] as Granularity[])"
               :key="g"
               type="button"
               :aria-pressed="granularity === g"
-              class="rounded-[9px] px-3 py-1 text-[13px] font-medium capitalize transition"
-              :class="granularity === g ? 'bg-accent-soft text-accent' : 'text-text-muted hover:text-text'"
+              class="rounded-lg px-3 py-1 text-xs font-semibold capitalize transition-all"
+              :class="granularity === g ? 'bg-surface text-text shadow-sm' : 'text-text-muted hover:text-text'"
               @click="setGranularity(g)"
             >
               {{ t(`reports.${g}`) }}
@@ -295,17 +317,17 @@ onMounted(async () => {
 
           <!-- Daily nav -->
           <div v-if="granularity === 'daily'" class="flex items-center gap-1.5">
-            <button class="rounded-control border border-border p-1.5 text-text-muted hover:bg-surface-2 hover:text-text" :aria-label="t('transactions.prev')" @click="changeDailyMonth(-1)"><ChevronLeft :size="16" /></button>
-            <span class="min-w-[7.5rem] text-center text-[13px] font-medium">{{ dailyMonthLabel }}</span>
-            <button class="rounded-control border border-border p-1.5 text-text-muted hover:bg-surface-2 hover:text-text" :aria-label="t('transactions.next')" @click="changeDailyMonth(1)"><ChevronRight :size="16" /></button>
+            <button class="rounded-lg border border-border p-1.5 text-text-muted hover:bg-surface-2 hover:text-text" :aria-label="t('transactions.prev')" @click="changeDailyMonth(-1)"><ChevronLeft :size="16" /></button>
+            <span class="min-w-[7.5rem] text-center text-xs font-semibold text-text">{{ dailyMonthLabel }}</span>
+            <button class="rounded-lg border border-border p-1.5 text-text-muted hover:bg-surface-2 hover:text-text" :aria-label="t('transactions.next')" @click="changeDailyMonth(1)"><ChevronRight :size="16" /></button>
           </div>
           <!-- Monthly nav -->
           <div v-else-if="granularity === 'monthly'" class="flex items-center gap-1.5">
-            <button class="rounded-control border border-border p-1.5 text-text-muted hover:bg-surface-2 hover:text-text" :aria-label="t('transactions.prev')" @click="changeMonthlyYear(-1)"><ChevronLeft :size="16" /></button>
-            <span class="tnum min-w-[3.5rem] text-center text-[13px] font-medium">{{ monthlyYear }}</span>
-            <button class="rounded-control border border-border p-1.5 text-text-muted hover:bg-surface-2 hover:text-text" :aria-label="t('transactions.next')" @click="changeMonthlyYear(1)"><ChevronRight :size="16" /></button>
+            <button class="rounded-lg border border-border p-1.5 text-text-muted hover:bg-surface-2 hover:text-text" :aria-label="t('transactions.prev')" @click="changeMonthlyYear(-1)"><ChevronLeft :size="16" /></button>
+            <span class="tnum min-w-[3.5rem] text-center text-xs font-semibold text-text">{{ monthlyYear }}</span>
+            <button class="rounded-lg border border-border p-1.5 text-text-muted hover:bg-surface-2 hover:text-text" :aria-label="t('transactions.next')" @click="changeMonthlyYear(1)"><ChevronRight :size="16" /></button>
           </div>
-          <span v-else class="tnum text-[13px] text-text-muted">{{ rangeLabel }}</span>
+          <span v-else class="tnum text-xs font-medium text-text-muted">{{ rangeLabel }}</span>
         </div>
       </div>
 
@@ -318,41 +340,41 @@ onMounted(async () => {
         <div class="mb-5">
           <SpendBar :segments="segments" :label="t('reports.tracker')" />
           <ul class="mt-3 grid grid-cols-2 gap-x-6 gap-y-1.5 sm:grid-cols-3">
-            <li v-for="(c, i) in topCategories" :key="c.categoryId" class="flex items-center justify-between text-[13px]">
+            <li v-for="(c, i) in topCategories" :key="c.categoryId" class="flex items-center justify-between text-xs">
               <span class="flex min-w-0 items-center gap-2">
                 <span
                   class="h-2.5 w-2.5 shrink-0 rounded-full"
                   :style="{ backgroundColor: spectrumColor(i) }"
                   aria-hidden="true"
                 />
-                <span class="truncate text-text-muted">{{ catName(c.categoryId) }}</span>
+                <span class="truncate text-text-muted font-medium">{{ catName(c.categoryId) }}</span>
               </span>
-              <Money :value="c.total" class="ml-2 shrink-0 font-medium" />
+              <Money :value="c.total" class="ml-2 shrink-0 font-semibold tnum" />
             </li>
           </ul>
         </div>
 
-        <div class="scroll-slim overflow-x-auto">
+        <div class="scroll-slim overflow-x-auto rounded-xl border border-border">
           <table class="w-full min-w-[640px] border-separate border-spacing-0 text-sm">
             <thead>
-              <tr class="text-[12px] uppercase text-text-muted">
-                <th class="sticky left-0 z-10 bg-surface px-3 py-2 text-left font-medium">{{ t('reports.category') }}</th>
-                <th v-for="(l, i) in matrix.labels" :key="i" class="px-2 py-2 text-right font-medium">{{ l }}</th>
-                <th class="px-3 py-2 text-right font-medium">{{ t('reports.total') }}</th>
+              <tr class="text-[11px] uppercase tracking-wider text-text-muted bg-surface-2/70">
+                <th class="sticky left-0 z-10 bg-surface-2/90 border-r border-b border-border px-3.5 py-2.5 text-left font-bold">{{ t('reports.category') }}</th>
+                <th v-for="(l, i) in matrix.labels" :key="i" class="border-b border-border px-2.5 py-2.5 text-right font-bold">{{ l }}</th>
+                <th class="border-b border-border px-3.5 py-2.5 text-right font-bold">{{ t('reports.total') }}</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="row in matrix.rows" :key="row.categoryId" class="border-t border-border">
-                <td class="sticky left-0 z-10 truncate bg-surface px-3 py-2 font-medium">{{ catName(row.categoryId) }}</td>
-                <td v-for="(v, i) in row.amounts" :key="i" class="tnum px-2 py-2 text-right text-[13px]" :style="heat(v)">{{ compact(v) }}</td>
-                <td class="tnum px-3 py-2 text-right font-medium"><Money :value="row.total" /></td>
+              <tr v-for="row in matrix.rows" :key="row.categoryId" class="hover:bg-surface-2/40 transition-colors">
+                <td class="sticky left-0 z-10 truncate bg-surface border-r border-b border-border px-3.5 py-2.5 font-semibold text-text text-xs">{{ catName(row.categoryId) }}</td>
+                <td v-for="(v, i) in row.amounts" :key="i" class="tnum border-b border-border/40 px-2 py-2 text-right text-xs font-medium" :style="heat(v)">{{ compact(v) }}</td>
+                <td class="tnum border-b border-border px-3.5 py-2 text-right font-semibold text-xs"><Money :value="row.total" /></td>
               </tr>
             </tbody>
             <tfoot>
-              <tr class="border-t border-border text-[13px] font-semibold">
-                <td class="sticky left-0 z-10 bg-surface px-3 py-2">{{ t('reports.total') }}</td>
-                <td v-for="(v, i) in matrix.periodTotals" :key="i" class="tnum px-2 py-2 text-right">{{ compact(v) }}</td>
-                <td class="tnum px-3 py-2 text-right"><Money :value="matrix.total" /></td>
+              <tr class="border-t-2 border-border text-xs font-bold bg-surface-2/50">
+                <td class="sticky left-0 z-10 bg-surface-2/80 border-r border-border px-3.5 py-2.5">{{ t('reports.total') }}</td>
+                <td v-for="(v, i) in matrix.periodTotals" :key="i" class="tnum px-2 py-2.5 text-right">{{ compact(v) }}</td>
+                <td class="tnum px-3.5 py-2.5 text-right text-text"><Money :value="matrix.total" /></td>
               </tr>
             </tfoot>
           </table>

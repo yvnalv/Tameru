@@ -13,14 +13,14 @@ const props = withDefaults(
 );
 
 const base =
-  'inline-flex items-center justify-center gap-2 rounded-control px-4 h-10 text-sm font-medium ' +
+  'inline-flex items-center justify-center gap-2 rounded-control px-4 h-10 text-sm font-medium whitespace-nowrap shrink-0 ' +
   'transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed select-none';
 
 const variants: Record<string, string> = {
-  primary: 'bg-accent text-accent-contrast hover:bg-accent-hover active:bg-accent-active',
-  secondary: 'border border-border text-text hover:bg-surface-2',
-  ghost: 'text-text-muted hover:text-text hover:bg-surface-2',
-  danger: 'bg-negative text-negative-contrast hover:opacity-90',
+  primary: 'bg-accent text-accent-contrast font-semibold shadow-sm hover:opacity-90 active:opacity-95',
+  secondary: 'border border-border bg-surface text-text hover:bg-surface-2 font-medium',
+  ghost: 'text-text-muted hover:text-text hover:bg-surface-2 font-medium',
+  danger: 'bg-negative text-negative-contrast font-semibold shadow-sm hover:opacity-90',
 };
 
 const classes = computed(() => [base, variants[props.variant], props.block ? 'w-full' : '']);

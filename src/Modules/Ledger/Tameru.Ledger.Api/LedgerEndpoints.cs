@@ -16,12 +16,12 @@ public static class LedgerEndpoints
 
         group.MapGet("/", async (
             LedgerService service,
-            string? type, Guid? accountId, Guid? categoryId, string? status,
+            string? type, Guid? accountId, Guid? budgetCategoryId, Guid? categoryId, string? status,
             DateOnly? from, DateOnly? to, string? q, int? page, int? pageSize,
             CancellationToken ct) =>
         {
             var filter = new TransactionFilter(
-                type, accountId, categoryId, status, from, to, q, page ?? 1, pageSize ?? 50);
+                type, accountId, budgetCategoryId, categoryId, status, from, to, q, page ?? 1, pageSize ?? 50);
             return (await service.ListAsync(filter, ct)).ToHttp();
         });
 

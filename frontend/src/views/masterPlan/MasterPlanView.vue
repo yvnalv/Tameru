@@ -293,7 +293,7 @@ onMounted(load);
           </div>
 
           <!-- Segmented Allocation Bar -->
-          <div class="flex h-3.5 w-full overflow-hidden rounded-full bg-surface-2">
+          <div class="flex h-3.5 w-full overflow-hidden rounded-full bg-surface-3">
             <div
               v-for="sec in sectionAllocations"
               :key="sec.id"
@@ -308,14 +308,14 @@ onMounted(load);
             <div
               v-for="sec in sectionAllocations"
               :key="sec.id"
-              class="flex items-center justify-between rounded-control border border-border bg-surface p-2.5 text-xs"
+              class="flex items-center justify-between rounded-xl border border-border bg-surface-2/60 p-2.5 text-xs"
             >
               <div class="flex items-center gap-2 truncate">
                 <span
                   class="h-2.5 w-2.5 shrink-0 rounded-full"
                   :style="{ backgroundColor: sec.color }"
                 />
-                <span class="font-medium truncate">{{ sec.name }}</span>
+                <span class="font-semibold text-text truncate">{{ sec.name }}</span>
               </div>
               <div class="flex items-center gap-1.5 tnum shrink-0">
                 <span class="font-bold text-text">{{ sec.actualPercent }}%</span>
@@ -342,11 +342,11 @@ onMounted(load);
       <div class="space-y-4">
         <AppCard v-for="section in plan.sections" :key="section.id" :padded="false">
           <div class="flex flex-wrap items-center gap-2 border-b border-border px-5 py-3.5">
-            <span class="text-sm font-semibold uppercase tracking-wider text-text">
+            <span class="text-sm font-bold uppercase tracking-wider text-text">
               {{ displayName(section.name, locale) }}
             </span>
             <button
-              class="inline-flex min-h-[24px] items-center gap-1 rounded-full bg-accent-soft px-2.5 py-1 text-xs font-semibold text-accent transition-opacity hover:opacity-80"
+              class="inline-flex min-h-[24px] items-center gap-1 rounded-full bg-accent-soft border border-accent/20 px-2.5 py-0.5 text-xs font-semibold text-accent transition-opacity hover:opacity-80"
               :title="t('masterPlan.editTarget')"
               @click="openEditTarget(section)"
             >

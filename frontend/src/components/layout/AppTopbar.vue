@@ -1,18 +1,24 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
-import { LogOut, Languages, Rows2, Rows3, PanelLeftClose, PanelLeftOpen, Eye, EyeOff, Plus } from 'lucide-vue-next';
+import {
+  LogOut,
+  Languages,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Eye,
+  EyeOff,
+  Sparkles,
+  Search,
+} from 'lucide-vue-next';
 import { useAuthStore } from '@/stores/auth';
 import { useUiStore } from '@/stores/ui';
-import { useTransactionModalStore } from '@/stores/transactionModal';
-import { useDensity } from '@/composables/useDensity';
 import IconButton from '@/components/ui/IconButton.vue';
 import AvatarChip from '@/components/ui/AvatarChip.vue';
+import ThemeToggle from '@/components/ui/ThemeToggle.vue';
 
 const router = useRouter();
 const auth = useAuthStore();
 const ui = useUiStore();
-const density = useDensity();
-const transactionModal = useTransactionModalStore();
 
 async function signOut(): Promise<void> {
   await auth.logout();
@@ -22,62 +28,107 @@ async function signOut(): Promise<void> {
 
 <template>
   <header
-    class="flex h-16 items-center justify-between border-b border-border bg-bg/80 px-4 backdrop-blur md:px-8"
+    class="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-surface/90 px-4 backdrop-blur shadow-xs md:px-8"
   >
-    <div class="flex items-center gap-2">
+    <!-- Left: Sidebar Toggle, Section Title, Quick Add -->
+    <div class="flex items-center gap-2.5">
       <IconButton
         class="hidden md:inline-flex"
+        variant="outline"
+        placement="bottom"
         :icon="ui.sidebarCollapsed ? PanelLeftOpen : PanelLeftClose"
         :label="ui.sidebarCollapsed ? $t('common.expand') : $t('common.collapse')"
-        :size="18"
+        :size="16"
         @click="ui.toggleSidebar()"
       />
-      <h1 class="text-base font-semibold">
+
+      <h1 class="text-base font-bold text-text tracking-tight">
         {{ $t(`nav.${(router.currentRoute.value.name as string) || 'dashboard'}`) }}
       </h1>
-      <!-- Omnipresent Quick Add Button -->
+
+      <!-- Omnipresent Command Palette Search Bar Trigger -->
       <button
         type="button"
-        class="ml-2 inline-flex items-center gap-1.5 rounded-control bg-accent px-2.5 py-1 text-xs font-semibold text-bg transition-opacity hover:opacity-90 sm:ml-4"
-        :title="$t('transactions.quickAdd')"
-        @click="transactionModal.openCreate()"
+        class="relative ml-2 hidden sm:flex h-9 w-48 md:w-60 items-center rounded-control border border-border bg-surface-2/80 pl-9 pr-2.5 text-xs text-text-muted transition-all hover:border-accent/40 hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+        :title="$t('commandPalette.searchAnything') + ' (⌘K / Ctrl+K)'"
+        @click="ui.openCommandPalette()"
       >
-        <Plus :size="15" :stroke-width="2.5" />
-        <span class="hidden sm:inline">{{ $t('transactions.quickAdd') }}</span>
+        <Search :size="15" class="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
+        <span class="truncate text-left text-text-muted">{{ $t('commandPalette.searchAnything') }}...</span>
+        <kbd class="ml-auto inline-flex items-center rounded border border-border bg-surface px-1.5 py-0.5 text-[10px] font-semibold text-text-muted">
+          ⌘K
+        </kbd>
       </button>
+
+      <!-- Mobile Search Icon Button -->
+      <IconButton
+        class="sm:hidden"
+        variant="outline"
+        :icon="Search"
+        :label="$t('commandPalette.searchAnything')"
+        :size="16"
+        @click="ui.openCommandPalette()"
+      />
     </div>
 
-    <div class="flex items-center gap-1">
+    <!-- Right: Utility Controls (Design System Consistent) -->
+    <div class="flex items-center gap-1.5">
+      <!-- Privacy Toggle (Hide/Show Amounts) with bottom tooltip -->
       <IconButton
+        variant="outline"
+        placement="bottom"
+        :active="ui.amountsHidden"
         :icon="ui.amountsHidden ? EyeOff : Eye"
         :label="ui.amountsHidden ? $t('common.showAmounts') : $t('common.hideAmounts')"
-        :size="18"
+        :size="16"
         @click="ui.toggleAmounts()"
       />
+
+      <!-- Language Selector (Icon-Only with tooltip) -->
       <IconButton
-        :icon="density.compact.value ? Rows2 : Rows3"
-        :label="$t('common.density')"
-        :size="18"
-        @click="density.toggle()"
+        variant="outline"
+        placement="bottom"
+        :icon="Languages"
+        :label="`${$t('common.language')} (${ui.locale.toUpperCase()})`"
+        :size="16"
+        @click="ui.toggleLocale()"
       />
 
+      <!-- Modern Light/Dark Mode Switcher (Icon-Only Capsule) -->
+      <ThemeToggle variant="segmented" :size="14" class="mx-0.5" />
+
+      <!-- Design System Link -->
       <button
-        class="inline-flex items-center gap-1.5 rounded-control px-2.5 py-1.5 text-sm font-medium text-text-muted hover:bg-surface-2 hover:text-text"
-        :title="$t('common.language')"
-        @click="ui.toggleLocale()"
+        type="button"
+        class="hidden sm:inline-flex h-9 items-center gap-1.5 rounded-control border border-accent/30 bg-accent-soft px-3 text-xs font-semibold text-accent shadow-xs transition-all hover:bg-accent hover:text-accent-contrast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+        title="Open Design System Showcase"
+        @click="router.push({ name: 'design-system' })"
       >
-        <Languages :size="18" :stroke-width="1.5" />
-        <span class="uppercase">{{ ui.locale }}</span>
+        <Sparkles :size="14" />
+        <span class="hidden lg:inline">Design System</span>
       </button>
 
-      <IconButton :icon="LogOut" :label="$t('common.signOut')" :size="18" @click="signOut" />
+      <!-- Sign Out Button with bottom tooltip -->
+      <IconButton
+        variant="outline"
+        placement="bottom"
+        danger
+        :icon="LogOut"
+        :label="$t('common.signOut')"
+        :size="16"
+        @click="signOut"
+      />
 
-      <!-- Logged-in owner -->
-      <div v-if="auth.user" class="ml-1 flex items-center gap-2 border-l border-border pl-2.5">
+      <!-- Logged-in owner Profile Pill -->
+      <div v-if="auth.user" class="ml-1 hidden items-center gap-2 border-l border-border pl-3 sm:flex">
         <AvatarChip :name="auth.user.displayName || auth.user.email" />
-        <div class="hidden leading-tight sm:block">
-          <p class="max-w-[9rem] truncate text-sm font-medium">{{ auth.user.displayName || auth.user.email }}</p>
-          <p class="max-w-[9rem] truncate text-[12px] text-text-muted">{{ auth.user.email }}</p>
+        <div class="hidden leading-tight lg:block">
+          <p class="max-w-[8.5rem] truncate text-xs font-semibold text-text">
+            {{ auth.user.displayName || auth.user.email }}
+          </p>
+          <p class="max-w-[8.5rem] truncate text-[11px] text-text-muted font-mono">
+            {{ auth.user.email }}
+          </p>
         </div>
       </div>
     </div>

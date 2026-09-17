@@ -306,29 +306,31 @@ onMounted(async () => {
 
       <!-- View layout toggle (Grouped vs Flat) when viewing -->
       <div v-if="period && !editing" class="flex items-center gap-2">
-        <div class="flex items-center rounded-control border border-border bg-surface p-0.5">
+        <div class="inline-flex rounded-xl bg-surface border border-border p-1 shadow-sm">
           <button
             type="button"
-            class="flex items-center gap-1.5 rounded px-2.5 py-1 text-xs font-medium transition-colors"
+            class="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all"
             :class="
               viewMode === 'grouped'
-                ? 'bg-accent-soft text-accent'
+                ? 'bg-accent text-accent-contrast shadow-sm'
                 : 'text-text-muted hover:text-text'
             "
             @click="viewMode = 'grouped'"
           >
-            <Layers :size="13" />
+            <Layers :size="14" />
             <span class="hidden sm:inline">{{ t('budget.viewModeGrouped') }}</span>
           </button>
           <button
             type="button"
-            class="flex items-center gap-1.5 rounded px-2.5 py-1 text-xs font-medium transition-colors"
+            class="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all"
             :class="
-              viewMode === 'flat' ? 'bg-accent-soft text-accent' : 'text-text-muted hover:text-text'
+              viewMode === 'flat'
+                ? 'bg-accent text-accent-contrast shadow-sm'
+                : 'text-text-muted hover:text-text'
             "
             @click="viewMode = 'flat'"
           >
-            <List :size="13" />
+            <List :size="14" />
             <span class="hidden sm:inline">{{ t('budget.viewModeFlat') }}</span>
           </button>
         </div>
@@ -435,11 +437,11 @@ onMounted(async () => {
           <div v-if="!editing" class="flex flex-wrap items-center gap-1.5">
             <button
               type="button"
-              class="rounded-full border px-2.5 py-1 text-xs font-medium transition-colors"
+              class="rounded-lg border px-3 py-1 text-xs font-semibold transition-all"
               :class="
                 riskFilter === 'all'
-                  ? 'border-accent bg-accent-soft text-accent'
-                  : 'border-border text-text-muted hover:border-border-strong hover:text-text'
+                  ? 'border-accent bg-accent text-accent-contrast shadow-sm'
+                  : 'border-border bg-surface text-text-muted hover:border-border-strong hover:text-text'
               "
               @click="riskFilter = 'all'"
             >
@@ -448,42 +450,43 @@ onMounted(async () => {
             <button
               v-if="riskCounts.over > 0"
               type="button"
-              class="flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors"
+              class="flex items-center gap-1.5 rounded-lg border px-3 py-1 text-xs font-semibold transition-all"
               :class="
                 riskFilter === 'over'
-                  ? 'border-negative bg-negative/15 text-negative'
-                  : 'border-negative/40 text-negative hover:bg-negative/10'
+                  ? 'border-negative bg-negative text-negative-contrast shadow-sm'
+                  : 'border-negative/30 bg-negative-soft text-negative hover:border-negative'
               "
               @click="riskFilter = 'over'"
             >
-              <AlertTriangle :size="12" />
+              <AlertTriangle :size="13" />
               <span>{{ t('budget.filterOver') }} ({{ riskCounts.over }})</span>
             </button>
             <button
               v-if="riskCounts.warning > 0"
               type="button"
-              class="flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors"
+              class="flex items-center gap-1.5 rounded-lg border px-3 py-1 text-xs font-semibold transition-all"
               :class="
                 riskFilter === 'warning'
-                  ? 'border-accent bg-accent-soft text-accent'
-                  : 'border-border text-text-muted hover:border-border-strong hover:text-text'
+                  ? 'border-warning bg-warning text-warning-contrast shadow-sm'
+                  : 'border-warning/30 bg-warning-soft text-warning hover:border-warning'
               "
               @click="riskFilter = 'warning'"
             >
-              <Flame :size="12" />
+              <Flame :size="13" />
               <span>{{ t('budget.filterWarning') }} ({{ riskCounts.warning }})</span>
             </button>
             <button
+              v-if="riskCounts.safe > 0"
               type="button"
-              class="flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors"
+              class="flex items-center gap-1.5 rounded-lg border px-3 py-1 text-xs font-semibold transition-all"
               :class="
                 riskFilter === 'safe'
-                  ? 'border-accent bg-accent-soft text-accent'
-                  : 'border-border text-text-muted hover:border-border-strong hover:text-text'
+                  ? 'border-positive bg-positive text-positive-contrast shadow-sm'
+                  : 'border-positive/30 bg-positive-soft text-positive hover:border-positive'
               "
               @click="riskFilter = 'safe'"
             >
-              <CheckCircle2 :size="12" />
+              <CheckCircle2 :size="13" />
               <span>{{ t('budget.filterSafe') }} ({{ riskCounts.safe }})</span>
             </button>
           </div>
@@ -549,7 +552,7 @@ onMounted(async () => {
             </div>
 
             <!-- Envelope Overall Progress Bar -->
-            <div class="relative h-2 w-full overflow-hidden rounded-full bg-surface-2">
+            <div class="relative h-2.5 w-full overflow-hidden rounded-full bg-surface-3">
               <div
                 class="absolute inset-y-0 left-0 bg-positive transition-all duration-300"
                 :style="{ width: `${greenWidth(group.totalPlan, group.totalActual)}%` }"
@@ -568,22 +571,22 @@ onMounted(async () => {
               <div v-for="line in group.lines" :key="line.categoryId" class="space-y-1.5">
                 <div class="flex items-center justify-between gap-3 text-sm">
                   <div class="flex items-center gap-2 truncate">
-                    <span class="truncate font-medium">
+                    <span class="truncate font-medium text-text">
                       {{ categoryName(line.categoryId, line.categoryName) }}
                     </span>
                     <span
                       v-if="line.actual > line.plan"
-                      class="rounded bg-negative/15 px-1.5 py-0.5 text-[10px] font-semibold text-negative"
+                      class="rounded-md bg-negative-soft border border-negative/20 px-2 py-0.5 text-[10px] font-semibold text-negative"
                     >
                       {{ t('budget.filterOver') }}
                     </span>
                   </div>
-                  <div class="tnum flex shrink-0 items-center gap-1.5 text-[13px]">
-                    <span :class="line.actual > line.plan ? 'text-negative font-semibold' : 'text-text'">
+                  <div class="tnum flex shrink-0 items-center gap-1.5 text-xs">
+                    <span :class="line.actual > line.plan ? 'text-negative font-semibold' : 'text-text font-medium'">
                       <Money :value="line.actual" />
                     </span>
                     <span class="text-text-muted">/</span>
-                    <Money :value="line.plan" class="text-text-muted" />
+                    <Money :value="line.plan" class="text-text-muted font-medium" />
                     <span
                       v-if="usedPct(line.plan, line.actual) !== null"
                       class="ml-1 font-semibold"
@@ -594,13 +597,13 @@ onMounted(async () => {
                   </div>
                 </div>
 
-                <div class="relative h-2 w-full overflow-hidden rounded-full bg-surface-2">
+                <div class="relative h-2 w-full overflow-hidden rounded-full bg-surface-3">
                   <div
-                    class="absolute inset-y-0 left-0 bg-positive"
+                    class="absolute inset-y-0 left-0 bg-positive transition-all duration-300"
                     :style="{ width: `${greenWidth(line.plan, line.actual)}%` }"
                   />
                   <div
-                    class="absolute inset-y-0 bg-negative"
+                    class="absolute inset-y-0 bg-negative transition-all duration-300"
                     :style="{
                       left: `${greenWidth(line.plan, line.actual)}%`,
                       width: `${redWidth(line.plan, line.actual)}%`,
@@ -663,13 +666,13 @@ onMounted(async () => {
               </div>
             </div>
 
-            <div class="relative h-2 w-full overflow-hidden rounded-full bg-surface-2">
+            <div class="relative h-2.5 w-full overflow-hidden rounded-full bg-surface-3">
               <div
-                class="absolute inset-y-0 left-0 bg-positive"
+                class="absolute inset-y-0 left-0 bg-positive transition-all duration-300"
                 :style="{ width: `${greenWidth(line.plan, line.actual)}%` }"
               />
               <div
-                class="absolute inset-y-0 bg-negative"
+                class="absolute inset-y-0 bg-negative transition-all duration-300"
                 :style="{
                   left: `${greenWidth(line.plan, line.actual)}%`,
                   width: `${redWidth(line.plan, line.actual)}%`,
