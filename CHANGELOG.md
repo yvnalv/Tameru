@@ -3,6 +3,26 @@
 This file is Tameru's immutable historical record. A task is not complete until this file has been
 updated. Newest entries at the top. See `CLAUDE.md` → **CHANGELOG Rules** for the full procedure.
 
+## [2026-09-16 23:52:00 UTC]
+
+CHG-0036 — Enhance Budget and Master Plan UX with frictionless MoneyInput, pacing & daily allowances, category risk filters, and 50/40/10 allocation visualizers
+
+- **Budget decision support KPI strip (`BudgetView.vue`):** Added 4 key pillars: Total Plan, Actual spend with live pacing progress (e.g. Day 17 of 30 · 57% elapsed), Leftover, and remaining Daily Allowance (`leftover / remaining_days` per day).
+- **Category risk filter chips:** Quick filter pills (`All`, `Overbudget` with red alert badge, `Warning` for >80% used with velocity indicator, and `On track`) to instantly spotlight budget items requiring immediate attention.
+- **Envelope grouping layout:** Toggle between **Group by Envelope** (Needs, Wants, Investment sub-totals and envelope spend bars) and **Flat List**.
+- **Frictionless budget planning:**
+  - Integrated `MoneyInput.vue` with live thousand separators, denomination abbreviations (`500k`, `1.5jt`), and inline math.
+  - Added **"Salin dari Bulan Lalu" (Copy from Last Month)** for 1-click historical budget replication.
+  - Added live sticky draft total showing aggregate planned amounts and delta vs prior plan.
+- **Master Plan strategic allocation visualizer (`MasterPlanView.vue`):**
+  - Added Decision Support cards: Monthly Baseline Commitment, Annual Commitment (`12 × Monthly`), and Planned Savings Rate (`Investment / Total × 100%`).
+  - Added **50/40/10 Allocation Bar** comparing actual section distribution percentages against target allocations with variance markers (`+2.2%`, `-5.2%`).
+  - Integrated `MoneyInput.vue` into item creation and editing, featuring frequency presets (`1x`, `2x`, `4x (mingguan)`) and live computed total budget preview (`Price × Frequency`).
+  - Added target % validation verifying that section targets sum to 100%.
+- **Verified:** 29 Vitest tests passing, `vue-tsc --noEmit` clean, production bundle built, and local Docker stack rebuilt and deployed live.
+
+---
+
 ## [2026-09-16 15:17:00 UTC]
 
 CHG-0035 — Frictionless transaction input UX with live IDR formatting, smart payee autocomplete, and omnipresent quick-add
