@@ -6,6 +6,7 @@ import {
   Search, Plus, Eye, EyeOff, Sun, Moon, Languages,
   LayoutDashboard, ReceiptText, Landmark, PieChart, BarChart3,
   Layers, Compass, Sparkles, CornerDownLeft, X, Wallet, Smartphone, TrendingUp, ShieldAlert,
+  Settings, Calendar,
 } from 'lucide-vue-next';
 import { useUiStore } from '@/stores/ui';
 import { useThemeStore } from '@/stores/theme';
@@ -125,6 +126,18 @@ const allItems = computed<CommandItem[]>(() => {
     },
   });
 
+  items.push({
+    id: 'action-settings-cycle',
+    category: 'quickActions',
+    title: t('settings.setCycleQuickAction'),
+    description: t('settings.tabs.cycle'),
+    icon: Calendar,
+    action: () => {
+      ui.closeCommandPalette();
+      router.push('/settings?tab=financial-cycle');
+    },
+  });
+
   // Navigation Items
   const navItems = [
     { name: 'dashboard', route: '/dashboard', label: t('nav.dashboard'), icon: LayoutDashboard },
@@ -134,6 +147,7 @@ const allItems = computed<CommandItem[]>(() => {
     { name: 'reports', route: '/reports', label: t('nav.reports'), icon: BarChart3 },
     { name: 'categories', route: '/categories', label: t('nav.categories'), icon: Layers },
     { name: 'masterPlan', route: '/master-plan', label: t('nav.masterPlan'), icon: Compass },
+    { name: 'settings', route: '/settings', label: t('nav.settings'), icon: Settings },
     { name: 'designSystem', route: '/design-system', label: 'Design System', icon: Sparkles },
   ];
 

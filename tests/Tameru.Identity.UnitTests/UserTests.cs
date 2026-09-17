@@ -50,9 +50,23 @@ public class UserTests
     {
         var user = User.Create("owner@tameru.local", "hash", "Yovan", "en");
 
-        user.UpdateProfile(displayName: null, locale: "id");
+        user.UpdateProfile(displayName: null, locale: "id", budgetCycleStartDay: 25);
 
         user.DisplayName.Should().Be("Yovan");
         user.Locale.Should().Be("id");
+        user.BudgetCycleStartDay.Should().Be(25);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(29)]
+    [InlineData(-5)]
+    public void BudgetCycleStartDay_out_of_range_throws_domain_rule(int invalidDay)
+    {
+        var user = User.Create("owner@tameru.local", "hash", "Yovan", "en");
+
+        var act = () => user.UpdateProfile(null, null, invalidDay);
+
+        act.Should().Throw<DomainRuleException>().Which.Code.Should().Be("budget_cycle_start_day_invalid");
     }
 }

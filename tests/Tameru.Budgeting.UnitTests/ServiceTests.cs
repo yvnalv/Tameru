@@ -99,6 +99,17 @@ public class BudgetServiceTests
 
         result.Error.Code.Should().Be("not_found");
     }
+
+    [Fact]
+    public async Task GetPeriodAsync_with_custom_start_day_sets_date_range()
+    {
+        await _sut.CreatePeriodAsync(new CreateBudgetPeriodRequest(2026, 9, null));
+
+        var period = (await _sut.GetPeriodAsync(2026, 9, startDay: 25)).Value;
+
+        period.StartDate.Should().Be(new DateOnly(2026, 9, 25));
+        period.EndDate.Should().Be(new DateOnly(2026, 10, 24));
+    }
 }
 
 public class MasterPlanServiceTests

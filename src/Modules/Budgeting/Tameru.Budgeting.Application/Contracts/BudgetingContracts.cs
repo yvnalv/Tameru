@@ -16,7 +16,8 @@ public sealed record BudgetLineDto(
 public sealed record BudgetPeriodDto(
     Guid Id, int Year, int Month, string? Note,
     IReadOnlyList<BudgetLineDto> Lines,
-    decimal TotalPlan, decimal TotalActual, decimal TotalLeftover);
+    decimal TotalPlan, decimal TotalActual, decimal TotalLeftover,
+    DateOnly? StartDate = null, DateOnly? EndDate = null);
 
 public sealed record BudgetPeriodSummaryDto(Guid Id, int Year, int Month, string? Note);
 

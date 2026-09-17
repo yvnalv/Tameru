@@ -35,6 +35,7 @@ const routes: RouteRecordRaw[] = [
       { path: 'budget', name: 'budget', component: () => import('@/views/budget/BudgetView.vue') },
       { path: 'master-plan', name: 'masterPlan', component: () => import('@/views/masterPlan/MasterPlanView.vue') },
       { path: 'categories', name: 'categories', component: () => import('@/views/categories/CategoriesView.vue') },
+      { path: 'settings', name: 'settings', component: () => import('@/views/settings/SettingsView.vue') },
     ],
   },
   { path: '/:pathMatch(.*)*', redirect: { name: 'dashboard' } },

@@ -118,6 +118,8 @@ export interface BudgetPeriod {
   totalPlan: number;
   totalActual: number;
   totalLeftover: number;
+  startDate?: string;
+  endDate?: string;
 }
 
 // --- Master Plan ------------------------------------------------------------
@@ -153,6 +155,7 @@ export interface AuthUser {
   email: string;
   displayName: string;
   locale: string;
+  budgetCycleStartDay?: number;
 }
 
 export interface AuthTokens {

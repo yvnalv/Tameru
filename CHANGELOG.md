@@ -3,6 +3,35 @@
 This file is Tameru's immutable historical record. A task is not complete until this file has been
 updated. Newest entries at the top. See `CLAUDE.md` → **CHANGELOG Rules** for the full procedure.
 
+## [2026-09-17 13:15:00 UTC]
+
+CHG-0037 — Configurable financial cycle starting day (payday on 25th) and dedicated tabbed Settings page
+
+- **Configurable Financial Cycle Starting Day:**
+  - Added `BudgetCycleStartDay` (integer, 1..28, default 1) to `User` entity, database schema via EF Core migration `20260917130218_AddBudgetCycleStartDay`, and profile update contract `UpdateProfileRequest`.
+  - Enables users whose salary is paid on a specific date (e.g. the 25th) to align their monthly budget period directly with their paycheck.
+- **Budget Period & Ledger Spending Integration:**
+  - Extended `ICategorySpendQuery` and `CategorySpendQuery` with date range querying (`GetExpenseTotalsByCategoryAsync(DateOnly from, DateOnly to)`).
+  - Updated `BudgetService.GetPeriodAsync` and `UpsertLinesAsync` to accept `startDay` and calculate cycle dates: for day $D = 25$, period $(Y, M)$ spans from day 25 of month $M$ to day 24 of month $M+1$.
+  - Added `StartDate` and `EndDate` to `BudgetPeriodDto`.
+  - Updated `BudgetView.vue` with financial cycle support: dynamically initializes to the currently active cycle (if today < startDay, points to the period funded on the 25th of the previous month).
+  - Shows exact cycle date range banner (e.g. `25 Aug 2026 – 24 Sep 2026`) and adjusts pacing calculations (days elapsed, days remaining, daily burn allowance).
+- **Dedicated Tabbed Settings Page (`/settings`):**
+  - Categorized settings with modern tab navigation:
+    1. **Financial Cycle (`financial-cycle`):** Starting day number input (1–28) with preset buttons (`1st (Awal Bulan)`, `25th (Gajian)`), live dynamic cycle range preview card, days-remaining progress bar, and IDR functional currency standards card.
+    2. **Appearance & Display (`appearance`):** Modern theme selector cards (Dark Mode, Light Mode), UI density switcher (Comfortable vs Compact), number privacy toggle (Mask balances by default), and language toggle (EN / ID).
+    3. **Account & Profile (`profile`):** Display name editing with live sync, owner email address, role badge, and session logout with confirmation dialog.
+    4. **Data & System (`data`):** Direct 1-click transactions backup export to RFC 4180 CSV, and system architecture specifications.
+- **Navigation & Omnipresent Accessibility:**
+  - Added `/settings` route in `router/index.ts`.
+  - Added Settings to desktop sidebar, mobile more sheet, topbar owner profile pill, and command palette (`Ctrl+K`).
+  - Added command palette direct action "Configure Financial Cycle".
+- **Strict Bilingual Localization:**
+  - Complete 1:1 structural parity between `en.ts` and `id.ts` for all settings, tabs, presets, tooltips, and badges.
+- **Verified:** 113 backend tests passing (including domain rules and startDay period queries), 44 Vitest tests passing (including strict i18n parity), `vue-tsc --noEmit` clean, production bundle built, and local Docker containers (`tameru-api`, `tameru-web`, `tameru-db`) rebuilt and deployed live.
+
+---
+
 ## [2026-09-16 23:52:00 UTC]
 
 CHG-0036 — Enhance Budget and Master Plan UX with frictionless MoneyInput, pacing & daily allowances, category risk filters, and 50/40/10 allocation visualizers

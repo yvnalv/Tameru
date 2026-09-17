@@ -13,4 +13,11 @@ public interface ICategorySpendQuery
     /// </summary>
     Task<IReadOnlyDictionary<Guid, decimal>> GetExpenseTotalsByCategoryAsync(
         int year, int month, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Sum of non-voided <b>expense</b> amounts in the given date range (inclusive), grouped by category ids.
+    /// Used when the budget cycle starts on a custom day (e.g. 25th of the month).
+    /// </summary>
+    Task<IReadOnlyDictionary<Guid, decimal>> GetExpenseTotalsByCategoryAsync(
+        DateOnly from, DateOnly to, CancellationToken cancellationToken = default);
 }
