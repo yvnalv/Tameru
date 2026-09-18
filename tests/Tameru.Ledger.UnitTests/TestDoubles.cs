@@ -13,14 +13,23 @@ internal sealed class FakeCategoryDirectory : ICategoryDirectory
     private readonly string _flow;
     private readonly bool _active;
 
-    public FakeCategoryDirectory(string flow = "Any", bool active = true)
+    public List<CategoryTaxonomyRef> Taxonomy { get; } = new();
+
+    public FakeCategoryDirectory(string flow = "Any", bool active = true, IEnumerable<CategoryTaxonomyRef>? taxonomy = null)
     {
         _flow = flow;
         _active = active;
+        if (taxonomy is not null)
+        {
+            Taxonomy.AddRange(taxonomy);
+        }
     }
 
     public Task<CategoryRef?> GetAsync(Guid categoryId, CancellationToken cancellationToken = default) =>
         Task.FromResult<CategoryRef?>(new CategoryRef(categoryId, "Category", _flow, _active));
+
+    public Task<IReadOnlyList<CategoryTaxonomyRef>> ListActiveTaxonomyAsync(CancellationToken cancellationToken = default) =>
+        Task.FromResult<IReadOnlyList<CategoryTaxonomyRef>>(Taxonomy);
 }
 
 internal sealed class FakeTransactionRepository : ITransactionRepository

@@ -28,7 +28,12 @@ public sealed class TameruApiFactory : WebApplicationFactory<Program>, IAsyncLif
     public async Task InitializeAsync()
     {
         await _db.StartAsync();
-        Environment.SetEnvironmentVariable("ConnectionStrings__Postgres", _db.GetConnectionString());
+        var connectionString = _db.GetConnectionString();
+        if (!connectionString.Contains("Timeout="))
+        {
+            connectionString += ";Timeout=60;Command Timeout=60;";
+        }
+        Environment.SetEnvironmentVariable("ConnectionStrings__Postgres", connectionString);
         Environment.SetEnvironmentVariable("Database__AutoMigrate", "true");
         Environment.SetEnvironmentVariable("Seed__Enabled", "true");
         Environment.SetEnvironmentVariable("Seed__Owner__Email", OwnerEmail);

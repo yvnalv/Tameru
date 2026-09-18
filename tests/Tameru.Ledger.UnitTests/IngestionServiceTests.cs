@@ -3,6 +3,7 @@ using Tameru.Ledger.Application;
 using Tameru.Ledger.Application.Contracts;
 using Tameru.Ledger.Domain;
 using Tameru.Modules.Contracts.Accounts;
+using Tameru.Modules.Contracts.Budgeting;
 using Tameru.SharedKernel.Time;
 using Xunit;
 
@@ -68,5 +69,71 @@ public class IngestionServiceTests
         result.Value.Transaction.CategoryId.Should().Be(CategoryCoffee);
         result.Value.Transaction.Amount.Should().Be(35000m);
         txRepo.Items.Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task IngestAsync_replaces_title_when_configured_on_rule()
+    {
+        var ruleRepo = new FakeCategorizationRuleRepository();
+        var uow = new FakeLedgerUnitOfWork();
+        var ruleService = new RuleService(ruleRepo, uow);
+
+        // Rule with ReplaceTitle
+        var cleanRule = CategorizationRule.Create(
+            "Indomaret Cleaner",
+            "indomaret",
+            targetCategoryId: CategoryCoffee,
+            replaceTitle: "Indomaret Minimarket");
+        await ruleRepo.AddAsync(cleanRule);
+
+        var accountDir = new FakeAccountDirectory(AccountBca, AccountGopay);
+        var categoryDir = new FakeCategoryDirectory();
+        var txRepo = new FakeTransactionRepository();
+        var ledgerService = new LedgerService(txRepo, accountDir, categoryDir, uow);
+
+        var sut = new IngestionService(ledgerService, ruleService, accountDir, new SystemClock());
+
+        var request = new IngestTransactionRequest(Text: "qris 99234 indomaret tgr 45k bca");
+        var result = await sut.IngestAsync(request);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value.AppliedRuleName.Should().Be("Indomaret Cleaner");
+        result.Value.Transaction.Title.Should().Be("Indomaret Minimarket");
+    }
+
+    [Fact]
+    public async Task IngestAsync_smartly_infers_category_and_budget_envelope_when_no_explicit_rule_matches()
+    {
+        var ruleRepo = new FakeCategorizationRuleRepository();
+        var uow = new FakeLedgerUnitOfWork();
+        var ruleService = new RuleService(ruleRepo, uow);
+
+        var budgetNeedsId = Guid.NewGuid();
+        var categoryFoodId = Guid.NewGuid();
+
+        var taxonomy = new List<CategoryTaxonomyRef>
+        {
+            new(budgetNeedsId, "Needs", "Budget", null, "Expense", true),
+            new(categoryFoodId, "Food", "Category", budgetNeedsId, "Any", true),
+        };
+
+        var accountDir = new FakeAccountDirectory(AccountBca, AccountGopay);
+        var categoryDir = new FakeCategoryDirectory("Any", true, taxonomy);
+        var txRepo = new FakeTransactionRepository();
+        var ledgerService = new LedgerService(txRepo, accountDir, categoryDir, uow);
+
+        var sut = new IngestionService(ledgerService, ruleService, accountDir, new SystemClock(), categoryDir);
+
+        var request = new IngestTransactionRequest(Text: "kopi kenangan 35k bca");
+        var result = await sut.IngestAsync(request);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Transaction.CategoryId.Should().Be(categoryFoodId);
+        result.Value.Transaction.BudgetCategoryId.Should().Be(budgetNeedsId);
+        result.Value.CategoryName.Should().Be("Food");
+        result.Value.BudgetName.Should().Be("Needs");
+        result.Value.AccountName.Should().Be("Test Account");
+        result.Value.FormattedConfirmation.Should().Contain("Category: Food");
+        result.Value.FormattedConfirmation.Should().Contain("Budget: Needs");
     }
 }

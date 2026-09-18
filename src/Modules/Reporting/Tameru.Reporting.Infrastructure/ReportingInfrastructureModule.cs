@@ -16,6 +16,9 @@ public static class ReportingInfrastructureModule
         this IServiceCollection services, IConfiguration configuration)
     {
         services.AddScoped<ReportingService>();
+        services.AddScoped<DecisionService>();
+        services.AddScoped<InsightsService>();
+        services.AddScoped<AssistantService>();
         return services;
     }
 }

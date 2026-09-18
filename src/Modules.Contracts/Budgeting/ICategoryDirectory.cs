@@ -8,6 +8,7 @@ namespace Tameru.Modules.Contracts.Budgeting;
 public interface ICategoryDirectory
 {
     Task<CategoryRef?> GetAsync(Guid categoryId, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<CategoryTaxonomyRef>> ListActiveTaxonomyAsync(CancellationToken cancellationToken = default);
 }
 
 /// <summary>A minimal projection of a category for cross-module validation.</summary>
@@ -16,3 +17,12 @@ public interface ICategoryDirectory
 /// <param name="Flow">Income / Expense / Transfer / Any.</param>
 /// <param name="IsActive">Whether the category is active.</param>
 public sealed record CategoryRef(Guid Id, string Level, string Flow, bool IsActive);
+
+/// <summary>A category taxonomy projection including parent hierarchy and name for smart categorization.</summary>
+public sealed record CategoryTaxonomyRef(
+    Guid Id,
+    string Name,
+    string Level,
+    Guid? ParentId,
+    string Flow,
+    bool IsActive);

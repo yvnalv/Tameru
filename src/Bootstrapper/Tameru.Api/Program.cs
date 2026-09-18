@@ -22,6 +22,7 @@ using Tameru.Identity.Infrastructure.Seeding;
 using Tameru.Ledger.Api;
 using Tameru.Ledger.Infrastructure;
 using Tameru.Ledger.Infrastructure.Persistence;
+using Tameru.Infrastructure.Common.Services;
 using Tameru.Reporting.Api;
 using Tameru.Reporting.Infrastructure;
 using Tameru.SharedKernel.Time;
@@ -41,6 +42,7 @@ builder.Services.AddSwaggerGen(SwaggerWithBearer);
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddSingleton<IClock, SystemClock>();
 builder.Services.AddScoped<ICurrentUser, HttpCurrentUser>();
+builder.Services.AddHttpClient<IChatCompletionService, OpenAiChatService>();
 
 // Modules. Order matters for cross-module contract overrides:
 //   Ledger's ILedgerAccountQuery replaces the Accounts no-op;
@@ -109,6 +111,8 @@ app.MapAccountsEndpoints();
 app.MapLedgerEndpoints();
 app.MapBudgetingEndpoints();
 app.MapReportingEndpoints();
+app.MapDecisionEndpoints();
+app.MapAssistantEndpoints();
 
 app.Run();
 return;

@@ -19,4 +19,11 @@ internal sealed class CategoryDirectory : ICategoryDirectory
             .Where(c => c.Id == categoryId)
             .Select(c => new CategoryRef(c.Id, c.Level.ToString(), c.Flow.ToString(), c.IsActive))
             .FirstOrDefaultAsync(cancellationToken);
+
+    public async Task<IReadOnlyList<CategoryTaxonomyRef>> ListActiveTaxonomyAsync(CancellationToken cancellationToken = default) =>
+        await _db.Categories
+            .Where(c => c.IsActive)
+            .OrderBy(c => c.SortOrder)
+            .Select(c => new CategoryTaxonomyRef(c.Id, c.Name, c.Level.ToString(), c.ParentId, c.Flow.ToString(), c.IsActive))
+            .ToListAsync(cancellationToken);
 }

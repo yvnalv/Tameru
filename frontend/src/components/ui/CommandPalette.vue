@@ -6,11 +6,12 @@ import {
   Search, Plus, Eye, EyeOff, Sun, Moon, Languages,
   LayoutDashboard, ReceiptText, Landmark, PieChart, BarChart3,
   Layers, Compass, Sparkles, CornerDownLeft, X, Wallet, Smartphone, TrendingUp, ShieldAlert,
-  Settings, Calendar,
+  Settings, Calendar, Bot,
 } from 'lucide-vue-next';
 import { useUiStore } from '@/stores/ui';
 import { useThemeStore } from '@/stores/theme';
 import { useTransactionModalStore } from '@/stores/transactionModal';
+import { useAssistantStore } from '@/stores/assistant';
 import { listAccounts } from '@/lib/accounts';
 import type { Account } from '@/types/api';
 
@@ -29,6 +30,7 @@ const router = useRouter();
 const ui = useUiStore();
 const themeStore = useThemeStore();
 const transactionModal = useTransactionModalStore();
+const assistant = useAssistantStore();
 
 const query = ref('');
 const activeIndex = ref(0);
@@ -85,6 +87,32 @@ const allItems = computed<CommandItem[]>(() => {
     action: () => {
       ui.closeCommandPalette();
       transactionModal.openCreate();
+    },
+  });
+
+  items.push({
+    id: 'action-simulate-purchase',
+    category: 'quickActions',
+    title: t('decision.simulatorTitle'),
+    description: t('decision.simulatorPrompt'),
+    icon: Sparkles,
+    badge: 'S',
+    action: () => {
+      ui.closeCommandPalette();
+      ui.openSimulator();
+    },
+  });
+
+  items.push({
+    id: 'action-open-assistant',
+    category: 'quickActions',
+    title: t('assistant.title'),
+    description: t('assistant.subtitle'),
+    icon: Bot,
+    badge: 'Ctrl+J',
+    action: () => {
+      ui.closeCommandPalette();
+      assistant.openAssistant();
     },
   });
 

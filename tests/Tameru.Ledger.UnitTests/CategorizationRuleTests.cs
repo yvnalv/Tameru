@@ -56,4 +56,36 @@ public class CategorizationRuleTests
 
         rule.Matches("kopi kenangan", "").Should().BeFalse();
     }
+
+    [Theory]
+    [InlineData(50000, false)]
+    [InlineData(150000, true)]
+    [InlineData(1000000, true)]
+    [InlineData(1500000, false)]
+    public void Matches_respects_amount_thresholds(decimal amount, bool expected)
+    {
+        var rule = CategorizationRule.Create("Tokopedia Electronics", "tokopedia", targetCategoryId: CategoryId, minAmount: 100000m, maxAmount: 1000000m);
+        rule.Matches("Tokopedia", null, amount: amount).Should().Be(expected);
+    }
+
+    [Fact]
+    public void Matches_respects_specific_account_filter()
+    {
+        var accountGopay = Guid.NewGuid();
+        var accountBca = Guid.NewGuid();
+        var rule = CategorizationRule.Create("Gopay Only", "gojek", targetCategoryId: CategoryId, accountId: accountGopay);
+
+        rule.Matches("Gojek", null, accountId: accountGopay).Should().BeTrue();
+        rule.Matches("Gojek", null, accountId: accountBca).Should().BeFalse();
+    }
+
+    [Theory]
+    [InlineData("Expense", true)]
+    [InlineData("Income", false)]
+    [InlineData("Transfer", false)]
+    public void Matches_respects_transaction_type_constraint(string type, bool expected)
+    {
+        var rule = CategorizationRule.Create("Expense Only", "reimburse", targetCategoryId: CategoryId, transactionType: "Expense");
+        rule.Matches("Reimburse", null, type: type).Should().Be(expected);
+    }
 }

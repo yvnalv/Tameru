@@ -39,6 +39,7 @@ export const useUiStore = defineStore('ui', () => {
   }
 
   const commandPaletteOpen = ref(false);
+  const simulatorModalOpen = ref(false);
 
   function openCommandPalette(): void {
     commandPaletteOpen.value = true;
@@ -52,9 +53,18 @@ export const useUiStore = defineStore('ui', () => {
     commandPaletteOpen.value = !commandPaletteOpen.value;
   }
 
+  function openSimulator(): void {
+    simulatorModalOpen.value = true;
+  }
+
+  function closeSimulator(): void {
+    simulatorModalOpen.value = false;
+  }
+
   return {
-    locale, density, sidebarCollapsed, amountsHidden, commandPaletteOpen,
+    locale, density, sidebarCollapsed, amountsHidden, commandPaletteOpen, simulatorModalOpen,
     changeLocale, toggleLocale, setDensity, toggleSidebar, toggleAmounts,
     openCommandPalette, closeCommandPalette, toggleCommandPalette,
+    openSimulator, closeSimulator,
   };
 });

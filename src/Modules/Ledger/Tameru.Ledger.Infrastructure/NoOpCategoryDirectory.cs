@@ -11,4 +11,7 @@ internal sealed class NoOpCategoryDirectory : ICategoryDirectory
 {
     public Task<CategoryRef?> GetAsync(Guid categoryId, CancellationToken cancellationToken = default) =>
         Task.FromResult<CategoryRef?>(new CategoryRef(categoryId, "Category", "Any", IsActive: true));
+
+    public Task<IReadOnlyList<CategoryTaxonomyRef>> ListActiveTaxonomyAsync(CancellationToken cancellationToken = default) =>
+        Task.FromResult<IReadOnlyList<CategoryTaxonomyRef>>(Array.Empty<CategoryTaxonomyRef>());
 }

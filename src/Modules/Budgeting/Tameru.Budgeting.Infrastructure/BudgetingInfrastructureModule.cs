@@ -27,6 +27,7 @@ public static class BudgetingInfrastructureModule
 
         // Provided cross-module contract (Ledger validates categories through this).
         services.AddScoped<ICategoryDirectory, CategoryDirectory>();
+        services.AddScoped<IBudgetDecisionQuery, BudgetDecisionQuery>();
 
         services.AddScoped<CategoryService>();
         services.AddScoped<BudgetService>();

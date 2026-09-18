@@ -178,6 +178,15 @@ export interface RuleDto {
   targetStatus: string | null;
   priority: number;
   isActive: boolean;
+  minAmount?: number | null;
+  maxAmount?: number | null;
+  accountId?: string | null;
+  transactionType?: TransactionType | null;
+  replaceTitle?: string | null;
+  groupId?: string | null;
+  scheduleExpression?: string | null;
+  isTemplate?: boolean;
+  tags?: string | null;
 }
 
 export interface CreateRuleRequest {
@@ -191,6 +200,15 @@ export interface CreateRuleRequest {
   targetStatus?: string | null;
   priority?: number;
   isActive?: boolean;
+  minAmount?: number | null;
+  maxAmount?: number | null;
+  accountId?: string | null;
+  transactionType?: TransactionType | null;
+  replaceTitle?: string | null;
+  groupId?: string | null;
+  scheduleExpression?: string | null;
+  isTemplate?: boolean;
+  tags?: string | null;
 }
 
 export interface UpdateRuleRequest {
@@ -204,6 +222,15 @@ export interface UpdateRuleRequest {
   targetStatus: string | null;
   priority: number;
   isActive: boolean;
+  minAmount?: number | null;
+  maxAmount?: number | null;
+  accountId?: string | null;
+  transactionType?: TransactionType | null;
+  replaceTitle?: string | null;
+  groupId?: string | null;
+  scheduleExpression?: string | null;
+  isTemplate?: boolean;
+  tags?: string | null;
 }
 
 export interface IngestTransactionRequest {
@@ -222,6 +249,89 @@ export interface IngestResultDto {
   transaction: Transaction;
   formattedConfirmation: string;
   appliedRuleName: string | null;
+}
+
+export interface DryRunRuleRequest {
+  text?: string;
+  payee?: string;
+  description?: string;
+  amount?: number | null;
+  accountId?: string | null;
+  transactionType?: TransactionType | null;
+}
+
+export interface DryRunMatchDto {
+  rule: RuleDto;
+  matched: boolean;
+  matchedReason?: string | null;
+  projectedCategoryId?: string | null;
+  projectedBudgetCategoryId?: string | null;
+  projectedSubCategoryId?: string | null;
+  projectedStatus?: string | null;
+  projectedTitle?: string | null;
+}
+
+export interface DryRunResultDto {
+  hasMatch: boolean;
+  winningMatch: DryRunMatchDto | null;
+  allEvaluations: DryRunMatchDto[];
+}
+
+export interface RuleAuditLogDto {
+  id: string;
+  ruleId: string;
+  ruleName: string;
+  transactionId: string | null;
+  transactionTitle: string;
+  amount: number | null;
+  matchedField: string;
+  matchedValue: string;
+  wasApplied: boolean;
+  details: string | null;
+  evaluatedAt: string;
+}
+
+export interface CreateFromTemplateRequest {
+  name?: string;
+  pattern?: string;
+  targetCategoryId?: string | null;
+  targetBudgetCategoryId?: string | null;
+  targetSubCategoryId?: string | null;
+  accountId?: string | null;
+  minAmount?: number | null;
+  maxAmount?: number | null;
+  groupId?: string | null;
+  scheduleExpression?: string | null;
+  tags?: string | null;
+}
+
+// --- AI Assistant Chat ------------------------------------------------------
+
+export interface ChatAction {
+  type: string;
+  summary: string;
+  data?: any;
+}
+
+export interface ChatRequest {
+  message: string;
+  conversationId?: string | null;
+}
+
+export interface ChatResponse {
+  message: string;
+  conversationId: string;
+  action: ChatAction | null;
+  insights: InsightDto[] | null;
+}
+
+export interface ChatMessageItem {
+  id: string;
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+  timestamp: string;
+  action?: ChatAction | null;
+  insights?: InsightDto[] | null;
 }
 
 export interface AuthTokens {
@@ -324,3 +434,82 @@ export interface EnvelopeReport {
   totalExpense: number;
   envelopes: EnvelopeItem[];
 }
+
+export interface SafeToSpendDto {
+  liquidCash: number;
+  unpaidObligations: number;
+  safetyBuffer: number;
+  safeToSpend: number;
+  daysRemaining: number;
+  dailyAllowance: number;
+  cycleStart: string;
+  cycleEnd: string;
+  nextPayday: string;
+  upcomingObligations: ObligationItemDto[];
+  liquidAccounts: LiquidAccountDto[];
+}
+
+export interface LiquidAccountDto {
+  id: string;
+  name: string;
+  type: string;
+  balance: number;
+}
+
+export interface ObligationItemDto {
+  id: string;
+  name: string;
+  amount: number;
+  section: string;
+  dueDate: string | null;
+  isDueBeforePayday: boolean;
+}
+
+export interface SimulatePurchaseRequest {
+  amount: number;
+  categoryId?: string | null;
+  description?: string | null;
+}
+
+export interface SurplusCategoryDto {
+  categoryId: string;
+  categoryName: string;
+  availableSurplus: number;
+}
+
+export interface SimulatePurchaseResultDto {
+  verdict: 'Safe' | 'Warning' | 'Risky';
+  amount: number;
+  categoryId: string | null;
+  categoryName: string | null;
+  currentSafeToSpend: number;
+  newSafeToSpend: number;
+  currentDailyAllowance: number;
+  newDailyAllowance: number;
+  daysRemaining: number;
+  categoryPlan: number | null;
+  categoryActual: number | null;
+  categoryLeftover: number | null;
+  categoryLeftoverAfterPurchase: number | null;
+  surplusCategories: SurplusCategoryDto[];
+  impactSummary: string;
+}
+
+// --- Proactive Insights -----------------------------------------------------
+
+export type InsightType = 'spending_velocity' | 'anomaly' | 'budget_pacing' | 'savings_trend' | 'runway' | 'payday';
+export type InsightSeverity = 'info' | 'warning' | 'critical';
+
+export interface InsightDto {
+  id: string;
+  type: InsightType;
+  severity: InsightSeverity;
+  title: string;
+  message: string;
+  actionRoute: string | null;
+  value: number | null;
+  categoryName: string | null;
+  generatedAt: string;
+}
+
+

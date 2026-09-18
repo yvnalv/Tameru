@@ -30,11 +30,11 @@ withDefaults(defineProps<{ size?: 'sm' | 'md' }>(), { size: 'sm' });
       <rect x="25.5" y="17" width="5" height="14" rx="2.5" fill="var(--accent-contrast)" opacity="0.9" />
     </svg>
     <span
-      class="font-bold tracking-tight"
+      class="font-bold tracking-tight text-text"
       :class="size === 'md' ? 'text-[22px]' : 'text-[19px]'"
       aria-hidden="true"
     >
-      Ta<span class="text-accent">meru</span>
+      Tameru
     </span>
   </span>
 </template>

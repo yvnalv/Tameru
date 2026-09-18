@@ -56,6 +56,18 @@ public static class LedgerEndpoints
         rulesGroup.MapPut("/{id:guid}", async (Guid id, UpdateRuleRequest request, RuleService service, CancellationToken ct) =>
             (await service.UpdateAsync(id, request, ct)).ToHttp());
 
+        rulesGroup.MapPost("/dry-run", async (DryRunRuleRequest request, RuleService service, CancellationToken ct) =>
+            (await service.DryRunAsync(request, ct)).ToHttp());
+
+        rulesGroup.MapGet("/audit-log", async (RuleService service, Guid? ruleId, int? limit, CancellationToken ct) =>
+            (await service.ListAuditLogAsync(ruleId, limit ?? 50, ct)).ToHttp());
+
+        rulesGroup.MapGet("/templates", async (RuleService service, CancellationToken ct) =>
+            (await service.ListTemplatesAsync(ct)).ToHttp());
+
+        rulesGroup.MapPost("/from-template/{id:guid}", async (Guid id, CreateFromTemplateRequest request, RuleService service, CancellationToken ct) =>
+            (await service.CreateFromTemplateAsync(id, request, ct)).ToHttp());
+
         rulesGroup.MapDelete("/{id:guid}", async (Guid id, RuleService service, CancellationToken ct) =>
             (await service.DeleteAsync(id, ct)).ToHttp());
 

@@ -66,3 +66,35 @@ internal sealed class FakeLedgerReportingQuery : ILedgerReportingQuery
         return Task.FromResult(result);
     }
 }
+
+internal sealed class FakeUserPreferences : Tameru.Modules.Contracts.Identity.IUserPreferences
+{
+    private readonly int _startDay;
+
+    public FakeUserPreferences(int startDay = 1) => _startDay = startDay;
+
+    public Task<int> GetBudgetCycleStartDayAsync(CancellationToken ct = default) => Task.FromResult(_startDay);
+}
+
+internal sealed class FakeBudgetDecisionQuery : Tameru.Modules.Contracts.Budgeting.IBudgetDecisionQuery
+{
+    private readonly IReadOnlyList<Tameru.Modules.Contracts.Budgeting.CategoryBudgetStatus> _categories;
+    private readonly IReadOnlyList<Tameru.Modules.Contracts.Budgeting.FixedObligationRef> _obligations;
+
+    public FakeBudgetDecisionQuery(
+        IReadOnlyList<Tameru.Modules.Contracts.Budgeting.CategoryBudgetStatus>? categories = null,
+        IReadOnlyList<Tameru.Modules.Contracts.Budgeting.FixedObligationRef>? obligations = null)
+    {
+        _categories = categories ?? [];
+        _obligations = obligations ?? [];
+    }
+
+    public Task<IReadOnlyList<Tameru.Modules.Contracts.Budgeting.CategoryBudgetStatus>> GetCategoryBudgetsAsync(
+        int year, int month, int startDay = 1, CancellationToken ct = default) =>
+        Task.FromResult(_categories);
+
+    public Task<IReadOnlyList<Tameru.Modules.Contracts.Budgeting.FixedObligationRef>> GetFixedObligationsAsync(
+        CancellationToken ct = default) =>
+        Task.FromResult(_obligations);
+}
+

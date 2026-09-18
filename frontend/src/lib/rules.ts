@@ -6,6 +6,10 @@ import type {
   UpdateRuleRequest,
   IngestTransactionRequest,
   IngestResultDto,
+  DryRunRuleRequest,
+  DryRunResultDto,
+  RuleAuditLogDto,
+  CreateFromTemplateRequest,
 } from '@/types/api';
 
 export function listRules(activeOnly = false): Promise<RuleDto[]> {
@@ -32,4 +36,25 @@ export function deleteRule(id: string): Promise<void> {
 
 export function ingestTransaction(data: IngestTransactionRequest): Promise<IngestResultDto> {
   return api.post<IngestResultDto>('/ingest/transaction', data);
+}
+
+export function dryRunRules(data: DryRunRuleRequest): Promise<DryRunResultDto> {
+  return api.post<DryRunResultDto>('/rules/dry-run', data);
+}
+
+export function listAuditLog(ruleId?: string, limit = 50): Promise<RuleAuditLogDto[]> {
+  return api.get<RuleAuditLogDto[]>('/rules/audit-log', {
+    params: {
+      ...(ruleId ? { ruleId } : {}),
+      limit: String(limit),
+    },
+  });
+}
+
+export function listTemplates(): Promise<RuleDto[]> {
+  return api.get<RuleDto[]>('/rules/templates');
+}
+
+export function createFromTemplate(id: string, data: CreateFromTemplateRequest): Promise<RuleDto> {
+  return api.post<RuleDto>(`/rules/from-template/${id}`, data);
 }

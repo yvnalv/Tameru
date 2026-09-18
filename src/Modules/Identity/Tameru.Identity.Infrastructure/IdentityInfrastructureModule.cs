@@ -33,6 +33,7 @@ public static class IdentityInfrastructureModule
         services.AddScoped<AuthService>();
         services.AddScoped<IdentitySeeder>();
         services.AddScoped<Tameru.Modules.Contracts.Identity.IApiTokenValidator, ApiTokenValidator>();
+        services.AddScoped<Tameru.Modules.Contracts.Identity.IUserPreferences, UserPreferences>();
 
         return services;
     }

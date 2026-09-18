@@ -24,6 +24,7 @@ import {
   getFinancialHealth,
   getEnvelopeReport,
 } from '@/lib/reports';
+import { getSafeToSpend } from '@/lib/decision';
 import { listTransactions } from '@/lib/transactions';
 import { listCategories } from '@/lib/categories';
 import type {
@@ -32,12 +33,14 @@ import type {
   EnvelopeReport,
   FinancialHealthReport,
   NetWorthReport,
+  SafeToSpendDto,
   Transaction,
 } from '@/types/api';
 import { displayName } from '@/lib/seededNames';
 import { formatShortDate } from '@/lib/format';
 import { getChartTheme } from '@/lib/chartTheme';
 import { useThemeStore } from '@/stores/theme';
+import { useUiStore } from '@/stores/ui';
 import { useTransactionModalStore } from '@/stores/transactionModal';
 import SpendBar from '@/components/ui/SpendBar.vue';
 import CashflowChart from '@/components/ui/CashflowChart.vue';
@@ -45,15 +48,18 @@ import DonutChart from '@/components/ui/DonutChart.vue';
 import Money from '@/components/ui/Money.vue';
 import AppButton from '@/components/ui/AppButton.vue';
 import LoadingBlock from '@/components/ui/LoadingBlock.vue';
+import InsightsPanel from '@/components/decision/InsightsPanel.vue';
 
 const { t, locale } = useI18n();
 const themeStore = useThemeStore();
+const ui = useUiStore();
 const transactionModal = useTransactionModalStore();
 
 const netWorth = ref<NetWorthReport | null>(null);
 const cashflow = ref<CashflowReport | null>(null);
 const health = ref<FinancialHealthReport | null>(null);
 const envelopes = ref<EnvelopeReport | null>(null);
+const safeToSpend = ref<SafeToSpendDto | null>(null);
 const categories = ref<Category[]>([]);
 const monthSpend = ref<{ categoryId: string; total: number }[]>([]);
 const monthIncome = ref<{ categoryId: string; total: number }[]>([]);
@@ -201,7 +207,7 @@ async function load(): Promise<void> {
     const y = now.getFullYear();
     const m = now.getMonth() + 1;
     const dim = new Date(y, m, 0).getDate();
-    const [nw, cf, fh, env, cats, spend, income, txns] = await Promise.all([
+    const [nw, cf, fh, env, cats, spend, income, txns, safe] = await Promise.all([
       getNetWorth(),
       getCashflow(y, m),
       getFinancialHealth(y, m),
@@ -210,6 +216,7 @@ async function load(): Promise<void> {
       getCategoryTracker('monthly', `${y}-${pad(m)}-01`, `${y}-${pad(m)}-${pad(dim)}`, 'Expense'),
       getCategoryTracker('monthly', `${y}-${pad(m)}-01`, `${y}-${pad(m)}-${pad(dim)}`, 'Income'),
       listTransactions({ page: 1, pageSize: 10 }),
+      getSafeToSpend().catch(() => null),
     ]);
     netWorth.value = nw;
     cashflow.value = cf;
@@ -219,6 +226,7 @@ async function load(): Promise<void> {
     monthSpend.value = spend.categories.map((c) => ({ categoryId: c.categoryId, total: c.total }));
     monthIncome.value = income.categories.map((c) => ({ categoryId: c.categoryId, total: c.total }));
     recent.value = txns.items;
+    safeToSpend.value = safe;
 
     if (!selectedAccountId.value && nw.accounts.length > 0) {
       selectedAccountId.value = nw.accounts[0].accountId;
@@ -251,10 +259,42 @@ onMounted(load);
     </div>
 
     <div v-else class="space-y-6">
-      <!-- 1. Top Row: 3-Tier KPI Summary Row (Modern Reference Specification) -->
-      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <!-- 1. Top Row: 4-Tier KPI & Decision Support Row -->
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <!-- Safe-to-Spend (Uncommitted Liquidity Decision Card) -->
+        <div class="rounded-card border border-primary/30 bg-primary/[0.04] p-5 shadow-card transition-all flex flex-col justify-between">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-1.5">
+              <span class="text-xs font-bold uppercase tracking-wider text-primary">{{ t('decision.safeToSpend') }}</span>
+            </div>
+            <button
+              type="button"
+              class="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg bg-primary text-primary-contrast hover:opacity-90 shadow-sm transition-all"
+              @click="ui.openSimulator()"
+              :title="t('decision.simulatePrompt')"
+            >
+              <Sparkles :size="13" />
+              <span>{{ t('decision.simulateAction') }}</span>
+            </button>
+          </div>
+          <div class="mt-3 flex items-baseline justify-between">
+            <span class="tnum text-2xl font-bold tracking-tight text-text sm:text-3xl">
+              <Money :value="safeToSpend?.safeToSpend ?? 0" :currency="currency" />
+            </span>
+            <span class="rounded-full bg-primary/15 px-2 py-0.5 text-[11px] font-bold text-primary">
+              {{ safeToSpend?.daysRemaining ?? 0 }} {{ t('decision.days') }}
+            </span>
+          </div>
+          <div class="mt-3 flex items-center justify-between border-t border-border/80 pt-2.5 text-xs text-text-muted">
+            <span>{{ t('decision.dailyPacing') }}</span>
+            <span class="font-semibold text-text tnum">
+              <Money :value="safeToSpend?.dailyAllowance ?? 0" :currency="currency" /> / {{ t('decision.day') }}
+            </span>
+          </div>
+        </div>
+
         <!-- Net Worth / Total Balance Card -->
-        <div class="rounded-card border border-border bg-surface p-5 shadow-card transition-all">
+        <div class="rounded-card border border-border bg-surface p-5 shadow-card transition-all flex flex-col justify-between">
           <div class="flex items-center justify-between">
             <span class="text-xs font-semibold uppercase tracking-wider text-text-muted">{{ t('dashboard.netWorth') }}</span>
             <div class="flex h-8 w-8 items-center justify-center rounded-full bg-accent/15 text-accent">
@@ -281,7 +321,7 @@ onMounted(load);
         </div>
 
         <!-- Monthly Inflow (Income) Card -->
-        <div class="rounded-card border border-border bg-surface p-5 shadow-card transition-all">
+        <div class="rounded-card border border-border bg-surface p-5 shadow-card transition-all flex flex-col justify-between">
           <div class="flex items-center justify-between">
             <span class="text-xs font-semibold uppercase tracking-wider text-text-muted">{{ t('dashboard.monthIncome') }}</span>
             <div class="flex h-8 w-8 items-center justify-center rounded-full bg-positive/15 text-positive">
@@ -303,7 +343,7 @@ onMounted(load);
         </div>
 
         <!-- Monthly Outflow (Expense) Card -->
-        <div class="rounded-card border border-border bg-surface p-5 shadow-card transition-all sm:col-span-2 lg:col-span-1">
+        <div class="rounded-card border border-border bg-surface p-5 shadow-card transition-all flex flex-col justify-between">
           <div class="flex items-center justify-between">
             <span class="text-xs font-semibold uppercase tracking-wider text-text-muted">{{ t('dashboard.monthExpense') }}</span>
             <div class="flex h-8 w-8 items-center justify-center rounded-full bg-negative/15 text-negative">
@@ -326,6 +366,9 @@ onMounted(load);
           </div>
         </div>
       </div>
+
+      <!-- 1b. Proactive Insights Panel -->
+      <InsightsPanel />
 
       <!-- 2. Second Row: Active Account & Balance Card + Statistics Cashflow Chart -->
       <div class="grid grid-cols-1 gap-6 lg:grid-cols-12">

@@ -30,6 +30,10 @@ namespace Tameru.Ledger.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<Guid?>("AccountId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("account_id");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
@@ -46,6 +50,11 @@ namespace Tameru.Ledger.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("deleted_by");
 
+                    b.Property<string>("GroupId")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("group_id");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean")
                         .HasColumnName("is_active");
@@ -53,6 +62,12 @@ namespace Tameru.Ledger.Infrastructure.Persistence.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean")
                         .HasColumnName("is_deleted");
+
+                    b.Property<bool>("IsTemplate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_template");
 
                     b.Property<string>("MatchField")
                         .IsRequired()
@@ -65,6 +80,14 @@ namespace Tameru.Ledger.Infrastructure.Persistence.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)")
                         .HasColumnName("match_operator");
+
+                    b.Property<decimal?>("MaxAmount")
+                        .HasColumnType("numeric(19,2)")
+                        .HasColumnName("max_amount");
+
+                    b.Property<decimal?>("MinAmount")
+                        .HasColumnType("numeric(19,2)")
+                        .HasColumnName("min_amount");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -81,6 +104,21 @@ namespace Tameru.Ledger.Infrastructure.Persistence.Migrations
                     b.Property<int>("Priority")
                         .HasColumnType("integer")
                         .HasColumnName("priority");
+
+                    b.Property<string>("ReplaceTitle")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("replace_title");
+
+                    b.Property<string>("ScheduleExpression")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("schedule_expression");
+
+                    b.Property<string>("Tags")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("tags");
 
                     b.Property<Guid?>("TargetBudgetCategoryId")
                         .HasColumnType("uuid")
@@ -99,6 +137,11 @@ namespace Tameru.Ledger.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("target_sub_category_id");
 
+                    b.Property<string>("TransactionType")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("transaction_type");
+
                     b.Property<DateTimeOffset?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
@@ -110,13 +153,90 @@ namespace Tameru.Ledger.Infrastructure.Persistence.Migrations
                     b.HasKey("Id")
                         .HasName("pk_categorization_rules");
 
+                    b.HasIndex("GroupId")
+                        .HasDatabaseName("ix_categorization_rules_group_id");
+
                     b.HasIndex("IsActive")
                         .HasDatabaseName("ix_categorization_rules_is_active");
+
+                    b.HasIndex("IsTemplate")
+                        .HasDatabaseName("ix_categorization_rules_is_template");
 
                     b.HasIndex("Priority")
                         .HasDatabaseName("ix_categorization_rules_priority");
 
                     b.ToTable("categorization_rules", "ledger");
+                });
+
+            modelBuilder.Entity("Tameru.Ledger.Domain.RuleAuditLog", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<decimal?>("Amount")
+                        .HasColumnType("numeric(19,2)")
+                        .HasColumnName("amount");
+
+                    b.Property<string>("Details")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("details");
+
+                    b.Property<DateTimeOffset>("EvaluatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("evaluated_at");
+
+                    b.Property<string>("MatchedField")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("matched_field");
+
+                    b.Property<string>("MatchedValue")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("matched_value");
+
+                    b.Property<Guid>("RuleId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("rule_id");
+
+                    b.Property<string>("RuleName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("rule_name");
+
+                    b.Property<Guid?>("TransactionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("transaction_id");
+
+                    b.Property<string>("TransactionTitle")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("transaction_title");
+
+                    b.Property<bool>("WasApplied")
+                        .HasColumnType("boolean")
+                        .HasColumnName("was_applied");
+
+                    b.HasKey("Id")
+                        .HasName("pk_rule_audit_logs");
+
+                    b.HasIndex("EvaluatedAt")
+                        .HasDatabaseName("ix_rule_audit_logs_evaluated_at");
+
+                    b.HasIndex("RuleId")
+                        .HasDatabaseName("ix_rule_audit_logs_rule_id");
+
+                    b.HasIndex("TransactionId")
+                        .HasDatabaseName("ix_rule_audit_logs_transaction_id");
+
+                    b.ToTable("rule_audit_logs", "ledger");
                 });
 
             modelBuilder.Entity("Tameru.Ledger.Domain.Transaction", b =>
