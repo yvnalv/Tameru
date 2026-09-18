@@ -53,20 +53,12 @@ public sealed class InsightsService
 
         var insights = new List<InsightDto>();
 
-        // Run all insight generators in parallel where possible
-        var safeTask = _decision.GetSafeToSpendAsync(ct);
-        var cashflowTask = _ledger.GetMonthlyCashflowAsync(year, ct);
-        var prevCashflowTask = _ledger.GetMonthlyCashflowAsync(year - 1, ct);
-        var startDayTask = _userPreferences.GetBudgetCycleStartDayAsync(ct);
-        var balancesTask = _balances.GetBalancesAsync(activeOnly: true, ct);
-
-        await Task.WhenAll(safeTask, cashflowTask, prevCashflowTask, startDayTask, balancesTask);
-
-        var safe = safeTask.Result;
-        var cashflowSeries = cashflowTask.Result;
-        var prevYearSeries = prevCashflowTask.Result;
-        var startDay = startDayTask.Result;
-        var allBalances = balancesTask.Result;
+        // Execute queries sequentially to respect EF Core single-threaded DbContext constraint
+        var safe = await _decision.GetSafeToSpendAsync(ct);
+        var cashflowSeries = await _ledger.GetMonthlyCashflowAsync(year, ct);
+        var prevYearSeries = await _ledger.GetMonthlyCashflowAsync(year - 1, ct);
+        var startDay = await _userPreferences.GetBudgetCycleStartDayAsync(ct);
+        var allBalances = await _balances.GetBalancesAsync(activeOnly: true, ct);
 
         var currentMonth = cashflowSeries.FirstOrDefault(m => m.Month == month);
         var totalBalance = allBalances.Sum(b => b.Balance);

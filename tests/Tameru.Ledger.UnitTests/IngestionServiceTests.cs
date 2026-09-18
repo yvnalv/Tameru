@@ -136,4 +136,68 @@ public class IngestionServiceTests
         result.Value.FormattedConfirmation.Should().Contain("Category: Food");
         result.Value.FormattedConfirmation.Should().Contain("Budget: Needs");
     }
+
+    [Fact]
+    public void ParseNaturalText_extracts_category_and_budget_in_full_scenario()
+    {
+        var result = IngestionService.ParseNaturalText("Add expense 45k lunch bca category Food budget Needs", _accounts);
+
+        result.Amount.Should().Be(45000);
+        result.Type.Should().Be("Expense");
+        result.AccountId.Should().Be(AccountBca);
+        result.CategoryName.Should().Be("Food");
+        result.BudgetName.Should().Be("Needs");
+        result.Title.Should().Be("Lunch");
+    }
+
+    [Fact]
+    public void ParseNaturalText_extracts_category_and_budget_in_indonesian_full_scenario()
+    {
+        var result = IngestionService.ParseNaturalText("Catat makan siang 45k bca kategori Food budget Needs", _accounts);
+
+        result.Amount.Should().Be(45000);
+        result.Type.Should().Be("Expense");
+        result.AccountId.Should().Be(AccountBca);
+        result.CategoryName.Should().Be("Food");
+        result.BudgetName.Should().Be("Needs");
+        result.Title.Should().Be("Makan Siang");
+    }
+
+    [Fact]
+    public async Task IngestAsync_resolves_explicit_category_and_budget_from_natural_scenario()
+    {
+        var ruleRepo = new FakeCategorizationRuleRepository();
+        var uow = new FakeLedgerUnitOfWork();
+        var ruleService = new RuleService(ruleRepo, uow);
+
+        var budgetNeedsId = Guid.NewGuid();
+        var categoryFoodId = Guid.NewGuid();
+
+        var taxonomy = new List<CategoryTaxonomyRef>
+        {
+            new(budgetNeedsId, "Needs", "Budget", null, "Expense", true),
+            new(categoryFoodId, "Food", "Category", budgetNeedsId, "Any", true),
+        };
+
+        var accountDir = new FakeAccountDirectory(_accounts);
+        var categoryDir = new FakeCategoryDirectory("Any", true, taxonomy);
+        var txRepo = new FakeTransactionRepository();
+        var ledgerService = new LedgerService(txRepo, accountDir, categoryDir, uow);
+
+        var sut = new IngestionService(ledgerService, ruleService, accountDir, new SystemClock(), categoryDir);
+
+        var request = new IngestTransactionRequest(Text: "Add expense 45k lunch bca category Food budget Needs");
+        var result = await sut.IngestAsync(request);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Transaction.Title.Should().Be("Lunch");
+        result.Value.Transaction.Amount.Should().Be(45000m);
+        result.Value.Transaction.CategoryId.Should().Be(categoryFoodId);
+        result.Value.Transaction.BudgetCategoryId.Should().Be(budgetNeedsId);
+        result.Value.CategoryName.Should().Be("Food");
+        result.Value.BudgetName.Should().Be("Needs");
+        result.Value.AccountName.Should().Be("BCA");
+        result.Value.FormattedConfirmation.Should().Contain("Category: Food");
+        result.Value.FormattedConfirmation.Should().Contain("Budget: Needs");
+    }
 }

@@ -3,13 +3,10 @@ import { RouterLink } from 'vue-router';
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-vue-next';
 import { navItems } from '@/components/layout/navItems';
 import { useUiStore } from '@/stores/ui';
-import { useAssistantStore } from '@/stores/assistant';
 import logoMark from '@/assets/brand/logo-mark.svg';
 import LogoLockup from '@/components/brand/LogoLockup.vue';
-import TameruAssistantIcon from '@/components/brand/TameruAssistantIcon.vue';
 
 const ui = useUiStore();
-const assistant = useAssistantStore();
 </script>
 
 <template>
@@ -54,32 +51,6 @@ const assistant = useAssistantStore();
           role="tooltip"
         >{{ $t(`nav.${item.key}`) }}</span>
       </RouterLink>
-
-      <!-- AI Assistant Button -->
-      <button
-        type="button"
-        class="group/tt relative flex w-full items-center rounded-control text-sm font-medium transition-all duration-150 border border-indigo-500/20 bg-indigo-500/5 hover:bg-indigo-500/15 text-indigo-400 hover:text-indigo-300"
-        :class="
-          ui.sidebarCollapsed
-            ? 'h-10 w-10 mx-auto justify-center p-0'
-            : 'gap-3 px-3 py-2.5'
-        "
-        @click="assistant.openAssistant()"
-      >
-        <TameruAssistantIcon :size="20" class="text-indigo-400" />
-        <span v-if="!ui.sidebarCollapsed" class="flex-1 text-left truncate">{{ $t('assistant.title') }}</span>
-        <span
-          v-if="!ui.sidebarCollapsed"
-          class="rounded-full bg-indigo-500/20 px-1.5 py-0.5 text-[10px] font-mono text-indigo-300"
-        >Ctrl+J</span>
-
-        <!-- Tooltip when collapsed -->
-        <span
-          v-if="ui.sidebarCollapsed"
-          class="pointer-events-none absolute left-full top-1/2 z-50 ml-2.5 -translate-y-1/2 whitespace-nowrap rounded-control border border-border bg-surface px-2.5 py-1 text-xs font-semibold text-text opacity-0 shadow-popover transition-opacity group-hover/tt:opacity-100"
-          role="tooltip"
-        >{{ $t('assistant.title') }} (Ctrl+J)</span>
-      </button>
     </nav>
 
     <!-- Footer: Pinned at bottom of sidebar -->

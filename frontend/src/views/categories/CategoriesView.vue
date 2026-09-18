@@ -177,8 +177,8 @@ onMounted(load);
         <!-- Categories -->
         <ul class="divide-y divide-border">
           <li v-for="c in childrenOf(b.id)" :key="c.id" class="px-5 py-1">
-            <div class="flex items-center gap-2 py-2 hover:bg-surface-2/40 px-2 rounded-lg transition-colors" :class="{ 'opacity-50': !c.isActive }">
-              <span class="text-sm font-semibold text-text">{{ displayName(c.name, locale) }}</span>
+            <div class="group flex items-center gap-2 py-2 hover:bg-surface-2/40 px-2 rounded-lg transition-colors" :class="{ 'opacity-50': !c.isActive }">
+              <span class="text-sm font-medium text-text-muted group-hover:text-text transition-colors">{{ displayName(c.name, locale) }}</span>
               <div class="ml-auto flex items-center gap-1">
                 <IconButton :icon="Plus" :label="t('categories.addChild')" :size="14" @click="openAdd('Sub', c)" />
                 <IconButton :icon="Pencil" :label="t('common.edit')" :size="14" @click="openEdit(c)" />
@@ -190,10 +190,10 @@ onMounted(load);
               <li
                 v-for="s in childrenOf(c.id)"
                 :key="s.id"
-                class="flex items-center gap-2 py-1.5 px-2 rounded-lg hover:bg-surface-2/40 transition-colors text-text-muted"
+                class="group flex items-center gap-2 py-1.5 px-2 rounded-lg hover:bg-surface-2/40 transition-colors text-text-muted/80"
                 :class="{ 'opacity-50': !s.isActive }"
               >
-                <span class="text-xs font-medium">{{ displayName(s.name, locale) }}</span>
+                <span class="text-xs font-normal text-text-muted/80 group-hover:text-text transition-colors">{{ displayName(s.name, locale) }}</span>
                 <div class="ml-auto flex items-center gap-1">
                   <IconButton :icon="Pencil" :label="t('common.edit')" :size="13" @click="openEdit(s)" />
                   <IconButton v-if="!s.isSystem && s.isActive" :icon="Ban" :label="t('categories.deactivate')" :size="13" danger @click="deactivate(s)" />

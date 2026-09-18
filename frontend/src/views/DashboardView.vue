@@ -263,13 +263,16 @@ onMounted(load);
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <!-- Safe-to-Spend (Uncommitted Liquidity Decision Card) -->
         <div class="rounded-card border border-primary/30 bg-primary/[0.04] p-5 shadow-card transition-all flex flex-col justify-between">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-1.5">
-              <span class="text-xs font-bold uppercase tracking-wider text-primary">{{ t('decision.safeToSpend') }}</span>
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="text-xs font-bold uppercase tracking-wider text-primary truncate">{{ t('decision.safeToSpend') }}</span>
+              <span class="shrink-0 rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-bold text-primary">
+                {{ safeToSpend?.daysRemaining ?? 0 }} {{ t('decision.days') }}
+              </span>
             </div>
             <button
               type="button"
-              class="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg bg-primary text-primary-contrast hover:opacity-90 shadow-sm transition-all"
+              class="shrink-0 flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg bg-primary text-primary-contrast hover:opacity-90 shadow-sm transition-all"
               @click="ui.openSimulator()"
               :title="t('decision.simulatePrompt')"
             >
@@ -277,17 +280,14 @@ onMounted(load);
               <span>{{ t('decision.simulateAction') }}</span>
             </button>
           </div>
-          <div class="mt-3 flex items-baseline justify-between">
-            <span class="tnum text-2xl font-bold tracking-tight text-text sm:text-3xl">
+          <div class="mt-3">
+            <div class="tnum text-2xl font-bold tracking-tight text-text sm:text-3xl whitespace-nowrap overflow-hidden text-ellipsis">
               <Money :value="safeToSpend?.safeToSpend ?? 0" :currency="currency" />
-            </span>
-            <span class="rounded-full bg-primary/15 px-2 py-0.5 text-[11px] font-bold text-primary">
-              {{ safeToSpend?.daysRemaining ?? 0 }} {{ t('decision.days') }}
-            </span>
+            </div>
           </div>
           <div class="mt-3 flex items-center justify-between border-t border-border/80 pt-2.5 text-xs text-text-muted">
             <span>{{ t('decision.dailyPacing') }}</span>
-            <span class="font-semibold text-text tnum">
+            <span class="font-semibold text-text tnum whitespace-nowrap">
               <Money :value="safeToSpend?.dailyAllowance ?? 0" :currency="currency" /> / {{ t('decision.day') }}
             </span>
           </div>
@@ -295,26 +295,28 @@ onMounted(load);
 
         <!-- Net Worth / Total Balance Card -->
         <div class="rounded-card border border-border bg-surface p-5 shadow-card transition-all flex flex-col justify-between">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-semibold uppercase tracking-wider text-text-muted">{{ t('dashboard.netWorth') }}</span>
-            <div class="flex h-8 w-8 items-center justify-center rounded-full bg-accent/15 text-accent">
-              <Wallet :size="16" />
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="text-xs font-semibold uppercase tracking-wider text-text-muted truncate">{{ t('dashboard.netWorth') }}</span>
+              <span class="shrink-0 rounded-full bg-surface-2 px-2 py-0.5 text-[10px] font-semibold text-text-muted">
+                {{ t('dashboard.acrossAccounts', { count: accounts.length }) }}
+              </span>
+            </div>
+            <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent/15 text-accent">
+              <Wallet :size="15" />
             </div>
           </div>
-          <div class="mt-3 flex items-baseline justify-between">
-            <span class="tnum text-2xl font-bold tracking-tight text-text sm:text-3xl">
+          <div class="mt-3">
+            <div class="tnum text-2xl font-bold tracking-tight text-text sm:text-3xl whitespace-nowrap overflow-hidden text-ellipsis">
               <Money :value="netWorth?.total ?? 0" :currency="currency" />
-            </span>
-            <span class="rounded-full bg-surface-2 px-2 py-0.5 text-[11px] font-semibold text-text-muted">
-              {{ t('dashboard.acrossAccounts', { count: accounts.length }) }}
-            </span>
+            </div>
           </div>
           <div class="mt-3 flex items-center justify-between border-t border-border pt-2.5 text-xs text-text-muted">
             <span>{{ t('dashboard.thisMonth') }}</span>
-            <span class="font-semibold text-positive" v-if="(cashflow?.net ?? 0) >= 0">
+            <span class="font-semibold text-positive whitespace-nowrap" v-if="(cashflow?.net ?? 0) >= 0">
               +<Money :value="cashflow?.net ?? 0" :currency="currency" />
             </span>
-            <span class="font-semibold text-negative" v-else>
+            <span class="font-semibold text-negative whitespace-nowrap" v-else>
               <Money :value="cashflow?.net ?? 0" :currency="currency" />
             </span>
           </div>
@@ -322,45 +324,49 @@ onMounted(load);
 
         <!-- Monthly Inflow (Income) Card -->
         <div class="rounded-card border border-border bg-surface p-5 shadow-card transition-all flex flex-col justify-between">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-semibold uppercase tracking-wider text-text-muted">{{ t('dashboard.monthIncome') }}</span>
-            <div class="flex h-8 w-8 items-center justify-center rounded-full bg-positive/15 text-positive">
-              <ArrowDownLeft :size="16" />
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="text-xs font-semibold uppercase tracking-wider text-text-muted truncate">{{ t('dashboard.monthIncome') }}</span>
+              <span class="shrink-0 rounded-full bg-positive/15 px-2 py-0.5 text-[10px] font-bold text-positive">
+                {{ currentMonthLabel }}
+              </span>
+            </div>
+            <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-positive/15 text-positive">
+              <ArrowDownLeft :size="15" />
             </div>
           </div>
-          <div class="mt-3 flex items-baseline justify-between">
-            <span class="tnum text-2xl font-bold tracking-tight text-positive sm:text-3xl">
+          <div class="mt-3">
+            <div class="tnum text-2xl font-bold tracking-tight text-positive sm:text-3xl whitespace-nowrap overflow-hidden text-ellipsis">
               +<Money :value="cashflow?.income ?? 0" :currency="currency" />
-            </span>
-            <span class="rounded-full bg-positive/15 px-2 py-0.5 text-[11px] font-bold text-positive">
-              {{ currentMonthLabel }}
-            </span>
+            </div>
           </div>
           <div class="mt-3 flex items-center justify-between border-t border-border pt-2.5 text-xs text-text-muted">
             <span>{{ t('dashboard.savingsRate') }}</span>
-            <span class="font-semibold text-text tnum">{{ health?.savingsRate ?? 0 }}%</span>
+            <span class="font-semibold text-text tnum whitespace-nowrap">{{ health?.savingsRate ?? 0 }}%</span>
           </div>
         </div>
 
         <!-- Monthly Outflow (Expense) Card -->
         <div class="rounded-card border border-border bg-surface p-5 shadow-card transition-all flex flex-col justify-between">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-semibold uppercase tracking-wider text-text-muted">{{ t('dashboard.monthExpense') }}</span>
-            <div class="flex h-8 w-8 items-center justify-center rounded-full bg-negative/15 text-negative">
-              <ArrowUpRight :size="16" />
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="text-xs font-semibold uppercase tracking-wider text-text-muted truncate">{{ t('dashboard.monthExpense') }}</span>
+              <span class="shrink-0 rounded-full bg-negative/15 px-2 py-0.5 text-[10px] font-bold text-negative whitespace-nowrap">
+                {{ t('dashboard.dailyBurn') }}: <Money :value="health?.dailyBurnRate ?? 0" :currency="currency" />
+              </span>
+            </div>
+            <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-negative/15 text-negative">
+              <ArrowUpRight :size="15" />
             </div>
           </div>
-          <div class="mt-3 flex items-baseline justify-between">
-            <span class="tnum text-2xl font-bold tracking-tight text-negative sm:text-3xl">
-              -<Money :value="cashflow?.expense ?? 0" :currency="currency" />
-            </span>
-            <span class="rounded-full bg-negative/15 px-2 py-0.5 text-[11px] font-bold text-negative">
-              {{ t('dashboard.dailyBurn') }}: <Money :value="health?.dailyBurnRate ?? 0" :currency="currency" />
-            </span>
+          <div class="mt-3">
+            <div class="tnum text-2xl font-bold tracking-tight text-negative sm:text-3xl whitespace-nowrap overflow-hidden text-ellipsis flex items-baseline">
+              <span>-</span><Money :value="cashflow?.expense ?? 0" :currency="currency" />
+            </div>
           </div>
           <div class="mt-3 flex items-center justify-between border-t border-border pt-2.5 text-xs text-text-muted">
             <span>{{ t('dashboard.projectedMonthEnd') }}</span>
-            <span class="font-semibold text-text tnum">
+            <span class="font-semibold text-text tnum whitespace-nowrap">
               <Money :value="health?.projectedMonthEndExpense ?? 0" :currency="currency" />
             </span>
           </div>

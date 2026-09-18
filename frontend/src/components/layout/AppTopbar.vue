@@ -7,21 +7,17 @@ import {
   PanelLeftOpen,
   Eye,
   EyeOff,
-  Sparkles,
   Search,
 } from 'lucide-vue-next';
 import { useAuthStore } from '@/stores/auth';
 import { useUiStore } from '@/stores/ui';
-import { useAssistantStore } from '@/stores/assistant';
 import IconButton from '@/components/ui/IconButton.vue';
 import AvatarChip from '@/components/ui/AvatarChip.vue';
 import ThemeToggle from '@/components/ui/ThemeToggle.vue';
-import TameruAssistantIcon from '@/components/brand/TameruAssistantIcon.vue';
 
 const router = useRouter();
 const auth = useAuthStore();
 const ui = useUiStore();
-const assistant = useAssistantStore();
 
 async function signOut(): Promise<void> {
   await auth.logout();
@@ -100,27 +96,6 @@ async function signOut(): Promise<void> {
       <!-- Modern Light/Dark Mode Switcher (Icon-Only Capsule) -->
       <ThemeToggle variant="segmented" :size="14" class="mx-0.5" />
 
-      <!-- AI Assistant Button -->
-      <button
-        type="button"
-        class="inline-flex h-9 items-center gap-1.5 rounded-control border border-indigo-500/30 bg-indigo-500/10 px-3 text-xs font-semibold text-indigo-400 shadow-xs transition-all hover:bg-indigo-500 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-        :title="$t('assistant.title') + ' (Ctrl+J)'"
-        @click="assistant.openAssistant()"
-      >
-        <TameruAssistantIcon :size="14" />
-        <span class="hidden lg:inline">{{ $t('assistant.title') }}</span>
-      </button>
-
-      <!-- Design System Link -->
-      <button
-        type="button"
-        class="hidden sm:inline-flex h-9 items-center gap-1.5 rounded-control border border-accent/30 bg-accent-soft px-3 text-xs font-semibold text-accent shadow-xs transition-all hover:bg-accent hover:text-accent-contrast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-        title="Open Design System Showcase"
-        @click="router.push({ name: 'design-system' })"
-      >
-        <Sparkles :size="14" />
-        <span class="hidden lg:inline">Design System</span>
-      </button>
 
       <!-- Sign Out Button with bottom tooltip -->
       <IconButton

@@ -1,8 +1,19 @@
+using Tameru.Application.Abstractions;
+
 namespace Tameru.Reporting.Application.Contracts;
 
 public sealed record ChatRequest(
     string Message,
-    string? ConversationId = null);
+    string? ConversationId = null,
+    AiProviderConfig? Provider = null);
+
+public sealed record TestConnectionRequest(
+    AiProviderConfig? Provider = null);
+
+public sealed record TestConnectionResponse(
+    bool Success,
+    string Message,
+    string? Model = null);
 
 public sealed record ChatAction(
     string Type,

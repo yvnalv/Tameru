@@ -313,9 +313,27 @@ export interface ChatAction {
   data?: any;
 }
 
+export interface AiProviderConfig {
+  provider?: string;
+  baseUrl?: string;
+  apiKey?: string;
+  model?: string;
+}
+
 export interface ChatRequest {
   message: string;
   conversationId?: string | null;
+  provider?: AiProviderConfig | null;
+}
+
+export interface TestConnectionRequest {
+  provider?: AiProviderConfig | null;
+}
+
+export interface TestConnectionResponse {
+  success: boolean;
+  message: string;
+  model?: string | null;
 }
 
 export interface ChatResponse {

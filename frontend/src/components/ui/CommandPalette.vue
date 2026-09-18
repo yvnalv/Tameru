@@ -176,7 +176,6 @@ const allItems = computed<CommandItem[]>(() => {
     { name: 'categories', route: '/categories', label: t('nav.categories'), icon: Layers },
     { name: 'masterPlan', route: '/master-plan', label: t('nav.masterPlan'), icon: Compass },
     { name: 'settings', route: '/settings', label: t('nav.settings'), icon: Settings },
-    { name: 'designSystem', route: '/design-system', label: 'Design System', icon: Sparkles },
   ];
 
   for (const nav of navItems) {

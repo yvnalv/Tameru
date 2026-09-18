@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, reactive } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import {
@@ -33,6 +33,8 @@ import {
   BookOpen,
   Clock,
   XCircle,
+  Bot,
+  AlertCircle,
 } from 'lucide-vue-next';
 import { useAuthStore } from '@/stores/auth';
 import { useUiStore } from '@/stores/ui';
@@ -40,6 +42,11 @@ import { useThemeStore } from '@/stores/theme';
 import { useToastStore } from '@/stores/toast';
 import { useConfirmStore } from '@/stores/confirm';
 import { regenerateApiToken } from '@/lib/auth';
+import {
+  getStoredAiConfig,
+  setStoredAiConfig,
+  testAiConnection,
+} from '@/lib/assistant';
 import {
   listRules,
   createRule,
@@ -83,12 +90,153 @@ const themeStore = useThemeStore();
 const toast = useToastStore();
 const confirm = useConfirmStore();
 
-type TabKey = 'financial-cycle' | 'rules' | 'appearance' | 'profile' | 'data';
+type TabKey = 'financial-cycle' | 'rules' | 'ai-provider' | 'appearance' | 'profile' | 'data';
 const activeTab = ref<TabKey>('financial-cycle');
 
+// ----------------------------------------------------------------------------
+// Tab 2b: AI Provider Settings
+// ----------------------------------------------------------------------------
+interface AiPreset {
+  id: string;
+  name: string;
+  provider: string;
+  baseUrl: string;
+  model: string;
+  needsKey: boolean;
+  hint: string;
+}
+
+const AI_PRESETS: AiPreset[] = [
+  {
+    id: 'openai',
+    name: 'OpenAI',
+    provider: 'OpenAI',
+    baseUrl: 'https://api.openai.com/v1/',
+    model: 'gpt-4o-mini',
+    needsKey: true,
+    hint: 'Official OpenAI GPT-4o / GPT-4o-mini models',
+  },
+  {
+    id: 'groq',
+    name: 'Groq (Fast)',
+    provider: 'Groq',
+    baseUrl: 'https://api.groq.com/openai/v1/',
+    model: 'llama-3.3-70b-versatile',
+    needsKey: true,
+    hint: 'Ultra-fast Llama 3 inference with free tier',
+  },
+  {
+    id: 'openrouter',
+    name: 'OpenRouter',
+    provider: 'OpenRouter',
+    baseUrl: 'https://openrouter.ai/api/v1/',
+    model: 'deepseek/deepseek-chat',
+    needsKey: true,
+    hint: 'Access DeepSeek, Claude, Llama 3, and more',
+  },
+  {
+    id: 'ollama',
+    name: 'Ollama (Local)',
+    provider: 'Ollama',
+    baseUrl: 'http://localhost:11434/v1/',
+    model: 'llama3.2',
+    needsKey: false,
+    hint: '100% private and offline on localhost',
+  },
+  {
+    id: 'custom',
+    name: 'Custom',
+    provider: 'Custom',
+    baseUrl: '',
+    model: '',
+    needsKey: true,
+    hint: 'Any OpenAI-compatible API endpoint',
+  },
+];
+
+const aiForm = reactive<{
+  provider: string;
+  baseUrl: string;
+  apiKey: string;
+  model: string;
+}>({
+  provider: 'OpenAI',
+  baseUrl: 'https://api.openai.com/v1/',
+  apiKey: '',
+  model: 'gpt-4o-mini',
+});
+const showAiKey = ref(false);
+const testingAi = ref(false);
+const testResult = ref<{ success: boolean; message: string; model?: string | null } | null>(null);
+const selectedPresetId = ref('openai');
+
+function initAiSettings(): void {
+  const stored = getStoredAiConfig();
+  if (stored) {
+    aiForm.provider = stored.provider || 'OpenAI';
+    aiForm.baseUrl = stored.baseUrl || 'https://api.openai.com/v1/';
+    aiForm.apiKey = stored.apiKey || '';
+    aiForm.model = stored.model || 'gpt-4o-mini';
+    const match = AI_PRESETS.find((p) => p.baseUrl === aiForm.baseUrl);
+    selectedPresetId.value = match ? match.id : 'custom';
+  }
+}
+
+function selectAiPreset(preset: AiPreset): void {
+  selectedPresetId.value = preset.id;
+  aiForm.provider = preset.provider;
+  if (preset.baseUrl) aiForm.baseUrl = preset.baseUrl;
+  if (preset.model) aiForm.model = preset.model;
+  testResult.value = null;
+}
+
+async function handleTestAi(): Promise<void> {
+  testingAi.value = true;
+  testResult.value = null;
+  try {
+    const res = await testAiConnection(aiForm);
+    testResult.value = res;
+    if (res.success) {
+      toast.success(res.message);
+    } else {
+      toast.error(res.message);
+    }
+  } catch (err: any) {
+    const msg = err?.response?.data?.message || err?.message || 'Connection test failed';
+    testResult.value = { success: false, message: msg };
+    toast.error(msg);
+  } finally {
+    testingAi.value = false;
+  }
+}
+
+function handleSaveAi(): void {
+  setStoredAiConfig(aiForm);
+  toast.success(t('settings.aiProvider.savedToast'));
+}
+
+async function handleResetAi(): Promise<void> {
+  const ok = await confirm.ask({
+    message: t('settings.aiProvider.resetConfirm'),
+    confirmLabel: t('common.reset'),
+    danger: true,
+  });
+  if (!ok) return;
+
+  setStoredAiConfig(null);
+  selectedPresetId.value = 'openai';
+  aiForm.provider = 'OpenAI';
+  aiForm.baseUrl = 'https://api.openai.com/v1/';
+  aiForm.apiKey = '';
+  aiForm.model = 'gpt-4o-mini';
+  testResult.value = null;
+  toast.success(t('settings.aiProvider.resetToast'));
+}
+
 onMounted(() => {
+  initAiSettings();
   const queryTab = route.query.tab as string;
-  if (queryTab && ['financial-cycle', 'rules', 'appearance', 'profile', 'data'].includes(queryTab)) {
+  if (queryTab && ['financial-cycle', 'rules', 'ai-provider', 'appearance', 'profile', 'data'].includes(queryTab)) {
     activeTab.value = queryTab as TabKey;
   }
   if (activeTab.value === 'rules') {
@@ -675,6 +823,20 @@ async function exportTransactionsCsv(): Promise<void> {
         >
           <Zap :size="15" />
           {{ t('settings.tabs.rules') }}
+        </button>
+
+        <button
+          type="button"
+          class="flex items-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-all whitespace-nowrap"
+          :class="
+            activeTab === 'ai-provider'
+              ? 'bg-accent text-accent-contrast shadow-sm font-bold'
+              : 'text-text-muted hover:text-text'
+          "
+          @click="setTab('ai-provider')"
+        >
+          <Bot :size="15" />
+          {{ t('settings.tabs.aiProvider') }}
         </button>
 
         <button
@@ -1581,6 +1743,212 @@ async function exportTransactionsCsv(): Promise<void> {
           </div>
         </AppCard>
       </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TAB 2b: AI Provider & LLM Connection                                  -->
+    <!-- ===================================================================== -->
+    <div v-else-if="activeTab === 'ai-provider'" class="space-y-4">
+      <!-- Overview & Status Banner -->
+      <AppCard>
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <div class="flex items-center gap-2">
+              <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-accent-soft text-accent">
+                <Bot :size="18" />
+              </div>
+              <h2 class="text-base font-bold text-text">
+                {{ t('settings.aiProvider.heading') }}
+              </h2>
+            </div>
+            <p class="text-xs text-text-muted mt-1.5 max-w-2xl">
+              {{ t('settings.aiProvider.description') }}
+            </p>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <span
+              v-if="aiForm.apiKey || aiForm.baseUrl?.includes('localhost') || aiForm.baseUrl?.includes('127.0.0.1')"
+              class="inline-flex items-center gap-1.5 rounded-full bg-positive-soft px-3 py-1 text-xs font-semibold text-positive border border-positive/20"
+            >
+              <CheckCircle2 :size="13" />
+              {{ t('settings.aiProvider.activeStatus', { model: aiForm.model || 'Configured' }) }}
+            </span>
+            <span
+              v-else
+              class="inline-flex items-center gap-1.5 rounded-full bg-surface-2 px-3 py-1 text-xs font-medium text-text-muted border border-border"
+            >
+              <Info :size="13" />
+              {{ t('settings.aiProvider.offlineStatus') }}
+            </span>
+          </div>
+        </div>
+      </AppCard>
+
+      <!-- Provider Selection & Configuration Form -->
+      <AppCard>
+        <h3 class="text-sm font-bold text-text mb-1">
+          {{ t('settings.aiProvider.presets') }}
+        </h3>
+        <p class="text-xs text-text-muted mb-4">
+          Select a provider to auto-fill recommended API endpoints and model identifiers.
+        </p>
+
+        <!-- Preset Cards Grid -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 mb-6">
+          <button
+            v-for="preset in AI_PRESETS"
+            :key="preset.id"
+            type="button"
+            class="flex flex-col items-start p-3 rounded-container border text-left transition-all"
+            :class="
+              selectedPresetId === preset.id
+                ? 'border-accent bg-accent-soft/40 ring-1 ring-accent text-text'
+                : 'border-border bg-surface-2/40 hover:bg-surface-2 text-text-muted hover:text-text'
+            "
+            @click="selectAiPreset(preset)"
+          >
+            <span class="text-xs font-bold text-text">{{ preset.name }}</span>
+            <span class="text-[10px] text-text-muted mt-1 leading-tight line-clamp-2">{{ preset.hint }}</span>
+          </button>
+        </div>
+
+        <!-- Connection Settings Form -->
+        <form class="space-y-4" @submit.prevent="handleSaveAi">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <FormField :label="t('settings.aiProvider.baseUrlLabel')" for-id="ai-base-url" required>
+              <AppInput
+                id="ai-base-url"
+                v-model="aiForm.baseUrl"
+                :placeholder="t('settings.aiProvider.baseUrlPlaceholder')"
+                required
+              />
+            </FormField>
+
+            <FormField :label="t('settings.aiProvider.modelLabel')" for-id="ai-model" required>
+              <AppInput
+                id="ai-model"
+                v-model="aiForm.model"
+                :placeholder="t('settings.aiProvider.modelPlaceholder')"
+                required
+              />
+            </FormField>
+          </div>
+
+          <FormField :label="t('settings.aiProvider.apiKeyLabel')" for-id="ai-key">
+            <div class="relative flex items-center">
+              <AppInput
+                id="ai-key"
+                v-model="aiForm.apiKey"
+                :type="showAiKey ? 'text' : 'password'"
+                :placeholder="t('settings.aiProvider.apiKeyPlaceholder')"
+                class="pr-10 w-full"
+              />
+              <button
+                type="button"
+                class="absolute right-2.5 p-1 rounded-md text-text-muted hover:text-text hover:bg-surface-2 transition-colors"
+                @click="showAiKey = !showAiKey"
+                :title="showAiKey ? 'Hide key' : 'Show key'"
+              >
+                <EyeOff v-if="showAiKey" :size="15" />
+                <Eye v-else :size="15" />
+              </button>
+            </div>
+            <p class="text-[11px] text-text-muted mt-1">
+              {{ t('settings.aiProvider.apiKeyNote') }}
+            </p>
+          </FormField>
+
+          <!-- Live Test Feedback Card -->
+          <div
+            v-if="testResult"
+            class="p-3.5 rounded-control border text-xs flex items-start gap-2.5 transition-all"
+            :class="
+              testResult.success
+                ? 'bg-positive-soft/60 border-positive/30 text-positive'
+                : 'bg-negative-soft/60 border-negative/30 text-negative'
+            "
+          >
+            <CheckCircle2 v-if="testResult.success" :size="16" class="shrink-0 mt-0.5" />
+            <AlertCircle v-else :size="16" class="shrink-0 mt-0.5" />
+            <div class="min-w-0 flex-1">
+              <div class="font-bold">
+                {{ testResult.success ? t('settings.aiProvider.testSuccess') : 'Connection Test Failed' }}
+              </div>
+              <div class="mt-0.5 opacity-90 break-words font-mono text-[11px]">
+                {{ testResult.message }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Buttons Bar -->
+          <div class="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-border">
+            <AppButton
+              type="button"
+              variant="secondary"
+              size="sm"
+              :loading="testingAi"
+              @click="handleTestAi"
+            >
+              <Sparkles :size="14" />
+              <span>{{ testingAi ? t('settings.aiProvider.testingConnection') : t('settings.aiProvider.testConnection') }}</span>
+            </AppButton>
+
+            <div class="flex items-center gap-2">
+              <AppButton
+                type="button"
+                variant="secondary"
+                size="sm"
+                @click="handleResetAi"
+              >
+                {{ t('settings.aiProvider.resetSettings') }}
+              </AppButton>
+              <AppButton
+                type="submit"
+                variant="primary"
+                size="sm"
+              >
+                <Save :size="14" />
+                <span>{{ t('settings.aiProvider.saveSettings') }}</span>
+              </AppButton>
+            </div>
+          </div>
+        </form>
+      </AppCard>
+
+      <!-- Provider Guides & Capabilities -->
+      <AppCard>
+        <h3 class="text-sm font-bold text-text mb-3">
+          {{ t('settings.aiProvider.helpTitle') }}
+        </h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-text-muted">
+          <div class="rounded-control border border-border bg-surface-2 p-3 space-y-1">
+            <span class="font-bold text-text flex items-center gap-1.5">
+              <span>OpenAI</span>
+            </span>
+            <p>{{ t('settings.aiProvider.helpOpenAi') }}</p>
+          </div>
+          <div class="rounded-control border border-border bg-surface-2 p-3 space-y-1">
+            <span class="font-bold text-text flex items-center gap-1.5">
+              <span>Groq</span>
+              <span class="text-[10px] bg-positive-soft text-positive px-1.5 py-0.5 rounded font-semibold">Recommended</span>
+            </span>
+            <p>{{ t('settings.aiProvider.helpGroq') }}</p>
+          </div>
+          <div class="rounded-control border border-border bg-surface-2 p-3 space-y-1">
+            <span class="font-bold text-text flex items-center gap-1.5">
+              <span>OpenRouter</span>
+            </span>
+            <p>{{ t('settings.aiProvider.helpOpenRouter') }}</p>
+          </div>
+          <div class="rounded-control border border-border bg-surface-2 p-3 space-y-1">
+            <span class="font-bold text-text flex items-center gap-1.5">
+              <span>Ollama</span>
+              <span class="text-[10px] bg-accent-soft text-accent px-1.5 py-0.5 rounded font-semibold">Offline & Private</span>
+            </span>
+            <p>{{ t('settings.aiProvider.helpOllama') }}</p>
+          </div>
+        </div>
+      </AppCard>
     </div>
 
     <!-- ===================================================================== -->

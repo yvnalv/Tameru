@@ -48,6 +48,9 @@ public sealed class IngestionService
         string? description = request.Description;
 
         // 1. If natural text is provided, parse it
+        string? parsedCategoryName = null;
+        string? parsedBudgetName = null;
+
         if (!string.IsNullOrWhiteSpace(request.Text))
         {
             var parsed = ParseNaturalText(request.Text, activeAccounts);
@@ -55,6 +58,8 @@ public sealed class IngestionService
             if (!string.IsNullOrWhiteSpace(parsed.Title) && string.IsNullOrWhiteSpace(title)) title = parsed.Title;
             if (accountId == Guid.Empty && parsed.AccountId.HasValue) accountId = parsed.AccountId.Value;
             if (string.IsNullOrWhiteSpace(request.Type) && !string.IsNullOrWhiteSpace(parsed.Type)) type = parsed.Type;
+            parsedCategoryName = parsed.CategoryName;
+            parsedBudgetName = parsed.BudgetName;
         }
 
         if (amount <= 0)
@@ -109,6 +114,30 @@ public sealed class IngestionService
         var taxonomy = _categories is not null ? await _categories.ListActiveTaxonomyAsync(ct) : Array.Empty<CategoryTaxonomyRef>();
         if (taxonomy.Count > 0)
         {
+            if (!categoryId.HasValue && !string.IsNullOrWhiteSpace(parsedCategoryName))
+            {
+                var matchedCat = taxonomy.FirstOrDefault(c => c.Level == "Category" && c.Name.Equals(parsedCategoryName, StringComparison.OrdinalIgnoreCase))
+                    ?? taxonomy.FirstOrDefault(c => c.Level == "Category" && c.Name.Contains(parsedCategoryName, StringComparison.OrdinalIgnoreCase));
+                if (matchedCat is not null)
+                {
+                    categoryId = matchedCat.Id;
+                    if (matchedCat.ParentId.HasValue && !budgetCategoryId.HasValue)
+                    {
+                        budgetCategoryId = matchedCat.ParentId.Value;
+                    }
+                }
+            }
+
+            if (!budgetCategoryId.HasValue && !string.IsNullOrWhiteSpace(parsedBudgetName))
+            {
+                var matchedBudget = taxonomy.FirstOrDefault(c => c.Level == "Budget" && c.Name.Equals(parsedBudgetName, StringComparison.OrdinalIgnoreCase))
+                    ?? taxonomy.FirstOrDefault(c => c.Level == "Budget" && c.Name.Contains(parsedBudgetName, StringComparison.OrdinalIgnoreCase));
+                if (matchedBudget is not null)
+                {
+                    budgetCategoryId = matchedBudget.Id;
+                }
+            }
+
             if (categoryId.HasValue && !budgetCategoryId.HasValue)
             {
                 var matchedCat = taxonomy.FirstOrDefault(c => c.Id == categoryId.Value);
@@ -408,7 +437,31 @@ public sealed class IngestionService
             }
         }
 
-        // 4. Clean up Title / Payee
+        // 4. Detect Explicit Category & Budget
+        string? categoryName = null;
+        string? budgetName = null;
+
+        var catRegex = new Regex(@"\b(?:category|kategori)[:\s]+([A-Za-z0-9&/_\-]+(?:\s+[A-Za-z0-9&/_\-]+)*?)(?=\s+\b(?:budget|anggaran|pos)\b|\s*$)", RegexOptions.IgnoreCase);
+        var catMatch = catRegex.Match(text);
+        if (catMatch.Success)
+        {
+            categoryName = catMatch.Groups[1].Value.Trim();
+            text = text.Remove(catMatch.Index, catMatch.Length);
+        }
+
+        var budgetRegex = new Regex(@"\b(?:budget|anggaran|pos)[:\s]+([A-Za-z0-9&/_\-]+(?:\s+[A-Za-z0-9&/_\-]+)*?)(?=\s+\b(?:category|kategori)\b|\s*$)", RegexOptions.IgnoreCase);
+        var budgetMatch = budgetRegex.Match(text);
+        if (budgetMatch.Success)
+        {
+            budgetName = budgetMatch.Groups[1].Value.Trim();
+            text = text.Remove(budgetMatch.Index, budgetMatch.Length);
+        }
+
+        // 5. Clean up Title / Payee
+        // Remove command verbs: add, catat, tambah, log, record, expense, pengeluaran, income, pemasukan
+        var cmdVerbs = @"\b(add|catat|tambah|log|record|expense|pengeluaran|income|pemasukan)\b";
+        text = Regex.Replace(text, cmdVerbs, "", RegexOptions.IgnoreCase);
+
         // Remove common Indonesian prepositions & ingestion verbs
         var fillers = @"\b(di|ke|via|pakai|menggunakan|dari|for|at|with|dapat|terima|masuk|cair)\b";
         text = Regex.Replace(text, fillers, "", RegexOptions.IgnoreCase);
@@ -423,8 +476,14 @@ public sealed class IngestionService
             text = CultureInfo.InvariantCulture.TextInfo.ToTitleCase(text.ToLowerInvariant());
         }
 
-        return new ParsedTransaction(amount, text, type, matchedAccountId);
+        return new ParsedTransaction(amount, text, type, matchedAccountId, categoryName, budgetName);
     }
 }
 
-public sealed record ParsedTransaction(decimal Amount, string Title, string Type, Guid? AccountId);
+public sealed record ParsedTransaction(
+    decimal Amount,
+    string Title,
+    string Type,
+    Guid? AccountId,
+    string? CategoryName = null,
+    string? BudgetName = null);

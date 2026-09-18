@@ -56,18 +56,22 @@ internal sealed class FakeTransactionRepository : ITransactionRepository
 
 internal sealed class FakeAccountDirectory : IAccountDirectory
 {
-    private readonly HashSet<Guid> _active = new();
+    private readonly List<AccountRef> _accounts = new();
 
-    public FakeAccountDirectory(params Guid[] activeAccounts) => _active.UnionWith(activeAccounts);
+    public FakeAccountDirectory(params Guid[] activeAccounts) =>
+        _accounts.AddRange(activeAccounts.Select(id => new AccountRef(id, "Test Account", "Bank", "IDR")));
+
+    public FakeAccountDirectory(IEnumerable<AccountRef> accounts) =>
+        _accounts.AddRange(accounts);
 
     public Task<bool> ExistsAndActiveAsync(Guid accountId, CancellationToken ct = default) =>
-        Task.FromResult(_active.Contains(accountId));
+        Task.FromResult(_accounts.Any(a => a.Id == accountId));
 
     public Task<string?> GetCurrencyAsync(Guid accountId, CancellationToken ct = default) =>
-        Task.FromResult<string?>(_active.Contains(accountId) ? "IDR" : null);
+        Task.FromResult<string?>(_accounts.FirstOrDefault(a => a.Id == accountId)?.CurrencyCode ?? "IDR");
 
     public Task<IReadOnlyList<AccountRef>> ListActiveAccountsAsync(CancellationToken ct = default) =>
-        Task.FromResult<IReadOnlyList<AccountRef>>(_active.Select(id => new AccountRef(id, "Test Account", "Bank", "IDR")).ToList());
+        Task.FromResult<IReadOnlyList<AccountRef>>(_accounts);
 }
 
 internal sealed class FakeLedgerUnitOfWork : ILedgerUnitOfWork

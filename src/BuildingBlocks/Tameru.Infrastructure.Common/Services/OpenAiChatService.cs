@@ -48,13 +48,34 @@ public sealed class OpenAiChatService : IChatCompletionService
     public async Task<ChatCompletionResult> CompleteAsync(
         IReadOnlyList<ChatMessagePrompt> messages,
         IReadOnlyList<ChatToolDefinition>? tools = null,
+        AiProviderConfig? providerConfig = null,
         CancellationToken ct = default)
     {
-        if (!IsConfigured)
+        var activeApiKey = !string.IsNullOrWhiteSpace(providerConfig?.ApiKey)
+            ? providerConfig.ApiKey.Trim()
+            : _apiKey;
+
+        var rawBaseUrl = !string.IsNullOrWhiteSpace(providerConfig?.BaseUrl)
+            ? providerConfig.BaseUrl.Trim()
+            : _baseUrl;
+
+        if (!rawBaseUrl.EndsWith('/'))
+        {
+            rawBaseUrl += "/";
+        }
+
+        var activeModel = !string.IsNullOrWhiteSpace(providerConfig?.Model)
+            ? providerConfig.Model.Trim()
+            : _model;
+
+        var isLocal = rawBaseUrl.Contains("localhost", StringComparison.OrdinalIgnoreCase)
+            || rawBaseUrl.Contains("127.0.0.1", StringComparison.OrdinalIgnoreCase);
+
+        if (string.IsNullOrWhiteSpace(activeApiKey) && !isLocal)
         {
             _logger.LogWarning("OpenAiChatService called but no Assistant:ApiKey / ASSISTANT_API_KEY is configured.");
             return new ChatCompletionResult(
-                Content: "Assistant is currently in local offline mode. To enable conversational AI with OpenAI, Groq, or Ollama, set `ASSISTANT_API_KEY` in your environment.",
+                Content: "Assistant is currently in local offline mode. To enable conversational AI with OpenAI, Groq, OpenRouter, or Ollama, configure your AI Provider in Settings.",
                 ToolCalls: null,
                 FinishReason: "no_api_key");
         }
@@ -63,7 +84,7 @@ public sealed class OpenAiChatService : IChatCompletionService
         {
             var requestBody = new JsonObject
             {
-                ["model"] = _model,
+                ["model"] = activeModel,
                 ["temperature"] = 0.2,
             };
 
@@ -136,13 +157,16 @@ public sealed class OpenAiChatService : IChatCompletionService
                 requestBody["tools"] = toolsArray;
             }
 
-            var requestUri = new Uri(new Uri(_baseUrl), "chat/completions");
+            var requestUri = new Uri(new Uri(rawBaseUrl), "chat/completions");
             using var request = new HttpRequestMessage(HttpMethod.Post, requestUri)
             {
                 Content = new StringContent(requestBody.ToJsonString(), Encoding.UTF8, "application/json"),
             };
 
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _apiKey);
+            if (!string.IsNullOrWhiteSpace(activeApiKey))
+            {
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", activeApiKey);
+            }
 
             var response = await _httpClient.SendAsync(request, ct);
             if (!response.IsSuccessStatusCode)

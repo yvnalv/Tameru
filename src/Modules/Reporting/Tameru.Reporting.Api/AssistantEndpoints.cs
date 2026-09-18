@@ -20,6 +20,12 @@ public static class AssistantEndpoints
             return Result<ChatResponse>.Success(result).ToHttp();
         });
 
+        group.MapPost("/test-connection", async (TestConnectionRequest request, AssistantService service, CancellationToken ct) =>
+        {
+            var result = await service.TestConnectionAsync(request, ct);
+            return Result<TestConnectionResponse>.Success(result).ToHttp();
+        });
+
         group.MapDelete("/conversation/{id}", (string id, AssistantService service) =>
         {
             service.ClearConversation(id);

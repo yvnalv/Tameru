@@ -3,6 +3,28 @@
 This file is Tameru's immutable historical record. A task is not complete until this file has been
 updated. Newest entries at the top. See `CLAUDE.md` → **CHANGELOG Rules** for the full procedure.
 
+## [2026-09-18 09:38:00 UTC]
+
+CHG-0040 — Fix KPI card overflow, EF Core insights concurrency, category styling, AI Provider settings, and full-scenario assistant parsing
+
+- **Dashboard KPI Cards Layout & Overflow (`DashboardView.vue`):**
+  - Dedicated 100% of middle row width to large Rupiah numbers with `whitespace-nowrap overflow-hidden text-ellipsis` to prevent negative currency breaks (e.g. `-Rp` breaking from `13.500.264`).
+  - Moved contextual badge chips (`7 days`, `18 accounts`, `Rp 750k / day` burn pace) to the card header beside the titles.
+- **Smart Insights Concurrency Fix (`InsightsService.cs`):**
+  - Fixed EF Core `InvalidOperationException` by replacing concurrent `Task.WhenAll` queries on scoped `DbContext` instances with sequential asynchronous executions.
+- **Category Typography Hierarchy (`CategoriesView.vue`):**
+  - Styled category items under Budget envelope headers with muted design-system typography (`text-text-muted font-medium`), visually distinguishing them from top-level budget headers.
+- **Custom AI Provider Configuration (`SettingsView.vue`, `OpenAiChatService.cs`, `AssistantService.cs`):**
+  - Added dedicated AI Provider tab to Settings supporting custom LLM endpoints (OpenAI, Groq, OpenRouter, Ollama, Custom), model selection, masked API keys, live connection testing, and local storage persistence.
+  - Implemented dynamic per-request AI provider overrides in backend chat services and added `POST /api/v1/assistant/test-connection` endpoint.
+- **Assistant UI Cleanup & Full-Scenario Natural Parsing (`AppTopbar.vue`, `AppSidebar.vue`, `IngestionService.cs`, `en.ts`, `id.ts`):**
+  - Removed duplicate "Tameru Assistant" and developer "Design System" buttons from topbar and sidebar navigation.
+  - Updated assistant input placeholder with full scenario syntax: `Add expense 45k lunch bca category Food budget Needs`.
+  - Upgraded `IngestionService.cs` natural language parsing to extract explicit categories, budget envelopes, accounts, and clean titles from natural sentences, backed by new unit tests in `IngestionServiceTests.cs`.
+- **Verified:** All 154 backend unit/integration tests and all 44 frontend tests passing; production build verified cleanly.
+
+---
+
 ## [2026-09-17 13:25:00 UTC]
 
 CHG-0038 — Align Settings page container with design system, fix density translations, and simplify app versioning

@@ -66,8 +66,13 @@ public sealed class AssistantService
             return new ChatResponse("Please send a message or instruction.", conversationId);
         }
 
+        var hasProviderConfig = request.Provider != null &&
+            (!string.IsNullOrWhiteSpace(request.Provider.ApiKey) ||
+             request.Provider.BaseUrl?.Contains("localhost", StringComparison.OrdinalIgnoreCase) == true ||
+             request.Provider.BaseUrl?.Contains("127.0.0.1", StringComparison.OrdinalIgnoreCase) == true);
+
         // Check if LLM is configured. If not, use intelligent local fallback
-        if (!_chatCompletion.IsConfigured)
+        if (!_chatCompletion.IsConfigured && !hasProviderConfig)
         {
             return await HandleLocalFallbackAsync(messageText, conversationId, ct);
         }
@@ -95,7 +100,7 @@ public sealed class AssistantService
 
         var tools = GetToolDefinitions();
 
-        var llmResult = await _chatCompletion.CompleteAsync(history, tools, ct);
+        var llmResult = await _chatCompletion.CompleteAsync(history, tools, request.Provider, ct);
 
         ChatAction? action = null;
         IReadOnlyList<InsightDto>? insights = null;
@@ -113,7 +118,7 @@ public sealed class AssistantService
             history.Add(new ChatMessagePrompt("tool", toolOutcome.ResultJson, ToolCallId: toolCall.Id));
 
             // Follow up completion with tool result to get final assistant response
-            var followUp = await _chatCompletion.CompleteAsync(history, null, ct);
+            var followUp = await _chatCompletion.CompleteAsync(history, null, request.Provider, ct);
             var finalMessage = followUp.Content ?? toolOutcome.DefaultMessage;
             history.Add(new ChatMessagePrompt("assistant", finalMessage));
 
@@ -251,10 +256,12 @@ Guidelines:
                     type = "object",
                     properties = new
                     {
-                        text = new { type = "string", description = "The raw transaction text or phrase, e.g. 'kopi 35k gopay' or 'grocery 250000 bca'" },
+                        text = new { type = "string", description = "The raw transaction text or phrase, e.g. 'kopi 35k gopay' or 'grocery 250000 bca category Food budget Needs'" },
                         amount = new { type = "number", description = "Optional explicit amount in IDR" },
                         title = new { type = "string", description = "Optional title or payee" },
                         type = new { type = "string", @enum = new[] { "Expense", "Income", "Transfer" }, description = "Transaction type" },
+                        category = new { type = "string", description = "Optional category name e.g. 'Food', 'Transportation', 'Entertainment'" },
+                        budget = new { type = "string", description = "Optional budget envelope name e.g. 'Needs', 'Wants', 'Investment'" },
                     },
                     required = new[] { "text" },
                 }),
@@ -305,6 +312,17 @@ Guidelines:
                     var amount = root.TryGetProperty("amount", out var a) && a.TryGetDecimal(out var amt) ? (decimal?)amt : null;
                     var title = root.TryGetProperty("title", out var ti) ? ti.GetString() : null;
                     var type = root.TryGetProperty("type", out var ty) ? ty.GetString() : null;
+                    var category = root.TryGetProperty("category", out var cat) ? cat.GetString() : null;
+                    var budget = root.TryGetProperty("budget", out var bg) ? bg.GetString() : null;
+
+                    if (!string.IsNullOrWhiteSpace(category) && text != null && !text.Contains(category, StringComparison.OrdinalIgnoreCase))
+                    {
+                        text = $"{text} category {category}";
+                    }
+                    if (!string.IsNullOrWhiteSpace(budget) && text != null && !text.Contains(budget, StringComparison.OrdinalIgnoreCase))
+                    {
+                        text = $"{text} budget {budget}";
+                    }
 
                     var outcome = await _transactionIngestor.IngestAsync(new IngestCommand(text, amount, title, type), ct);
                     if (outcome is not null)
@@ -389,6 +407,40 @@ Guidelines:
             return new ToolExecutionResult(
                 ResultJson: JsonSerializer.Serialize(new { error = ex.Message }),
                 DefaultMessage: "Encountered an error performing the action.");
+        }
+    }
+
+    public async Task<TestConnectionResponse> TestConnectionAsync(
+        TestConnectionRequest request, CancellationToken ct = default)
+    {
+        try
+        {
+            var testPrompt = new List<ChatMessagePrompt>
+            {
+                new("user", "Respond with: Hello! Tameru AI connected successfully.")
+            };
+
+            var result = await _chatCompletion.CompleteAsync(testPrompt, null, request.Provider, ct);
+            if (result.FinishReason is "error" or "no_api_key" or "exception")
+            {
+                return new TestConnectionResponse(
+                    Success: false,
+                    Message: result.Content ?? "Connection failed. Please verify provider URL, API key, and model name.",
+                    Model: request.Provider?.Model);
+            }
+
+            return new TestConnectionResponse(
+                Success: true,
+                Message: result.Content?.Trim() ?? "Connection successful!",
+                Model: request.Provider?.Model);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Test connection failed");
+            return new TestConnectionResponse(
+                Success: false,
+                Message: $"Connection error: {ex.Message}",
+                Model: request.Provider?.Model);
         }
     }
 

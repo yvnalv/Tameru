@@ -22,6 +22,12 @@ public sealed record ChatCompletionResult(
     IReadOnlyList<ChatToolCall>? ToolCalls = null,
     string? FinishReason = null);
 
+public sealed record AiProviderConfig(
+    string? Provider = null,
+    string? BaseUrl = null,
+    string? ApiKey = null,
+    string? Model = null);
+
 public interface IChatCompletionService
 {
     bool IsConfigured { get; }
@@ -29,5 +35,6 @@ public interface IChatCompletionService
     Task<ChatCompletionResult> CompleteAsync(
         IReadOnlyList<ChatMessagePrompt> messages,
         IReadOnlyList<ChatToolDefinition>? tools = null,
+        AiProviderConfig? providerConfig = null,
         CancellationToken ct = default);
 }
