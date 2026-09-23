@@ -65,6 +65,21 @@ internal sealed class FakeLedgerReportingQuery : ILedgerReportingQuery
             .ToList();
         return Task.FromResult(result);
     }
+
+    public Task<IReadOnlyList<DayOfWeekSpend>> GetDayOfWeekSpendAsync(
+        DateOnly from, DateOnly to, CancellationToken cancellationToken = default) =>
+        Task.FromResult<IReadOnlyList<DayOfWeekSpend>>(
+            Enum.GetValues<DayOfWeek>()
+                .Select(d => new DayOfWeekSpend(d, 100_000m, 4, 25_000m))
+                .ToList());
+
+    public Task<IReadOnlyList<PayeeSpendTotal>> GetTopPayeesAsync(
+        DateOnly from, DateOnly to, int limit = 5, CancellationToken cancellationToken = default) =>
+        Task.FromResult<IReadOnlyList<PayeeSpendTotal>>([
+            new PayeeSpendTotal("Superindo", 500_000m, 3),
+            new PayeeSpendTotal("Indomaret", 250_000m, 5),
+            new PayeeSpendTotal("Tokopedia", 200_000m, 2)
+        ]);
 }
 
 internal sealed class FakeUserPreferences : Tameru.Modules.Contracts.Identity.IUserPreferences

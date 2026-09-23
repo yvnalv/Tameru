@@ -107,4 +107,53 @@ internal sealed class LedgerReportingQuery : ILedgerReportingQuery
             .Select(r => new EnvelopePeriodTotal(r.BudgetCategoryId, r.Date, r.Sum))
             .ToList();
     }
+
+    public async Task<IReadOnlyList<DayOfWeekSpend>> GetDayOfWeekSpendAsync(
+        DateOnly from, DateOnly to, CancellationToken cancellationToken = default)
+    {
+        var dailyExpenses = await _db.Transactions
+            .Where(t => t.Type == TransactionType.Expense && t.Date >= from && t.Date <= to)
+            .GroupBy(t => t.Date)
+            .Select(g => new { Date = g.Key, Sum = g.Sum(x => x.Amount) })
+            .ToListAsync(cancellationToken);
+
+        var byDow = dailyExpenses
+            .GroupBy(d => d.Date.DayOfWeek)
+            .ToDictionary(g => g.Key, g => g.Sum(x => x.Sum));
+
+        var totalDaysInPeriod = new Dictionary<DayOfWeek, int>();
+        for (var d = from; d <= to; d = d.AddDays(1))
+        {
+            var dow = d.DayOfWeek;
+            totalDaysInPeriod[dow] = totalDaysInPeriod.GetValueOrDefault(dow) + 1;
+        }
+
+        var result = new List<DayOfWeekSpend>();
+        foreach (DayOfWeek dow in Enum.GetValues<DayOfWeek>())
+        {
+            var total = byDow.TryGetValue(dow, out var s) ? s : 0m;
+            var days = totalDaysInPeriod.GetValueOrDefault(dow, 1);
+            var avg = days > 0 ? Math.Round(total / days, 2) : 0m;
+            result.Add(new DayOfWeekSpend(dow, total, days, avg));
+        }
+
+        return result;
+    }
+
+    public async Task<IReadOnlyList<PayeeSpendTotal>> GetTopPayeesAsync(
+        DateOnly from, DateOnly to, int limit = 5, CancellationToken cancellationToken = default)
+    {
+        var safeLimit = Math.Max(1, Math.Min(limit, 20));
+        var top = await _db.Transactions
+            .Where(t => t.Type == TransactionType.Expense && t.Date >= from && t.Date <= to && !string.IsNullOrWhiteSpace(t.Title))
+            .GroupBy(t => t.Title.Trim())
+            .Select(g => new { Payee = g.Key, Total = g.Sum(x => x.Amount), Count = g.Count() })
+            .OrderByDescending(x => x.Total)
+            .Take(safeLimit)
+            .ToListAsync(cancellationToken);
+
+        return top
+            .Select(x => new PayeeSpendTotal(x.Payee, x.Total, x.Count))
+            .ToList();
+    }
 }

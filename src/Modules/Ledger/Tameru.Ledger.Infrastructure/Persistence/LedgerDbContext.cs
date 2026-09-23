@@ -21,6 +21,7 @@ public sealed class LedgerDbContext : BaseDbContext, ILedgerUnitOfWork
     public DbSet<Transaction> Transactions => Set<Transaction>();
     public DbSet<CategorizationRule> CategorizationRules => Set<CategorizationRule>();
     public DbSet<RuleAuditLog> RuleAuditLogs => Set<RuleAuditLog>();
+    public DbSet<RecurringBill> RecurringBills => Set<RecurringBill>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -28,6 +29,7 @@ public sealed class LedgerDbContext : BaseDbContext, ILedgerUnitOfWork
         modelBuilder.ApplyConfiguration(new TransactionConfiguration());
         modelBuilder.ApplyConfiguration(new CategorizationRuleConfiguration());
         modelBuilder.ApplyConfiguration(new RuleAuditLogConfiguration());
+        modelBuilder.ApplyConfiguration(new RecurringBillConfiguration());
 
         ApplySoftDeleteFilter(modelBuilder);
         base.OnModelCreating(modelBuilder);

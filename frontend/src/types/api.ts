@@ -374,6 +374,8 @@ export interface NetWorthReport {
   total: number;
   currencyCode: string;
   accounts: AccountBalance[];
+  totalAssets?: number;
+  totalLiabilities?: number;
 }
 
 export interface MonthlyCashflow {
@@ -529,5 +531,249 @@ export interface InsightDto {
   categoryName: string | null;
   generatedAt: string;
 }
+
+// --- Deep Analysis & Recommendations ----------------------------------------
+
+export interface DeepAnalysisDto {
+  period: AnalysisPeriodDto;
+  income: IncomeAnalysisDto;
+  expense: ExpenseAnalysisDto;
+}
+
+export interface AnalysisPeriodDto {
+  year: number;
+  month: number;
+  startDate: string;
+  endDate: string;
+}
+
+export interface IncomeAnalysisDto {
+  totalIncome: number;
+  previousPeriodIncome: number;
+  moMChangePercent: number | null;
+  retentionRate: number;
+  stabilityScore: number;
+  categories: IncomeCategoryItemDto[];
+}
+
+export interface IncomeCategoryItemDto {
+  categoryId: string;
+  amount: number;
+  percentage: number;
+}
+
+export interface ExpenseAnalysisDto {
+  totalExpense: number;
+  previousPeriodExpense: number;
+  moMChangePercent: number | null;
+  fixedVsVariable: FixedVsVariableDto;
+  weekdayVsWeekend: WeekdayVsWeekendDto;
+  topPayees: PayeeItemDto[];
+  categoryMomentum: CategoryMomentumDto[];
+}
+
+export interface FixedVsVariableDto {
+  fixedAmount: number;
+  variableAmount: number;
+  fixedPercentage: number;
+  variablePercentage: number;
+}
+
+export interface WeekdayVsWeekendDto {
+  weekdayTotal: number;
+  weekdayDailyAverage: number;
+  weekendTotal: number;
+  weekendDailyAverage: number;
+  weekendVelocityRatio: number;
+  dayOfWeekBreakdown: DayOfWeekItemDto[];
+}
+
+export interface DayOfWeekItemDto {
+  dayOfWeek: string;
+  totalAmount: number;
+  dayCount: number;
+  averagePerDay: number;
+}
+
+export interface PayeeItemDto {
+  payee: string;
+  amount: number;
+  transactionCount: number;
+  percentage: number;
+}
+
+export interface CategoryMomentumDto {
+  categoryId: string;
+  currentAmount: number;
+  trailingAverageAmount: number;
+  growthPercent: number;
+}
+
+export interface RecommendationDto {
+  id: string;
+  strategy: string;
+  severity: 'info' | 'warning' | 'critical';
+  title: string;
+  summary: string;
+  actionText: string;
+  actionRoute: string;
+  estimatedMonthlySavings: number | null;
+}
+
+// --- Debts & Liabilities ----------------------------------------------------
+
+export interface Liability {
+  id: string;
+  title: string;
+  type: 'Debt' | 'Installment' | 'Receivable';
+  creditor: string;
+  totalAmount: number;
+  paidAmount: number;
+  remainingBalance: number;
+  monthlyInstallment: number;
+  dueDay: number | null;
+  interestRate: number | null;
+  startDate: string;
+  dueDate: string | null;
+  status: 'Active' | 'PaidOff' | 'Defaulted';
+  notes: string | null;
+  progressPercentage: number;
+  paymentsCount: number;
+}
+
+export interface LiabilityPayment {
+  id: string;
+  liabilityId: string;
+  date: string;
+  amount: number;
+  principalAmount: number;
+  interestAmount: number;
+  transactionId: string | null;
+  notes: string | null;
+}
+
+export interface DebtsSummary {
+  totalDebts: number;
+  totalPaid: number;
+  totalRemaining: number;
+  monthlyCommitment: number;
+  totalReceivables: number;
+  activeCount: number;
+  paidOffCount: number;
+  overallProgressPercentage: number;
+}
+
+export interface CreateLiabilityInput {
+  title: string;
+  type: string;
+  creditor: string;
+  totalAmount: number;
+  initialPaidAmount?: number;
+  monthlyInstallment?: number;
+  dueDay?: number | null;
+  interestRate?: number | null;
+  startDate?: string | null;
+  dueDate?: string | null;
+  notes?: string | null;
+}
+
+export interface UpdateLiabilityInput {
+  title: string;
+  type: string;
+  creditor: string;
+  totalAmount: number;
+  monthlyInstallment?: number;
+  dueDay?: number | null;
+  interestRate?: number | null;
+  startDate?: string;
+  dueDate?: string | null;
+  notes?: string | null;
+}
+
+export interface RecordPaymentInput {
+  amount: number;
+  date: string;
+  principalAmount?: number;
+  interestAmount?: number;
+  notes?: string;
+  postToLedger?: boolean;
+  accountId?: string | null;
+  categoryId?: string | null;
+}
+
+// --- Recurring Bills & Subscriptions ----------------------------------------
+
+export interface RecurringBill {
+  id: string;
+  title: string;
+  amount: number;
+  currencyCode: string;
+  billingCycle: 'Monthly' | 'Quarterly' | 'Yearly' | 'Weekly';
+  dueDay: number;
+  accountId: string;
+  accountName: string | null;
+  categoryId: string | null;
+  categoryName: string | null;
+  autoDebit: boolean;
+  isActive: boolean;
+  lastPaidDate: string | null;
+  nextDueDate: string;
+  remindDaysBefore: number;
+  notes: string | null;
+  isOverdue: boolean;
+  isDueSoon: boolean;
+  isPaidThisCycle: boolean;
+  daysUntilDue: number;
+}
+
+export interface RecurringBillsSummary {
+  totalActiveBills: number;
+  totalMonthlyCommitment: number;
+  overdueCount: number;
+  overdueAmount: number;
+  dueSoonCount: number;
+  dueSoonAmount: number;
+}
+
+export interface CreateRecurringBillInput {
+  title: string;
+  amount: number;
+  billingCycle: string;
+  dueDay: number;
+  accountId: string;
+  categoryId?: string | null;
+  autoDebit?: boolean;
+  remindDaysBefore?: number;
+  startDate?: string | null;
+  currencyCode?: string;
+  notes?: string | null;
+}
+
+export interface UpdateRecurringBillInput {
+  title: string;
+  amount: number;
+  billingCycle: string;
+  dueDay: number;
+  accountId: string;
+  categoryId?: string | null;
+  autoDebit?: boolean;
+  isActive?: boolean;
+  remindDaysBefore?: number;
+  notes?: string | null;
+}
+
+export interface PayRecurringBillInput {
+  date: string;
+  amount?: number;
+  accountId?: string;
+  categoryId?: string | null;
+  notes?: string;
+}
+
+export interface PayRecurringBillResult {
+  transaction: Transaction;
+  recurringBill: RecurringBill;
+}
+
 
 

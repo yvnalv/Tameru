@@ -15,3 +15,17 @@ export function getInsights(params?: InsightsParams): Promise<InsightDto[]> {
     } : undefined,
   });
 }
+
+export function getDeepAnalysis(year?: number, month?: number): Promise<import('@/types/api').DeepAnalysisDto> {
+  const params: Record<string, number> = {};
+  if (year) params.year = year;
+  if (month) params.month = month;
+  return api.get<import('@/types/api').DeepAnalysisDto>('/decision/deep-analysis', { params });
+}
+
+export function getRecommendations(year?: number, month?: number): Promise<import('@/types/api').RecommendationDto[]> {
+  const params: Record<string, number> = {};
+  if (year) params.year = year;
+  if (month) params.month = month;
+  return api.get<import('@/types/api').RecommendationDto[]>('/decision/recommendations', { params });
+}

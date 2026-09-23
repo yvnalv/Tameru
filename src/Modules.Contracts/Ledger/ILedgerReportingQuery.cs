@@ -52,6 +52,18 @@ public interface ILedgerReportingQuery
     Task<IReadOnlyList<EnvelopePeriodTotal>> GetEnvelopeTotalsAsync(
         DateOnly from, DateOnly to, ReportGranularity granularity,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Returns aggregated spending totals grouped by day of week (Sunday..Saturday) over the range <paramref name="from"/>..<paramref name="to"/>.
+    /// </summary>
+    Task<IReadOnlyList<DayOfWeekSpend>> GetDayOfWeekSpendAsync(
+        DateOnly from, DateOnly to, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Returns the top expense payees/titles sorted by total amount spent over the range <paramref name="from"/>..<paramref name="to"/>.
+    /// </summary>
+    Task<IReadOnlyList<PayeeSpendTotal>> GetTopPayeesAsync(
+        DateOnly from, DateOnly to, int limit = 5, CancellationToken cancellationToken = default);
 }
 
 /// <summary>Income vs. expense for one calendar month.</summary>
@@ -68,3 +80,9 @@ public sealed record CategoryPeriodTotal(Guid CategoryId, DateOnly PeriodStart, 
 /// <param name="PeriodStart">The bucket's first day.</param>
 /// <param name="Amount">Sum of non-voided expense amounts in the bucket.</param>
 public sealed record EnvelopePeriodTotal(Guid? BudgetCategoryId, DateOnly PeriodStart, decimal Amount);
+
+/// <summary>Expense total and day count for one day of the week.</summary>
+public sealed record DayOfWeekSpend(DayOfWeek DayOfWeek, decimal TotalAmount, int DayCount, decimal AveragePerDay);
+
+/// <summary>Expense total and transaction count for a payee/merchant.</summary>
+public sealed record PayeeSpendTotal(string Payee, decimal TotalAmount, int TransactionCount);

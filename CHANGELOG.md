@@ -3,6 +3,59 @@
 This file is Tameru's immutable historical record. A task is not complete until this file has been
 updated. Newest entries at the top. See `CLAUDE.md` → **CHANGELOG Rules** for the full procedure.
 
+## [2026-09-23 07:35:00 UTC]
+
+CHG-0042 — Phase 2B & 2C: Debts & Liabilities Module, Recurring Bills & Subscriptions, and Net Worth Integration
+
+- **Debts & Liabilities Clean Architecture Module (`src/Modules/Debts/`, `ILiabilityQuery.cs`):**
+  - Designed and implemented complete Clean Architecture module (`Tameru.Debts.Domain`, `Tameru.Debts.Application`, `Tameru.Debts.Infrastructure`, `Tameru.Debts.Api`) mapped to private schema `debts` (PostgreSQL).
+  - Implemented `Liability` and `LiabilityPayment` domain entities supporting loan repayments, interest/principal split, and automated `PaidOff` status transition when remaining balance reaches zero.
+  - Implemented `DebtsService` with full lifecycle operations: `ListAsync`, `GetByIdAsync`, `CreateAsync`, `UpdateAsync`, `DeleteAsync`, `RecordPaymentAsync`, `DeletePaymentAsync`, and executive `GetSummaryAsync`.
+  - Added optional 1-click ledger transaction posting seam via `ITransactionIngestor` when recording debt payments.
+  - Registered `ILiabilityQuery` contract in `Modules.Contracts/Debts/` consumed by Reporting for live liability queries without cross-boundary database coupling.
+  - Added EF Core migration `20260923071106_InitialDebts` in `DebtsDbContext`.
+- **Recurring Bills & Subscriptions Engine (`Tameru.Ledger`):**
+  - Modeled `RecurringBill` domain entity in `Tameru.Ledger.Domain` with cycle support (`Monthly`, `Quarterly`, `Yearly`, `Weekly`), due day computation, auto-debit flags, and reminder periods.
+  - Implemented `RecurringBillService` with 1-click payment logging (`PayAsync`) that atomically records an expense transaction in `ledger.transactions` and advances `NextDueDate` to the subsequent billing cycle.
+  - Added `RecurringBills` DbSet to `LedgerDbContext` with migration `20260923071300_AddRecurringBills`.
+  - Exposed REST endpoints in `LedgerEndpoints.cs` under `/api/v1/ledger/recurring-bills`.
+- **Net Worth Accounting Recalculation (`ReportingService.cs`, `NetWorthReport`):**
+  - Updated Net Worth formula across backend reporting and frontend dashboard to enforce the true balance equation: $\text{True Net Worth} = \text{Total Assets} - \text{Total Active Liabilities}$.
+  - Enriched `NetWorthReport` with `TotalAssets` and `TotalLiabilities` breakdown while maintaining backwards-compatible `Total` property.
+- **Frontend Dedicated Views & Dashboard Integration (`DebtsView.vue`, `RecurringBillsView.vue`, `DashboardView.vue`):**
+  - Created `/debts` screen with 4-card metric strip (Total Remaining, Total Repaid, Monthly Commitment, Total Receivables), status filter tabs, visual repayment progress bars, Add/Edit modal, Record Payment modal, and payment history viewer.
+  - Created `/recurring` screen with executive commitment metrics, overdue/due-soon alerts, auto-debit tags, and 1-click payment logging confirmation modal.
+  - Added "Upcoming Recurring Bills Due" alert banner to `DashboardView.vue` linking directly to `/recurring` for rapid settlement.
+  - Updated `DashboardView.vue` Net Worth card to display dual Assets vs. Debts breakdown with link to `/debts`.
+  - Activated navigation items in `navItems.ts` under the `Planning` section and registered routes in `router/index.ts`.
+- **Internationalization (i18n):**
+  - 100% key parity maintained across `frontend/src/i18n/locales/en.ts` and `frontend/src/i18n/locales/id.ts` with zero missing keys, validated by Vitest `locales.spec.ts`.
+- **Verified:** All 162 backend unit and architecture tests passing (`dotnet test`); all 44 Vitest tests passing; `vue-tsc --noEmit` and Vite production build clean; local Docker stack (`tameru-api`, `tameru-web`, `tameru-db`) rebuilt and verified live via end-to-end lifecycle script.
+
+---
+
+## [2026-09-23 04:21:00 UTC]
+
+CHG-0041 — Phase 2 Information Architecture, Deep Income & Expense Diagnostics, and Proactive Recommendation System
+
+- **Sectioned Navigation & Information Architecture (`navItems.ts`, `AppSidebar.vue`, `router/index.ts`, `MobileNav.vue`):**
+  - Reorganized desktop sidebar and mobile navigation into 4 logical conceptual tiers: `Core` (Dashboard, Transactions, Accounts), `Planning` (Budget, Master Plan, Debts, Recurring, Goals), `Intelligence` (Insights, Reports), and `System` (Categories, Settings).
+  - Added section header labels in expanded sidebar mode and clean dividers in collapsed icon rail mode.
+  - Added `/insights` route and omnipresent navigation support.
+- **Deep Income & Expense Analysis Engine (`ILedgerReportingQuery.cs`, `LedgerReportingQuery.cs`, `DeepAnalysisService.cs`):**
+  - Extended ledger aggregate query seam with `GetDayOfWeekSpendAsync` (Monday..Sunday daily averages) and `GetTopPayeesAsync` (top merchant spending).
+  - Added `DeepAnalysisService` computing behavioral financial metrics on read: Income Retention Rate (net margin), Income Stability Score, Fixed vs. Variable Cost Split, and Category Spending Acceleration (comparison to 3-month trailing baseline).
+  - Preserved single-source-of-truth invariants (ADR-0006) with zero persistent duplicate tables.
+- **Actionable Financial Recommendation System (`RecommendationService.cs`, `RecommendationCard.vue`):**
+  - Built deterministic recommendation engine evaluating spending pacing, cash runway, category surges, and Master Plan alignment.
+  - Implemented `RecommendationCard.vue` with severity badges, potential monthly savings estimates, strategy identifiers, and direct one-click action navigation.
+- **Dedicated Insights View (`InsightsView.vue`, `WeekdayVelocityChart.vue`):**
+  - Shipped `/insights` with responsive layout, executive KPI tile strip, Weekday vs. Weekend ECharts velocity bar chart, Fixed vs. Variable spend bar, top payees breakdown, and month-over-month category momentum list.
+  - 100% bilingual parity between `en.ts` and `id.ts` with zero untranslated strings.
+- **Verified:** All 148 backend unit and architecture tests passing; all 44 Vitest tests passing (including strict i18n key parity); `vue-tsc --noEmit` clean; production bundle built cleanly.
+
+---
+
 ## [2026-09-18 09:38:00 UTC]
 
 CHG-0040 — Fix KPI card overflow, EF Core insights concurrency, category styling, AI Provider settings, and full-scenario assistant parsing

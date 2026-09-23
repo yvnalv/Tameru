@@ -93,10 +93,13 @@ Remaining is optional polish + the post-MVP roadmap. See [IMPLEMENTATION_PLAN.md
   + 6 warnings to **0/0 across all seven screens**. Two items remain open by choice — the Budget
   empty state still uses a 404 (an API-contract change), and the net-worth bar's use of the semantic
   green→red spectrum for accounts needs a design-system decision.
+- ✅ **M11** — Ingestion Speed & Categorization Engine: Regex rule execution engine with dry-run support, rule templates, audit logging, and natural language transaction parsing with local/custom AI provider integration.
+- ✅ **Phase 2A** — Information Architecture & Intelligence: Sectioned 4-tier navigation (Core, Planning, Intelligence, System); Deep Income & Expense Diagnostics (Retention Rate, Fixed vs Variable split, Weekday vs Weekend burn velocity, category momentum); and an actionable, deterministic Financial Recommendation System (`/insights`).
+- ✅ **Phase 2B & 2C** — Debts & Recurring Commitments: Clean Architecture `Tameru.Debts` module (loans, installments, receivables, repayment tracking, automated payoff); `RecurringBill` engine in `Tameru.Ledger` with 1-click ledger logging; Net Worth recalculation ($\text{Assets} - \text{Liabilities}$); `/debts` and `/recurring` dedicated views; Dashboard overdue/due-soon alert banner.
 
 ## Deferred (post-MVP)
 
-Goals & Projects (Life Plan, Wedding Plan), Debts (Liabilities), Loan/Property Simulator,
+Goals & Projects (Life Plan, Wedding Plan), Loan/Property Simulator,
 Investments (RDN Ajaib, ASII, Trans. Hist.), Work & Payroll helpers. See [ROADMAP.md](ROADMAP.md).
 
 ## Conventions reminder

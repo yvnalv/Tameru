@@ -14,6 +14,9 @@ using Tameru.Budgeting.Api;
 using Tameru.Budgeting.Infrastructure;
 using Tameru.Budgeting.Infrastructure.Persistence;
 using Tameru.Budgeting.Infrastructure.Seeding;
+using Tameru.Debts.Api;
+using Tameru.Debts.Infrastructure;
+using Tameru.Debts.Infrastructure.Persistence;
 using Tameru.Identity.Api;
 using Tameru.Identity.Infrastructure;
 using Tameru.Identity.Infrastructure.Authentication;
@@ -51,6 +54,7 @@ builder.Services.AddIdentityModule(config);
 builder.Services.AddAccountsModule(config);
 builder.Services.AddLedgerModule(config);
 builder.Services.AddBudgetingModule(config);
+builder.Services.AddDebtsModule(config);
 
 // Reporting composes the Accounts + Ledger contracts (read-only); it owns no data.
 builder.Services.AddReportingModule(config);
@@ -110,6 +114,7 @@ app.MapIdentityEndpoints();
 app.MapAccountsEndpoints();
 app.MapLedgerEndpoints();
 app.MapBudgetingEndpoints();
+app.MapDebtsEndpoints();
 app.MapReportingEndpoints();
 app.MapDecisionEndpoints();
 app.MapAssistantEndpoints();
@@ -145,6 +150,7 @@ static async Task MigrateAndSeedAsync(WebApplication app)
         await services.GetRequiredService<AccountsDbContext>().Database.MigrateAsync();
         await services.GetRequiredService<LedgerDbContext>().Database.MigrateAsync();
         await services.GetRequiredService<BudgetingDbContext>().Database.MigrateAsync();
+        await services.GetRequiredService<DebtsDbContext>().Database.MigrateAsync();
     }
 
     if (config.GetValue("Seed:Enabled", false))

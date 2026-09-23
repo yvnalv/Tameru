@@ -2,11 +2,13 @@ namespace Tameru.Reporting.Application.Contracts;
 
 // --- Net worth --------------------------------------------------------------
 
-/// <summary>Net worth = sum of derived balances over active accounts (BR-023), plus the breakdown.</summary>
+/// <summary>Net worth = total assets - total liabilities, plus the breakdown.</summary>
 public sealed record NetWorthReport(
     decimal Total,
     string CurrencyCode,
-    IReadOnlyList<AccountBalanceDto> Accounts);
+    IReadOnlyList<AccountBalanceDto> Accounts,
+    decimal TotalAssets = 0,
+    decimal TotalLiabilities = 0);
 
 /// <summary>One account's derived balance in the net-worth breakdown.</summary>
 public sealed record AccountBalanceDto(

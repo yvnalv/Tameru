@@ -35,6 +35,20 @@ public static class DecisionEndpoints
             return Result<IReadOnlyList<InsightDto>>.Success(result).ToHttp();
         });
 
+        group.MapGet("/deep-analysis", async (
+            DeepAnalysisService service, int? year, int? month, CancellationToken ct) =>
+        {
+            var result = await service.GetAnalysisAsync(year, month, ct);
+            return Result<DeepAnalysisDto>.Success(result).ToHttp();
+        });
+
+        group.MapGet("/recommendations", async (
+            RecommendationService service, int? year, int? month, CancellationToken ct) =>
+        {
+            var result = await service.GetRecommendationsAsync(year, month, ct);
+            return Result<IReadOnlyList<RecommendationDto>>.Success(result).ToHttp();
+        });
+
         return app;
     }
 }

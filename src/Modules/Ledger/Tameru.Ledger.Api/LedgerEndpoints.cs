@@ -95,6 +95,30 @@ public static class LedgerEndpoints
             return (await ingestion.IngestAsync(request, ct)).ToHttp();
         }).WithTags("Ingestion").AllowAnonymous();
 
+        // --- Recurring Bills -------------------------------------------------
+        var recurringGroup = app.MapGroup("/api/v1/ledger/recurring-bills").WithTags("Recurring Bills").RequireAuthorization();
+
+        recurringGroup.MapGet("/", async (RecurringBillService service, string? filter, CancellationToken ct) =>
+            (await service.ListAsync(filter, ct)).ToHttp());
+
+        recurringGroup.MapGet("/summary", async (RecurringBillService service, CancellationToken ct) =>
+            (await service.GetSummaryAsync(ct)).ToHttp());
+
+        recurringGroup.MapGet("/{id:guid}", async (Guid id, RecurringBillService service, CancellationToken ct) =>
+            (await service.GetByIdAsync(id, ct)).ToHttp());
+
+        recurringGroup.MapPost("/", async (CreateRecurringBillRequest request, RecurringBillService service, CancellationToken ct) =>
+            (await service.CreateAsync(request, ct)).ToHttp());
+
+        recurringGroup.MapPut("/{id:guid}", async (Guid id, UpdateRecurringBillRequest request, RecurringBillService service, CancellationToken ct) =>
+            (await service.UpdateAsync(id, request, ct)).ToHttp());
+
+        recurringGroup.MapDelete("/{id:guid}", async (Guid id, RecurringBillService service, CancellationToken ct) =>
+            (await service.DeleteAsync(id, ct)).ToHttp());
+
+        recurringGroup.MapPost("/{id:guid}/pay", async (Guid id, PayRecurringBillRequest request, RecurringBillService service, CancellationToken ct) =>
+            (await service.PayAsync(id, request, ct)).ToHttp());
+
         return app;
     }
 }

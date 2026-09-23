@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { RouterLink } from 'vue-router';
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-vue-next';
-import { navItems } from '@/components/layout/navItems';
+import { navSections } from '@/components/layout/navItems';
 import { useUiStore } from '@/stores/ui';
 import logoMark from '@/assets/brand/logo-mark.svg';
 import LogoLockup from '@/components/brand/LogoLockup.vue';
@@ -23,34 +23,48 @@ const ui = useUiStore();
       <img v-else :src="logoMark" alt="Tameru" class="h-8 w-8" />
     </div>
 
-    <!-- Scrollable Navigation Menu (Only this section is scrollable) -->
-    <nav class="flex-1 overflow-y-auto scroll-slim space-y-1.5 px-3 py-4">
-      <RouterLink
-        v-for="item in navItems"
-        :key="item.key"
-        :to="{ name: item.route }"
-        class="group/tt relative flex items-center rounded-control text-sm font-medium transition-all duration-150"
-        :class="
-          ui.sidebarCollapsed
-            ? 'h-10 w-10 mx-auto justify-center p-0 text-text-muted hover:bg-surface-2 hover:text-text'
-            : 'gap-3 px-3 py-2.5 text-text-muted hover:bg-surface-2 hover:text-text'
-        "
-        active-class="!bg-accent !text-accent-contrast font-semibold shadow-sm"
-      >
-        <component :is="item.icon" :size="20" :stroke-width="1.75" />
-        <span v-if="!ui.sidebarCollapsed" class="flex-1 truncate">{{ $t(`nav.${item.key}`) }}</span>
-        <span
-          v-if="!ui.sidebarCollapsed && item.placeholder"
-          class="rounded-full bg-surface-2 px-1.5 py-0.5 text-[10px] font-medium text-text-muted"
-        >{{ $t('common.soon') }}</span>
+    <!-- Scrollable Navigation Menu (Grouped by section) -->
+    <nav class="flex-1 overflow-y-auto scroll-slim space-y-3 px-3 py-3">
+      <div v-for="(section, sIdx) in navSections" :key="section.titleKey" class="space-y-1">
+        <!-- Section Header (Expanded) or Divider (Collapsed) -->
+        <div
+          v-if="!ui.sidebarCollapsed"
+          class="px-3 pt-1.5 pb-0.5 text-[10px] font-bold uppercase tracking-wider text-text-muted/70"
+        >
+          {{ $t(section.titleKey) }}
+        </div>
+        <div
+          v-else-if="sIdx > 0"
+          class="my-1.5 mx-auto w-6 border-t border-border/60"
+        />
 
-        <!-- Tooltip when collapsed -->
-        <span
-          v-if="ui.sidebarCollapsed"
-          class="pointer-events-none absolute left-full top-1/2 z-50 ml-2.5 -translate-y-1/2 whitespace-nowrap rounded-control border border-border bg-surface px-2.5 py-1 text-xs font-semibold text-text opacity-0 shadow-popover transition-opacity group-hover/tt:opacity-100"
-          role="tooltip"
-        >{{ $t(`nav.${item.key}`) }}</span>
-      </RouterLink>
+        <RouterLink
+          v-for="item in section.items"
+          :key="item.key"
+          :to="{ name: item.route }"
+          class="group/tt relative flex items-center rounded-control text-sm font-medium transition-all duration-150"
+          :class="
+            ui.sidebarCollapsed
+              ? 'h-10 w-10 mx-auto justify-center p-0 text-text-muted hover:bg-surface-2 hover:text-text'
+              : 'gap-3 px-3 py-2 text-text-muted hover:bg-surface-2 hover:text-text'
+          "
+          active-class="!bg-accent !text-accent-contrast font-semibold shadow-sm"
+        >
+          <component :is="item.icon" :size="19" :stroke-width="1.75" />
+          <span v-if="!ui.sidebarCollapsed" class="flex-1 truncate">{{ $t(`nav.${item.key}`) }}</span>
+          <span
+            v-if="!ui.sidebarCollapsed && item.placeholder"
+            class="rounded-full bg-surface-2 px-1.5 py-0.5 text-[10px] font-medium text-text-muted"
+          >{{ $t('common.soon') }}</span>
+
+          <!-- Tooltip when collapsed -->
+          <span
+            v-if="ui.sidebarCollapsed"
+            class="pointer-events-none absolute left-full top-1/2 z-50 ml-2.5 -translate-y-1/2 whitespace-nowrap rounded-control border border-border bg-surface px-2.5 py-1 text-xs font-semibold text-text opacity-0 shadow-popover transition-opacity group-hover/tt:opacity-100"
+            role="tooltip"
+          >{{ $t(`nav.${item.key}`) }}</span>
+        </RouterLink>
+      </div>
     </nav>
 
     <!-- Footer: Pinned at bottom of sidebar -->
@@ -58,7 +72,7 @@ const ui = useUiStore();
       class="shrink-0 border-t border-border p-3 text-xs text-text-muted"
       :class="ui.sidebarCollapsed ? 'flex justify-center' : 'flex items-center justify-between'"
     >
-      <span v-if="!ui.sidebarCollapsed" class="text-[11px] font-medium opacity-70">Tameru v0.1</span>
+      <span v-if="!ui.sidebarCollapsed" class="text-[11px] font-medium opacity-70">Tameru v0.2</span>
       <button
         type="button"
         class="rounded-control p-1.5 text-text-muted hover:bg-surface-2 hover:text-text transition-colors"

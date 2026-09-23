@@ -19,6 +19,8 @@ public static class ReportingInfrastructureModule
         services.AddScoped<DecisionService>();
         services.AddScoped<InsightsService>();
         services.AddScoped<AssistantService>();
+        services.AddScoped<DeepAnalysisService>();
+        services.AddScoped<RecommendationService>();
         return services;
     }
 }

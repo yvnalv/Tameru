@@ -1,4 +1,5 @@
 using Tameru.Modules.Contracts.Accounts;
+using Tameru.Modules.Contracts.Debts;
 using Tameru.Modules.Contracts.Ledger;
 using Tameru.Reporting.Application.Contracts;
 using Tameru.SharedKernel.Results;
@@ -7,8 +8,8 @@ namespace Tameru.Reporting.Application;
 
 /// <summary>
 /// Read-only analytics for the dashboard. Reporting owns no data: every figure is computed on read
-/// from the Accounts and Ledger modules through their contracts (docs/MODULES.md → Reporting), so
-/// reports are always consistent with the ledger, the single source of truth (ADR-0006).
+/// from the Accounts, Ledger, and Debts modules through their contracts (docs/MODULES.md → Reporting), so
+/// reports are always consistent with the ledger and debt books, the sources of truth (ADR-0006).
 /// </summary>
 public sealed class ReportingService
 {
@@ -17,14 +18,19 @@ public sealed class ReportingService
 
     private readonly IAccountBalanceDirectory _accounts;
     private readonly ILedgerReportingQuery _ledger;
+    private readonly ILiabilityQuery? _liabilityQuery;
 
-    public ReportingService(IAccountBalanceDirectory accounts, ILedgerReportingQuery ledger)
+    public ReportingService(
+        IAccountBalanceDirectory accounts,
+        ILedgerReportingQuery ledger,
+        ILiabilityQuery? liabilityQuery = null)
     {
         _accounts = accounts;
         _ledger = ledger;
+        _liabilityQuery = liabilityQuery;
     }
 
-    /// <summary>Net worth over active accounts (BR-023) plus the per-account breakdown.</summary>
+    /// <summary>Net worth over active accounts and active liabilities plus the per-account breakdown.</summary>
     public async Task<Result<NetWorthReport>> GetNetWorthAsync(CancellationToken ct = default)
     {
         var balances = await _accounts.GetBalancesAsync(activeOnly: true, ct);
@@ -32,7 +38,13 @@ public sealed class ReportingService
             .Select(b => new AccountBalanceDto(b.Id, b.Name, b.GroupName, b.Type, b.Balance, b.CurrencyCode))
             .ToList();
 
-        return new NetWorthReport(accounts.Sum(a => a.Balance), FunctionalCurrency, accounts);
+        var totalAssets = accounts.Sum(a => a.Balance);
+        var totalLiabilities = _liabilityQuery is not null
+            ? await _liabilityQuery.GetTotalRemainingLiabilitiesAsync(ct)
+            : 0m;
+        var netWorth = totalAssets - totalLiabilities;
+
+        return new NetWorthReport(netWorth, FunctionalCurrency, accounts, totalAssets, totalLiabilities);
     }
 
     /// <summary>Income vs. expense for the given month, with the full-year 12-month trend.</summary>

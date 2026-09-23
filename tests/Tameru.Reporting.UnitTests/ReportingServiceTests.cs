@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Tameru.Modules.Contracts.Accounts;
+using Tameru.Modules.Contracts.Debts;
 using Tameru.Modules.Contracts.Ledger;
 using Tameru.Reporting.Application;
 
@@ -8,11 +9,21 @@ namespace Tameru.Reporting.UnitTests;
 public class ReportingServiceTests
 {
     private static ReportingService Build(
-        FakeAccountBalanceDirectory? accounts = null, FakeLedgerReportingQuery? ledger = null) =>
-        new(accounts ?? new FakeAccountBalanceDirectory(), ledger ?? new FakeLedgerReportingQuery());
+        FakeAccountBalanceDirectory? accounts = null,
+        FakeLedgerReportingQuery? ledger = null,
+        ILiabilityQuery? liabilityQuery = null) =>
+        new(accounts ?? new FakeAccountBalanceDirectory(), ledger ?? new FakeLedgerReportingQuery(), liabilityQuery);
 
     private static AccountBalance Account(string name, decimal balance, bool active = true) =>
         new(Guid.NewGuid(), name, "Cash", "Bank", "IDR", balance, active);
+
+    private sealed class FakeLiabilityQuery : ILiabilityQuery
+    {
+        private readonly decimal _total;
+        public FakeLiabilityQuery(decimal total) => _total = total;
+        public Task<decimal> GetTotalRemainingLiabilitiesAsync(CancellationToken ct = default) => Task.FromResult(_total);
+        public Task<int> GetActiveCountAsync(CancellationToken ct = default) => Task.FromResult(1);
+    }
 
     // --- Net worth ----------------------------------------------------------
 
@@ -31,6 +42,22 @@ public class ReportingServiceTests
         result.Value.Total.Should().Be(3_500_000m);
         result.Value.CurrencyCode.Should().Be("IDR");
         result.Value.Accounts.Should().HaveCount(2);
+    }
+
+    [Fact]
+    public async Task NetWorth_subtracts_active_liabilities_from_assets()
+    {
+        var accounts = new FakeAccountBalanceDirectory(
+            Account("Bank BCA", 10_000_000m),
+            Account("Cash", 2_000_000m));
+        var liabilities = new FakeLiabilityQuery(4_000_000m);
+
+        var result = await Build(accounts: accounts, liabilityQuery: liabilities).GetNetWorthAsync();
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value.TotalAssets.Should().Be(12_000_000m);
+        result.Value.TotalLiabilities.Should().Be(4_000_000m);
+        result.Value.Total.Should().Be(8_000_000m);
     }
 
     [Fact]

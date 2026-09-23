@@ -29,6 +29,7 @@ public static class LedgerInfrastructureModule
         services.AddScoped<ITransactionRepository, TransactionRepository>();
         services.AddScoped<ICategorizationRuleRepository, CategorizationRuleRepository>();
         services.AddScoped<IRuleAuditLogRepository, RuleAuditLogRepository>();
+        services.AddScoped<IRecurringBillRepository, RecurringBillRepository>();
 
         // Provided cross-module contracts — replace the Accounts no-op default; expose spend totals
         // and aggregate reads for Reporting.
@@ -43,6 +44,7 @@ public static class LedgerInfrastructureModule
         services.AddScoped<RuleService>();
         services.AddScoped<IngestionService>();
         services.AddScoped<ITransactionIngestor, TransactionIngestor>();
+        services.AddScoped<RecurringBillService>();
 
         return services;
     }

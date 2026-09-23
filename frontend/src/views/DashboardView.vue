@@ -16,6 +16,8 @@ import {
   CreditCard,
   BarChart3,
   PieChart,
+  Repeat,
+  AlertTriangle,
 } from 'lucide-vue-next';
 import {
   getCashflow,
@@ -25,6 +27,7 @@ import {
   getEnvelopeReport,
 } from '@/lib/reports';
 import { getSafeToSpend } from '@/lib/decision';
+import { getRecurringSummary } from '@/lib/recurring';
 import { listTransactions } from '@/lib/transactions';
 import { listCategories } from '@/lib/categories';
 import type {
@@ -33,6 +36,7 @@ import type {
   EnvelopeReport,
   FinancialHealthReport,
   NetWorthReport,
+  RecurringBillsSummary,
   SafeToSpendDto,
   Transaction,
 } from '@/types/api';
@@ -60,6 +64,7 @@ const cashflow = ref<CashflowReport | null>(null);
 const health = ref<FinancialHealthReport | null>(null);
 const envelopes = ref<EnvelopeReport | null>(null);
 const safeToSpend = ref<SafeToSpendDto | null>(null);
+const recurringSummary = ref<RecurringBillsSummary | null>(null);
 const categories = ref<Category[]>([]);
 const monthSpend = ref<{ categoryId: string; total: number }[]>([]);
 const monthIncome = ref<{ categoryId: string; total: number }[]>([]);
@@ -207,7 +212,7 @@ async function load(): Promise<void> {
     const y = now.getFullYear();
     const m = now.getMonth() + 1;
     const dim = new Date(y, m, 0).getDate();
-    const [nw, cf, fh, env, cats, spend, income, txns, safe] = await Promise.all([
+    const [nw, cf, fh, env, cats, spend, income, txns, safe, recSummary] = await Promise.all([
       getNetWorth(),
       getCashflow(y, m),
       getFinancialHealth(y, m),
@@ -217,6 +222,7 @@ async function load(): Promise<void> {
       getCategoryTracker('monthly', `${y}-${pad(m)}-01`, `${y}-${pad(m)}-${pad(dim)}`, 'Income'),
       listTransactions({ page: 1, pageSize: 10 }),
       getSafeToSpend().catch(() => null),
+      getRecurringSummary().catch(() => null),
     ]);
     netWorth.value = nw;
     cashflow.value = cf;
@@ -227,6 +233,7 @@ async function load(): Promise<void> {
     monthIncome.value = income.categories.map((c) => ({ categoryId: c.categoryId, total: c.total }));
     recent.value = txns.items;
     safeToSpend.value = safe;
+    recurringSummary.value = recSummary;
 
     if (!selectedAccountId.value && nw.accounts.length > 0) {
       selectedAccountId.value = nw.accounts[0].accountId;
@@ -259,6 +266,47 @@ onMounted(load);
     </div>
 
     <div v-else class="space-y-6">
+      <!-- Upcoming Recurring Bills Due Banner -->
+      <div
+        v-if="recurringSummary && (recurringSummary.overdueCount > 0 || recurringSummary.dueSoonCount > 0)"
+        class="rounded-card border p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 transition-all"
+        :class="recurringSummary.overdueCount > 0
+          ? 'border-danger/40 bg-danger/[0.04]'
+          : 'border-warning/40 bg-warning/[0.04]'"
+      >
+        <div class="flex items-center gap-3">
+          <div
+            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
+            :class="recurringSummary.overdueCount > 0 ? 'bg-danger/15 text-danger' : 'bg-warning/15 text-warning'"
+          >
+            <AlertTriangle v-if="recurringSummary.overdueCount > 0" :size="18" />
+            <Repeat v-else :size="18" />
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-bold text-text">
+                {{ recurringSummary.overdueCount > 0
+                  ? t('dashboard.billsOverdueTitle', { count: recurringSummary.overdueCount })
+                  : t('dashboard.billsDueSoonTitle', { count: recurringSummary.dueSoonCount }) }}
+              </span>
+              <span class="font-mono text-xs font-bold" :class="recurringSummary.overdueCount > 0 ? 'text-danger' : 'text-warning'">
+                <Money :value="recurringSummary.overdueCount > 0 ? recurringSummary.overdueAmount : recurringSummary.dueSoonAmount" :currency="currency" />
+              </span>
+            </div>
+            <p class="text-xs text-text-muted mt-0.5">
+              {{ t('dashboard.billsBannerSubtitle') }}
+            </p>
+          </div>
+        </div>
+        <RouterLink
+          to="/recurring"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-surface text-text border border-border hover:border-accent/40 shadow-sm transition-all whitespace-nowrap self-start sm:self-auto"
+        >
+          <span>{{ t('dashboard.viewAndPayBills') }}</span>
+          <ArrowRight :size="14" />
+        </RouterLink>
+      </div>
+
       <!-- 1. Top Row: 4-Tier KPI & Decision Support Row -->
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <!-- Safe-to-Spend (Uncommitted Liquidity Decision Card) -->
@@ -309,6 +357,15 @@ onMounted(load);
           <div class="mt-3">
             <div class="tnum text-2xl font-bold tracking-tight text-text sm:text-3xl whitespace-nowrap overflow-hidden text-ellipsis">
               <Money :value="netWorth?.total ?? 0" :currency="currency" />
+            </div>
+            <div v-if="(netWorth?.totalLiabilities ?? 0) > 0" class="mt-1 flex items-center gap-2 text-xs">
+              <span class="text-text-muted">
+                {{ t('dashboard.assets') }}: <span class="font-mono font-medium text-text"><Money :value="netWorth?.totalAssets ?? 0" :currency="currency" /></span>
+              </span>
+              <span class="text-text-muted">·</span>
+              <RouterLink to="/debts" class="text-warning hover:underline font-medium">
+                {{ t('dashboard.debts') }}: <span class="font-mono font-semibold"><Money :value="netWorth?.totalLiabilities ?? 0" :currency="currency" /></span>
+              </RouterLink>
             </div>
           </div>
           <div class="mt-3 flex items-center justify-between border-t border-border pt-2.5 text-xs text-text-muted">
