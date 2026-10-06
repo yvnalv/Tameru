@@ -21,6 +21,7 @@ import { formatRowDate } from '@/lib/format';
 import { displayName } from '@/lib/seededNames';
 import { accountsImportConfig } from '@/lib/importConfigs';
 import { useDensity } from '@/composables/useDensity';
+import MoneyInput from '@/components/ui/MoneyInput.vue';
 import { useToastStore } from '@/stores/toast';
 import { useConfirmStore } from '@/stores/confirm';
 import { useTransactionModalStore } from '@/stores/transactionModal';
@@ -836,11 +837,10 @@ onMounted(load);
         </div>
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <FormField :label="t('accounts.openingBalance')" for-id="acc-opening">
-            <AppInput
+            <MoneyInput
               id="acc-opening"
-              type="number"
-              :model-value="String(form.openingBalance)"
-              @update:model-value="form.openingBalance = Number($event)"
+              v-model="form.openingBalance"
+              :show-chips="false"
             />
           </FormField>
           <FormField :label="t('accounts.currency')" for-id="acc-currency">

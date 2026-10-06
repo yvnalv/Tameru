@@ -1442,6 +1442,7 @@ async function exportTransactionsCsv(): Promise<void> {
                   v-model.number="dryRunAmount"
                   type="number"
                   min="0"
+                  step="any"
                   placeholder="e.g. 65000"
                   class="h-10 w-full rounded-control border border-border bg-surface px-3 text-sm text-text shadow-xs focus:border-accent focus:outline-none tabular-nums"
                 />
@@ -2340,6 +2341,7 @@ async function exportTransactionsCsv(): Promise<void> {
                   v-model.number="ruleMinAmount"
                   type="number"
                   min="0"
+                  step="any"
                   placeholder="e.g. 100000"
                   class="h-10 w-full rounded-control border border-border bg-surface px-3 text-sm text-text shadow-xs focus:border-accent focus:outline-none tabular-nums"
                 />
@@ -2350,6 +2352,7 @@ async function exportTransactionsCsv(): Promise<void> {
                   v-model.number="ruleMaxAmount"
                   type="number"
                   min="0"
+                  step="any"
                   placeholder="e.g. 500000"
                   class="h-10 w-full rounded-control border border-border bg-surface px-3 text-sm text-text shadow-xs focus:border-accent focus:outline-none tabular-nums"
                 />

@@ -512,6 +512,8 @@ onMounted(load);
             <AppInput
               id="mp-target"
               type="number"
+              min="0"
+              step="any"
               :model-value="String(form.targetPercent)"
               @update:model-value="form.targetPercent = Number($event)"
             />

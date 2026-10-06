@@ -39,6 +39,7 @@ import { useConfirmStore } from '@/stores/confirm';
 import AppCard from '@/components/ui/AppCard.vue';
 import AppButton from '@/components/ui/AppButton.vue';
 import AppModal from '@/components/ui/AppModal.vue';
+import MoneyInput from '@/components/ui/MoneyInput.vue';
 import AppInput from '@/components/ui/AppInput.vue';
 import AppSelect from '@/components/ui/AppSelect.vue';
 import FormField from '@/components/ui/FormField.vue';
@@ -508,13 +509,7 @@ onMounted(loadData);
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormField :label="t('recurring.formAmount')" required>
-            <input
-              v-model.number="billForm.amount"
-              type="number"
-              min="1"
-              step="1000"
-              class="h-10 w-full min-w-0 rounded-control border border-border-strong bg-surface px-3 text-sm text-text placeholder:text-text-muted focus:border-accent"
-            />
+            <MoneyInput v-model="billForm.amount" :show-chips="false" />
           </FormField>
           <FormField :label="t('recurring.formBillingCycle')" required>
             <AppSelect
@@ -601,13 +596,7 @@ onMounted(loadData);
             <AppInput v-model="payForm.date" type="date" />
           </FormField>
           <FormField :label="t('recurring.formAmount')" required>
-            <input
-              v-model.number="payForm.amount"
-              type="number"
-              min="1"
-              step="1000"
-              class="h-10 w-full min-w-0 rounded-control border border-border-strong bg-surface px-3 text-sm text-text placeholder:text-text-muted focus:border-accent"
-            />
+            <MoneyInput v-model="payForm.amount" :show-chips="false" />
           </FormField>
         </div>
 

@@ -3,6 +3,19 @@
 This file is Tameru's immutable historical record. A task is not complete until this file has been
 updated. Newest entries at the top. See `CLAUDE.md` → **CHANGELOG Rules** for the full procedure.
 
+## [2026-10-06 15:30:01 UTC]
+
+CHG-0043 — Fix HTML5 step validation rejecting valid money and decimal amounts across Debts, Recurring Bills, Accounts, Master Plan and Settings
+
+- **Root cause:** `<input type="number">` validates against `min + n x step`. Money fields declared `step="1000"` with `min="0"`/`min="1"`, so the browser rejected any amount not landing on a 1.000 boundary (e.g. entering `12313` produced "Please enter a valid value. The two nearest valid values are 12001 and 13001"). Fields with no `step` inherited the default of `1` and rejected decimals, which conflicts with money stored as `numeric(19,2)`.
+- **Money fields migrated to the house `MoneyInput` component (8 call sites):** `DebtsView.vue` (total amount, initial paid amount, monthly installment x2, payment amount), `RecurringBillsView.vue` (bill amount, payment amount) and `AccountsView.vue` (opening balance). `MoneyInput` is a `type="text"` control, so the step constraint cannot recur; it also brings `id-ID` thousands formatting, the currency prefix, shorthand parsing (`50k`, `25k+15k`) and tabular figures, matching `TransactionModal.vue`.
+- **Decimal fields corrected to `step="any"`:** liability interest rate in `DebtsView.vue` (was `step="0.1"`, rejecting rates such as `5.25`% APR) and Master Plan target percent in `MasterPlanView.vue`.
+- **Nullable threshold fields corrected to `step="any"`:** purchase simulator amount (`PurchaseSimulatorModal.vue`) and the dry-run amount plus rule min/max amount thresholds (`SettingsView.vue`). These keep a raw number input because `null` carries the distinct meaning "no threshold", which `MoneyInput`'s non-nullable `number` model would have collapsed to `0`.
+- **Deliberately unchanged:** genuinely integer-only fields keep the implicit `step="1"` — due day (1..31), reminder days before (0..30), cycle start day (1..28), rule priority (1..999) and Master Plan frequency.
+- **Verified:** `vue-tsc --noEmit` clean; all 44 Vitest tests passing; production build clean; local Docker stack rebuilt and the Add Recurring Bill form confirmed accepting arbitrary amounts.
+
+---
+
 ## [2026-09-23 07:35:00 UTC]
 
 CHG-0042 — Phase 2B & 2C: Debts & Liabilities Module, Recurring Bills & Subscriptions, and Net Worth Integration

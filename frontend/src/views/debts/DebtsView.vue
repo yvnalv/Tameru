@@ -42,6 +42,7 @@ import { useConfirmStore } from '@/stores/confirm';
 import AppCard from '@/components/ui/AppCard.vue';
 import AppButton from '@/components/ui/AppButton.vue';
 import AppModal from '@/components/ui/AppModal.vue';
+import MoneyInput from '@/components/ui/MoneyInput.vue';
 import AppInput from '@/components/ui/AppInput.vue';
 import AppSelect from '@/components/ui/AppSelect.vue';
 import FormField from '@/components/ui/FormField.vue';
@@ -570,43 +571,19 @@ onMounted(loadData);
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormField :label="t('debts.formTotalAmount')" required>
-            <input
-              v-model.number="liabilityForm.totalAmount"
-              type="number"
-              min="0"
-              step="1000"
-              class="h-10 w-full min-w-0 rounded-control border border-border-strong bg-surface px-3 text-sm text-text placeholder:text-text-muted focus:border-accent"
-            />
+            <MoneyInput v-model="liabilityForm.totalAmount" :show-chips="false" />
           </FormField>
           <FormField v-if="!editingLiability" :label="t('debts.formInitialPaidAmount')">
-            <input
-              v-model.number="liabilityForm.initialPaidAmount"
-              type="number"
-              min="0"
-              step="1000"
-              class="h-10 w-full min-w-0 rounded-control border border-border-strong bg-surface px-3 text-sm text-text placeholder:text-text-muted focus:border-accent"
-            />
+            <MoneyInput v-model="liabilityForm.initialPaidAmount" :show-chips="false" />
           </FormField>
           <FormField v-else :label="t('debts.formMonthlyInstallment')">
-            <input
-              v-model.number="liabilityForm.monthlyInstallment"
-              type="number"
-              min="0"
-              step="1000"
-              class="h-10 w-full min-w-0 rounded-control border border-border-strong bg-surface px-3 text-sm text-text placeholder:text-text-muted focus:border-accent"
-            />
+            <MoneyInput v-model="liabilityForm.monthlyInstallment" :show-chips="false" />
           </FormField>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <FormField v-if="!editingLiability" :label="t('debts.formMonthlyInstallment')">
-            <input
-              v-model.number="liabilityForm.monthlyInstallment"
-              type="number"
-              min="0"
-              step="1000"
-              class="h-10 w-full min-w-0 rounded-control border border-border-strong bg-surface px-3 text-sm text-text placeholder:text-text-muted focus:border-accent"
-            />
+            <MoneyInput v-model="liabilityForm.monthlyInstallment" :show-chips="false" />
           </FormField>
           <FormField :label="t('debts.formDueDay')">
             <input
@@ -622,7 +599,8 @@ onMounted(loadData);
             <input
               v-model.number="liabilityForm.interestRate"
               type="number"
-              step="0.1"
+              min="0"
+              step="any"
               placeholder="% APR"
               class="h-10 w-full min-w-0 rounded-control border border-border-strong bg-surface px-3 text-sm text-text placeholder:text-text-muted focus:border-accent"
             />
@@ -667,13 +645,7 @@ onMounted(loadData);
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormField :label="t('debts.paymentAmount')" required>
-            <input
-              v-model.number="paymentForm.amount"
-              type="number"
-              min="1"
-              step="1000"
-              class="h-10 w-full min-w-0 rounded-control border border-border-strong bg-surface px-3 text-sm text-text placeholder:text-text-muted focus:border-accent"
-            />
+            <MoneyInput v-model="paymentForm.amount" :show-chips="false" />
           </FormField>
           <FormField :label="t('debts.paymentDate')" required>
             <AppInput v-model="paymentForm.date" type="date" />

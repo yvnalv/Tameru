@@ -146,6 +146,7 @@ onMounted(() => {
               v-model.number="amount"
               type="number"
               min="1"
+              step="any"
               placeholder="0"
               class="w-full pl-11 pr-4 py-2.5 rounded-xl bg-surface border border-border text-base font-bold text-text focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 tabular-nums transition-all"
             />
