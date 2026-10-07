@@ -199,9 +199,17 @@ first login. Update later with `docker compose pull tameru-api tameru-web && doc
 
 ## Database
 
-- Migrations are per-module EF Core migrations. In Development they auto-apply
-  (`Database__AutoMigrate=true`); in Production apply explicitly during deploy
-  (`dotnet ef database update` or a migration bundle) before the new API starts.
+- Migrations are per-module EF Core migrations, each module owning its own schema and migration
+  history table.
+- `Database__AutoMigrate=true` applies pending migrations on startup. Tameru is single-user with no
+  blue/green deploy, so the production stack runs with it **on** — a separate migration step would
+  add a moving part without removing the real risk. Before applying, the API logs each module's
+  pending migration ids, and a failure is logged at `Critical` and rethrown so the container exits
+  rather than serving traffic against a half-migrated schema.
+- **Take a `pg_dump` before any deploy that carries a migration.** Auto-migrate has no automatic
+  rollback; the backup is the rollback. Pin `TAMERU_TAG` to the previous `sha-` image to revert code.
+- To apply migrations explicitly instead, set `Database__AutoMigrate=false` and run
+  `dotnet ef database update` (or a migration bundle) per module before starting the new API.
 - Postgres is **not** publicly exposed — bind to loopback and reach it via SSH tunnel for admin.
 - **Backups:** scheduled `pg_dump` to an off-box location; the DB is the system of record.
 

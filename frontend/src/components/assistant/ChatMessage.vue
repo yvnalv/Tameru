@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import type { ChatMessageItem } from '@/types/api';
 import ActionCard from './ActionCard.vue';
 import { Bot, User, Copy, Check } from 'lucide-vue-next';
@@ -7,6 +8,8 @@ import { Bot, User, Copy, Check } from 'lucide-vue-next';
 const props = defineProps<{
   message: ChatMessageItem;
 }>();
+
+const { t } = useI18n();
 
 const copied = ref(false);
 
@@ -101,7 +104,7 @@ async function copyText(): Promise<void> {
           v-if="!isUser"
           type="button"
           class="opacity-0 group-hover:opacity-100 transition-opacity hover:text-slate-200 flex items-center gap-1"
-          title="Copy message"
+          :title="t('assistant.copyMessage')"
           @click="copyText"
         >
           <Check v-if="copied" class="h-3 w-3 text-emerald-400" />

@@ -310,17 +310,17 @@ onMounted(load);
       <!-- 1. Top Row: 4-Tier KPI & Decision Support Row -->
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <!-- Safe-to-Spend (Uncommitted Liquidity Decision Card) -->
-        <div class="rounded-card border border-primary/30 bg-primary/[0.04] p-5 shadow-card transition-all flex flex-col justify-between">
+        <div class="rounded-card border border-accent/30 bg-accent/[0.04] p-5 shadow-card transition-all flex flex-col justify-between">
           <div class="flex items-center justify-between gap-2">
             <div class="flex items-center gap-2 min-w-0">
-              <span class="text-xs font-bold uppercase tracking-wider text-primary truncate">{{ t('decision.safeToSpend') }}</span>
-              <span class="shrink-0 rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-bold text-primary">
+              <span class="text-xs font-bold uppercase tracking-wider text-accent truncate">{{ t('decision.safeToSpend') }}</span>
+              <span class="shrink-0 rounded-full bg-accent/15 px-2 py-0.5 text-[10px] font-bold text-accent">
                 {{ safeToSpend?.daysRemaining ?? 0 }} {{ t('decision.days') }}
               </span>
             </div>
             <button
               type="button"
-              class="shrink-0 flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg bg-primary text-primary-contrast hover:opacity-90 shadow-sm transition-all"
+              class="shrink-0 flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg bg-accent text-accent-contrast hover:opacity-90 shadow-sm transition-all"
               @click="ui.openSimulator()"
               :title="t('decision.simulatePrompt')"
             >

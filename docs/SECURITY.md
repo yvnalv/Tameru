@@ -41,7 +41,13 @@ owner's financial data.
 
 - All input validated at the Application boundary; parameterized EF Core queries (no string SQL).
 - Errors never leak stack traces, SQL, or secrets (see [ERROR_HANDLING.md](ERROR_HANDLING.md)).
-- Rate-limit `/auth/login` to slow brute force.
+- **Rate-limited credential endpoints.** `/auth/login` and `/auth/refresh` run behind a fixed-window
+  limiter partitioned by client IP (`RateLimiting:Auth:PermitLimit`, default 10 per
+  `RateLimiting:Auth:WindowSeconds`, default 60). Exceeding it returns `429` with the standard
+  `rate_limited` envelope and a `Retry-After` header. `/auth/refresh` is included because a stolen
+  refresh token is credential-equivalent. The API sits behind Nginx, so `X-Forwarded-For` is trusted
+  for partitioning (`RateLimiting:ForwardedHeaders:ForwardLimit` — 1 locally, 2 behind a second
+  proxy on a shared VPS).
 
 ## Auditing
 

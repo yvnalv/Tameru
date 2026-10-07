@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, watch, computed, nextTick, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { parseMoneyInput, formatThousands } from '@/lib/moneyParser';
 
 const props = withDefaults(
@@ -21,6 +22,8 @@ const props = withDefaults(
     invalid: false,
   },
 );
+
+const { t } = useI18n();
 
 const emit = defineEmits<{
   'update:modelValue': [value: number];
@@ -148,7 +151,7 @@ defineExpose({
         v-if="modelValue > 0 || rawText"
         type="button"
         class="mr-2.5 rounded px-1.5 py-0.5 text-xs font-medium text-text-muted hover:bg-surface-2 hover:text-text"
-        aria-label="Clear amount"
+        :aria-label="t('common.clearAmount')"
         @click="clearAmount"
       >
         ✕

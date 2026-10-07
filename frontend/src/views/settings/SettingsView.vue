@@ -1317,13 +1317,13 @@ async function exportTransactionsCsv(): Promise<void> {
                       <!-- Schedule Badge -->
                       <span
                         v-if="rule.scheduleExpression"
-                        class="rounded bg-primary/10 px-1.5 py-0.2 text-[9px] font-bold text-primary border border-primary/20 flex items-center gap-1"
+                        class="rounded bg-accent/10 px-1.5 py-0.2 text-[9px] font-bold text-accent border border-accent/20 flex items-center gap-1"
                       >
                         <Clock :size="10" /> {{ rule.scheduleExpression }}
                       </span>
                       <span
                         v-if="rule.transactionType"
-                        class="rounded bg-surface-2 px-1.5 py-0.2 text-[9px] font-semibold text-primary border border-border"
+                        class="rounded bg-surface-2 px-1.5 py-0.2 text-[9px] font-semibold text-accent border border-border"
                       >
                         {{ rule.transactionType }}
                       </span>
@@ -1343,7 +1343,7 @@ async function exportTransactionsCsv(): Promise<void> {
                       </span>
                       <span
                         v-if="rule.replaceTitle"
-                        class="rounded bg-primary/10 px-1.5 py-0.2 text-[9px] font-semibold text-primary border border-primary/20"
+                        class="rounded bg-accent/10 px-1.5 py-0.2 text-[9px] font-semibold text-accent border border-accent/20"
                       >
                         ➔ {{ rule.replaceTitle }}
                       </span>
@@ -1433,7 +1433,7 @@ async function exportTransactionsCsv(): Promise<void> {
               <FormField :label="t('settings.rules.dryRun.textPrompt')">
                 <AppInput
                   v-model="dryRunText"
-                  placeholder="e.g. Starbucks 65000 BCA"
+                  :placeholder="t('settings.rules.dryRunTextPlaceholder')"
                 />
               </FormField>
 
@@ -1443,7 +1443,7 @@ async function exportTransactionsCsv(): Promise<void> {
                   type="number"
                   min="0"
                   step="any"
-                  placeholder="e.g. 65000"
+                  :placeholder="t('settings.rules.dryRunAmountPlaceholder')"
                   class="h-10 w-full rounded-control border border-border bg-surface px-3 text-sm text-text shadow-xs focus:border-accent focus:outline-none tabular-nums"
                 />
               </FormField>
@@ -1631,7 +1631,7 @@ async function exportTransactionsCsv(): Promise<void> {
                   </span>
                   <span
                     v-if="tpl.scheduleExpression"
-                    class="rounded bg-primary/10 px-1.5 py-0.2 text-[9px] font-bold text-primary border border-primary/20 flex items-center gap-1"
+                    class="rounded bg-accent/10 px-1.5 py-0.2 text-[9px] font-bold text-accent border border-accent/20 flex items-center gap-1"
                   >
                     <Clock :size="10" /> {{ tpl.scheduleExpression }}
                   </span>
@@ -2237,7 +2237,7 @@ async function exportTransactionsCsv(): Promise<void> {
         <FormField :label="t('settings.rules.ruleName')" required>
           <AppInput
             v-model="ruleName"
-            placeholder="e.g. Starbucks to Coffee"
+            :placeholder="t('settings.rules.namePlaceholder')"
             required
           />
         </FormField>
@@ -2261,7 +2261,7 @@ async function exportTransactionsCsv(): Promise<void> {
         <FormField :label="t('settings.rules.pattern')" required>
           <AppInput
             v-model="rulePattern"
-            placeholder="e.g. starbucks, kopi, grab"
+            :placeholder="t('settings.rules.keywordsPlaceholder')"
             required
           />
         </FormField>
@@ -2270,7 +2270,7 @@ async function exportTransactionsCsv(): Promise<void> {
           <AppSelect
             v-model="ruleTargetCategoryId"
             :options="categoryOptions"
-            placeholder="Select target category..."
+            :placeholder="t('settings.rules.selectTargetCategory')"
           />
         </FormField>
 
@@ -2342,7 +2342,7 @@ async function exportTransactionsCsv(): Promise<void> {
                   type="number"
                   min="0"
                   step="any"
-                  placeholder="e.g. 100000"
+                  :placeholder="t('settings.rules.minAmountPlaceholder')"
                   class="h-10 w-full rounded-control border border-border bg-surface px-3 text-sm text-text shadow-xs focus:border-accent focus:outline-none tabular-nums"
                 />
               </FormField>
@@ -2353,7 +2353,7 @@ async function exportTransactionsCsv(): Promise<void> {
                   type="number"
                   min="0"
                   step="any"
-                  placeholder="e.g. 500000"
+                  :placeholder="t('settings.rules.maxAmountPlaceholder')"
                   class="h-10 w-full rounded-control border border-border bg-surface px-3 text-sm text-text shadow-xs focus:border-accent focus:outline-none tabular-nums"
                 />
               </FormField>

@@ -440,7 +440,7 @@ onMounted(load);
               id="mp-price"
               v-model="form.price"
               :show-chips="false"
-              placeholder="0 (mis. 50k, 1.5jt)"
+              :placeholder="t('masterPlan.pricePlaceholder')"
             />
           </FormField>
 

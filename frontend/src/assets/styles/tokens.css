@@ -10,6 +10,9 @@
 
   /* Accent — Modern Cobalt / Indigo */
   --accent: #3b46f1;
+  /* Channel triplet so Tailwind can apply opacity modifiers (bg-accent/10, ring-accent/20).
+     A bare var() colour silently drops the modifier, so keep this in sync with --accent. */
+  --accent-rgb: 59 70 241;
   --accent-hover: #2e37d9;
   --accent-active: #232ab8;
   --accent-soft: rgba(59, 70, 241, 0.08);
@@ -68,6 +71,7 @@
 
   /* Accent — Vibrant Electric Indigo (>= 4.5:1 with white text) */
   --accent: #5558f0;
+  --accent-rgb: 85 88 240;
   --accent-hover: #474ae0;
   --accent-active: #3b3ed0;
   --accent-soft: rgba(85, 88, 240, 0.16);

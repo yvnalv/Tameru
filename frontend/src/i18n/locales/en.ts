@@ -24,6 +24,7 @@ export default {
     sectionSystem: 'System',
   },
   common: {
+    clearAmount: 'Clear amount',
     loading: 'Loading…',
     retry: 'Retry',
     signOut: 'Sign out',
@@ -78,6 +79,7 @@ export default {
     jumpToAccount: 'Jump to Account',
   },
   login: {
+    signInWith: 'Sign in with {provider}',
     title: 'Sign in',
     subtitle: 'Sign in to your Tameru account.',
     email: 'Email',
@@ -333,6 +335,7 @@ export default {
     deactivateConfirm: 'Deactivate this category? It is hidden but its history is kept.',
   },
   budget: {
+    planPlaceholder: '0 (e.g. 500k, 1.5jt)',
     title: 'Budget',
     previousMonth: 'Previous month',
     nextMonth: 'Next month',
@@ -368,6 +371,7 @@ export default {
     envelopeSubtotal: 'Envelope subtotal',
   },
   masterPlan: {
+    pricePlaceholder: '0 (e.g. 50k, 1.5jt)',
     title: 'Master Plan',
     target: 'Target',
     total: 'Total',
@@ -434,6 +438,13 @@ export default {
       helpOllama: '100% local, private, and offline execution on your own machine without sending data externally.',
     },
     rules: {
+      dryRunTextPlaceholder: 'e.g. Starbucks 65000 BCA',
+      dryRunAmountPlaceholder: 'e.g. 65000',
+      namePlaceholder: 'e.g. Starbucks to Coffee',
+      keywordsPlaceholder: 'e.g. starbucks, kopi, grab',
+      selectTargetCategory: 'Select target category...',
+      minAmountPlaceholder: 'e.g. 100000',
+      maxAmountPlaceholder: 'e.g. 500000',
       webhookHeading: 'Ingestion Webhook & Personal API Token',
       webhookDescription: 'Connect Telegram bots, iOS Shortcuts, or external automations to record transactions in seconds without opening the app.',
       personalApiToken: 'Personal API Token',
@@ -710,6 +721,8 @@ export default {
     },
   },
   assistant: {
+    closeDrawer: 'Close drawer',
+    copyMessage: 'Copy message',
     title: 'Tameru Assistant',
     subtitle: 'AI financial copilot for actions, insights & predictions',
     placeholder: 'Ask Tameru or log transaction... (e.g. "Add expense 45k lunch bca category Food budget Needs")',
@@ -728,6 +741,8 @@ export default {
     apiKeyMissing: 'Assistant is running in offline mode. Set ASSISTANT_API_KEY in backend environment to enable LLM-powered conversational chat.',
   },
   debts: {
+    dueDayPlaceholder: '1-31',
+    interestRatePlaceholder: '% APR',
     title: 'Debts & Liabilities',
     subtitle: 'Track loans, credit card balances, installments and money lent to others',
     addLiability: 'Add Liability',

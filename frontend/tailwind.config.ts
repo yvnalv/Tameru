@@ -9,7 +9,8 @@ export default {
     extend: {
       colors: {
         accent: {
-          DEFAULT: 'var(--accent)',
+          // rgb(... / <alpha-value>) so opacity modifiers work; see --accent-rgb in tokens.css.
+          DEFAULT: 'rgb(var(--accent-rgb) / <alpha-value>)',
           hover: 'var(--accent-hover)',
           active: 'var(--accent-active)',
           soft: 'var(--accent-soft)',

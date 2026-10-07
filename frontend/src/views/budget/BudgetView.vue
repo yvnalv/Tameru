@@ -797,7 +797,7 @@ onMounted(async () => {
                 :id="'plan-' + c.id"
                 v-model="planDraft[c.id]"
                 :show-chips="false"
-                placeholder="0 (mis. 500k, 1.5jt)"
+                :placeholder="t('budget.planPlaceholder')"
               />
             </div>
           </div>

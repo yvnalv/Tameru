@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Routing;
 using Tameru.Identity.Application;
 using Tameru.Identity.Application.Contracts;
@@ -13,17 +14,32 @@ namespace Tameru.Identity.Api;
 /// <summary>Maps the <c>/api/v1/auth</c> endpoints (docs/API_SPEC.md → Auth).</summary>
 public static class IdentityEndpoints
 {
-    public static IEndpointRouteBuilder MapIdentityEndpoints(this IEndpointRouteBuilder app)
+    /// <param name="credentialRateLimitPolicy">
+    /// Optional rate-limit policy applied to the anonymous credential endpoints
+    /// (docs/SECURITY.md). The host owns the policy definition, so the name is passed in rather
+    /// than referenced here — a module must not depend on the bootstrapper.
+    /// </param>
+    public static IEndpointRouteBuilder MapIdentityEndpoints(
+        this IEndpointRouteBuilder app,
+        string? credentialRateLimitPolicy = null)
     {
         var group = app.MapGroup("/api/v1/auth").WithTags("Auth");
 
-        group.MapPost("/login", async (LoginRequest request, AuthService auth, CancellationToken ct) =>
+        var login = group.MapPost("/login", async (LoginRequest request, AuthService auth, CancellationToken ct) =>
             (await auth.LoginAsync(request, ct)).ToHttp())
             .AllowAnonymous();
 
-        group.MapPost("/refresh", async (RefreshRequest request, AuthService auth, CancellationToken ct) =>
+        // Refresh is credential-equivalent: a stolen refresh token is as good as a password, so it
+        // gets the same guard as login.
+        var refresh = group.MapPost("/refresh", async (RefreshRequest request, AuthService auth, CancellationToken ct) =>
             (await auth.RefreshAsync(request, ct)).ToHttp())
             .AllowAnonymous();
+
+        if (!string.IsNullOrWhiteSpace(credentialRateLimitPolicy))
+        {
+            login.RequireRateLimiting(credentialRateLimitPolicy);
+            refresh.RequireRateLimiting(credentialRateLimitPolicy);
+        }
 
         group.MapPost("/logout", async (LogoutRequest request, AuthService auth, CancellationToken ct) =>
             (await auth.LogoutAsync(request, ct)).ToHttp())

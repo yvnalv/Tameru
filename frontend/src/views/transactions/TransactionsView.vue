@@ -529,7 +529,7 @@ onMounted(async () => {
                 :key="size"
                 type="button"
                 class="rounded-md px-2 py-0.5 text-xs font-medium transition-colors"
-                :class="filters.pageSize === size ? 'bg-primary text-white font-semibold shadow-xs' : 'text-text-muted hover:text-text'"
+                :class="filters.pageSize === size ? 'bg-accent text-white font-semibold shadow-xs' : 'text-text-muted hover:text-text'"
                 @click="setPageSize(size)"
               >
                 {{ size }}
@@ -557,7 +557,7 @@ onMounted(async () => {
               type="button"
               class="h-8 min-w-[2rem] rounded-lg px-2 text-xs font-semibold transition-all"
               :class="filters.page === p
-                ? 'bg-primary text-white shadow-xs'
+                ? 'bg-accent text-white shadow-xs'
                 : 'bg-surface hover:bg-surface-2 text-text border border-border'"
               @click="setPage(Number(p))"
             >

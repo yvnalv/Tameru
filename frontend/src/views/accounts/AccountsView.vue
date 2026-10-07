@@ -529,7 +529,7 @@ onMounted(load);
         <AppCard class="col-span-2 sm:col-span-1">
           <div class="flex items-center justify-between">
             <p class="text-xs font-medium text-text-muted">{{ t('accounts.clearedRatio') }}</p>
-            <div class="flex h-5 w-5 items-center justify-center rounded-md bg-primary-soft text-primary">
+            <div class="flex h-5 w-5 items-center justify-center rounded-md bg-accent-soft text-accent">
               <CheckCircle2 :size="14" />
             </div>
           </div>
@@ -604,7 +604,7 @@ onMounted(load);
 
                 <!-- Title & Category -->
                 <div class="min-w-0 flex-1">
-                  <p class="truncate text-sm font-semibold text-text group-hover:text-primary transition-colors">
+                  <p class="truncate text-sm font-semibold text-text group-hover:text-accent transition-colors">
                     {{ tx.title }}
                   </p>
                   <p class="mt-0.5 truncate text-xs text-text-muted">
@@ -672,7 +672,7 @@ onMounted(load);
                     :key="size"
                     type="button"
                     class="rounded-md px-2 py-0.5 text-xs font-medium transition-colors"
-                    :class="accountTxFilters.pageSize === size ? 'bg-primary text-white font-semibold shadow-xs' : 'text-text-muted hover:text-text'"
+                    :class="accountTxFilters.pageSize === size ? 'bg-accent text-white font-semibold shadow-xs' : 'text-text-muted hover:text-text'"
                     @click="setAccountPageSize(size)"
                   >
                     {{ size }}
@@ -700,7 +700,7 @@ onMounted(load);
                   type="button"
                   class="h-8 min-w-[2rem] rounded-lg px-2 text-xs font-semibold transition-all"
                   :class="accountTxFilters.page === p
-                    ? 'bg-primary text-white shadow-xs'
+                    ? 'bg-accent text-white shadow-xs'
                     : 'bg-surface hover:bg-surface-2 text-text border border-border'"
                   @click="setAccountPage(Number(p))"
                 >
@@ -772,7 +772,7 @@ onMounted(load);
             <!-- Account Details -->
             <div class="min-w-0 flex-1">
               <div class="flex items-center gap-2">
-                <p class="truncate text-sm font-semibold text-text group-hover:text-primary transition-colors">
+                <p class="truncate text-sm font-semibold text-text group-hover:text-accent transition-colors">
                   {{ a.name }}
                 </p>
                 <span

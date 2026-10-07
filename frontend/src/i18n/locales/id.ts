@@ -24,6 +24,7 @@ export default {
     sectionSystem: 'Sistem',
   },
   common: {
+    clearAmount: 'Hapus jumlah',
     loading: 'Memuat…',
     retry: 'Coba lagi',
     signOut: 'Keluar',
@@ -78,6 +79,7 @@ export default {
     jumpToAccount: 'Buka Akun',
   },
   login: {
+    signInWith: 'Masuk dengan {provider}',
     title: 'Masuk',
     subtitle: 'Masuk ke akun Tameru Anda.',
     email: 'Email',
@@ -333,6 +335,7 @@ export default {
     deactivateConfirm: 'Nonaktifkan kategori ini? Akan disembunyikan tetapi riwayatnya tetap disimpan.',
   },
   budget: {
+    planPlaceholder: '0 (mis. 500rb, 1,5jt)',
     title: 'Anggaran',
     previousMonth: 'Bulan sebelumnya',
     nextMonth: 'Bulan berikutnya',
@@ -368,6 +371,7 @@ export default {
     envelopeSubtotal: 'Subtotal amplop',
   },
   masterPlan: {
+    pricePlaceholder: '0 (mis. 50rb, 1,5jt)',
     title: 'Rencana Induk',
     target: 'Target',
     total: 'Total',
@@ -434,6 +438,13 @@ export default {
       helpOllama: '100% lokal, privat, dan offline di komputer Anda sendiri tanpa mengirim data keluar.',
     },
     rules: {
+      dryRunTextPlaceholder: 'mis. Starbucks 65000 BCA',
+      dryRunAmountPlaceholder: 'mis. 65000',
+      namePlaceholder: 'mis. Starbucks ke Kopi',
+      keywordsPlaceholder: 'mis. starbucks, kopi, grab',
+      selectTargetCategory: 'Pilih kategori tujuan...',
+      minAmountPlaceholder: 'mis. 100000',
+      maxAmountPlaceholder: 'mis. 500000',
       webhookHeading: 'Webhook Ingesti & Token API Pribadi',
       webhookDescription: 'Hubungkan bot Telegram, Pintasan iOS, atau automasi eksternal untuk mencatat transaksi dalam hitungan detik tanpa membuka aplikasi.',
       personalApiToken: 'Token API Pribadi',
@@ -710,6 +721,8 @@ export default {
     },
   },
   assistant: {
+    closeDrawer: 'Tutup panel',
+    copyMessage: 'Salin pesan',
     title: 'Asisten Tameru',
     subtitle: 'Kopilot keuangan AI untuk aksi cepat, wawasan, & prediksi',
     placeholder: 'Tanya Tameru atau catat transaksi... (misal: "Catat makan siang 45k bca kategori Food budget Needs")',
@@ -728,6 +741,8 @@ export default {
     apiKeyMissing: 'Asisten berjalan dalam mode offline. Atur ASSISTANT_API_KEY pada environment backend untuk mengaktifkan obrolan interaktif AI.',
   },
   debts: {
+    dueDayPlaceholder: '1-31',
+    interestRatePlaceholder: '% per tahun',
     title: 'Hutang & Liabilitas',
     subtitle: 'Lacak pinjaman, kartu kredit, cicilan kredit, dan piutang yang dipinjamkan',
     addLiability: 'Tambah Liabilitas',

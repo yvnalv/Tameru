@@ -591,7 +591,7 @@ onMounted(loadData);
               type="number"
               min="1"
               max="31"
-              placeholder="1-31"
+              :placeholder="t('debts.dueDayPlaceholder')"
               class="h-10 w-full min-w-0 rounded-control border border-border-strong bg-surface px-3 text-sm text-text placeholder:text-text-muted focus:border-accent"
             />
           </FormField>
@@ -601,7 +601,7 @@ onMounted(loadData);
               type="number"
               min="0"
               step="any"
-              placeholder="% APR"
+              :placeholder="t('debts.interestRatePlaceholder')"
               class="h-10 w-full min-w-0 rounded-control border border-border-strong bg-surface px-3 text-sm text-text placeholder:text-text-muted focus:border-accent"
             />
           </FormField>

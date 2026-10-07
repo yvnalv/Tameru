@@ -53,7 +53,15 @@ public sealed class TameruApiFactory : WebApplicationFactory<Program>, IAsyncLif
         foreach (var key in Keys) Environment.SetEnvironmentVariable(key, null);
     }
 
-    protected override void ConfigureWebHost(IWebHostBuilder builder) => builder.UseEnvironment("Production");
+    protected override void ConfigureWebHost(IWebHostBuilder builder)
+    {
+        builder.UseEnvironment("Production");
+
+        // Every test logs in, and the TestServer reports no remote IP, so the whole suite shares one
+        // rate-limit partition. Lift the credential limit here so the brute-force guard never throttles
+        // unrelated tests; RateLimitTests opts back down to a small limit on its own host.
+        builder.UseSetting("RateLimiting:Auth:PermitLimit", "100000");
+    }
 }
 
 [CollectionDefinition("api")]

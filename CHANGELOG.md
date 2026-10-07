@@ -3,6 +3,30 @@
 This file is Tameru's immutable historical record. A task is not complete until this file has been
 updated. Newest entries at the top. See `CLAUDE.md` → **CHANGELOG Rules** for the full procedure.
 
+## [2026-10-07 13:47:16 UTC]
+
+CHG-0044 — Security, design-token and test hardening: login rate limiting, dead accent utilities, Debts/Recurring coverage, migration logging and i18n cleanup
+
+- **Brute-force guard on the credential endpoints (`RateLimiting.cs`, `Program.cs`, `IdentityEndpoints.cs`):**
+  - Implemented the control docs/SECURITY.md already required but the code never had: a fixed-window limiter on `/auth/login` and `/auth/refresh`, partitioned by client IP, configured by `RateLimiting:Auth:PermitLimit` (default 10) and `RateLimiting:Auth:WindowSeconds` (default 60).
+  - Rejections return `429` with the documented `rate_limited` envelope (docs/ERROR_HANDLING.md) plus a `Retry-After` header; the queue limit is 0 so an attack cannot hold connections open.
+  - `UseForwardedHeaders` runs ahead of the limiter so partitioning uses the real client rather than the Nginx container; hop count is configuration-driven for the local (1) and shared-VPS (2) topologies.
+  - `/auth/refresh` is included deliberately — a stolen refresh token is credential-equivalent.
+  - The policy name is passed into `MapIdentityEndpoints` rather than referenced from it, keeping the Identity module free of a dependency on the bootstrapper.
+- **Design tokens: `*-primary` utilities emitted no CSS at all (`tailwind.config.ts`, `tokens.css`, 5 views):**
+  - `primary` was never a defined colour, so 33 usages across `SettingsView`, `PurchaseSimulatorModal`, `DashboardView`, `AccountsView` and `TransactionsView` silently produced nothing — missing focus rings and unstyled elements. All swapped to `accent`.
+  - Tailwind cannot apply an opacity modifier to a bare `var()` colour, so `bg-accent/10`, `ring-accent/20` and friends were *also* dead — roughly 50 pre-existing usages. Added an `--accent-rgb` channel triplet per theme and switched `accent.DEFAULT` to `rgb(var(--accent-rgb) / <alpha-value>)`; verified the rules now emit in the built stylesheet.
+- **Test coverage for the Phase 2 modules (integration 8 → 21 tests):**
+  - `DebtsFlowTests` — remaining balance derives from total minus payments, full repayment flips status to `PaidOff`, deleting a payment restores the balance, an active liability reduces True Net Worth through the `ILiabilityQuery` contract, and the summary aggregates outstanding debt.
+  - `RecurringBillsFlowTests` — paying a bill posts a real ledger expense and moves the derived account balance, monthly and yearly cycles advance correctly, and an overridden amount is what reaches the ledger.
+  - `RateLimitTests` — the limiter blocks past the permit limit with the right envelope, covers refresh, and leaves a normal login untouched. Each uses its own host so it cannot drain the shared bucket; the shared test factory lifts the limit so the guard never throttles unrelated tests.
+  - `MoneyInput.spec.ts` (frontend) — pins the properties that make CHG-0043's defect impossible: a text control with no `step`/`min`/`max`, accepting arbitrary and decimal amounts, plus `50k` and `25k+15k` shorthand.
+- **Migration safety (`Program.cs`, docs/DEPLOYMENT.md):** each module's pending migration ids are logged before they are applied, success is logged per module, and a failure is logged at `Critical` with the last applied migration and rethrown so the container exits instead of serving a half-migrated schema. DEPLOYMENT.md previously told production to apply migrations explicitly while the production stack ran with `AutoMigrate=true`; the doc now records auto-migrate as the deliberate single-user strategy, with a pre-deploy `pg_dump` as the rollback and the explicit alternative written down.
+- **Internationalisation (rule 9):** removed the last 18 hardcoded user-facing strings outside the internal design-system view — assistant drawer/copy actions, the money input's clear control, Budget and Master Plan amount hints, the Debts due-day and APR hints, the four social sign-in labels (one parameterised key), and seven Settings rule-builder placeholders including an Indonesian string hardcoded into the English build. `useI18n` wired into `MoneyInput` and `ChatMessage`, which had none. Both locale dictionaries extended in step; only the proper noun `Tameru` remains literal, which rule 9 permits.
+- **Verified:** 183 backend tests passing (`dotnet test Tameru.slnx`), 52 Vitest tests passing, `vue-tsc --noEmit` clean, production build clean.
+
+---
+
 ## [2026-10-06 15:30:01 UTC]
 
 CHG-0043 — Fix HTML5 step validation rejecting valid money and decimal amounts across Debts, Recurring Bills, Accounts, Master Plan and Settings

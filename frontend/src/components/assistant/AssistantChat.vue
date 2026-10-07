@@ -127,7 +127,7 @@ function handleClear(): void {
           <button
             type="button"
             class="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-colors"
-            title="Close drawer"
+            :title="t('assistant.closeDrawer')"
             @click="assistantStore.closeAssistant"
           >
             <X class="h-4 w-4" />

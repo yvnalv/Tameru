@@ -80,6 +80,8 @@ builder.Services
     });
 builder.Services.AddAuthorization();
 
+builder.Services.AddTameruRateLimiting(config);
+
 builder.Services.AddCors(options => options.AddDefaultPolicy(policy =>
     policy.WithOrigins(config.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [])
           .AllowAnyHeader()
@@ -91,6 +93,9 @@ var app = builder.Build();
 await MigrateAndSeedAsync(app);
 
 // --- Pipeline ---------------------------------------------------------------
+// Must run before the rate limiter so it partitions on the real client IP, not the proxy's.
+app.UseForwardedHeaders(RateLimiting.BuildForwardedHeadersOptions(config));
+
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 if (app.Environment.IsDevelopment())
@@ -100,6 +105,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors();
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -110,7 +116,7 @@ app.MapGet("/health", () => ApiResponse<object>.Ok(new
     utc = DateTimeOffset.UtcNow,
 }));
 
-app.MapIdentityEndpoints();
+app.MapIdentityEndpoints(RateLimiting.AuthPolicy);
 app.MapAccountsEndpoints();
 app.MapLedgerEndpoints();
 app.MapBudgetingEndpoints();
@@ -146,11 +152,16 @@ static async Task MigrateAndSeedAsync(WebApplication app)
 
     if (config.GetValue("Database:AutoMigrate", false))
     {
-        await services.GetRequiredService<IdentityDbContext>().Database.MigrateAsync();
-        await services.GetRequiredService<AccountsDbContext>().Database.MigrateAsync();
-        await services.GetRequiredService<LedgerDbContext>().Database.MigrateAsync();
-        await services.GetRequiredService<BudgetingDbContext>().Database.MigrateAsync();
-        await services.GetRequiredService<DebtsDbContext>().Database.MigrateAsync();
+        // Each module owns its own schema and migration history, so they are applied one by one.
+        // Pending migrations are logged before they run: on a deploy that goes wrong, the log is the
+        // record of exactly how far the schema got (docs/DEPLOYMENT.md → Database).
+        var logger = services.GetRequiredService<ILoggerFactory>().CreateLogger("Tameru.Migrations");
+
+        await MigrateModuleAsync(services.GetRequiredService<IdentityDbContext>(), "Identity", logger);
+        await MigrateModuleAsync(services.GetRequiredService<AccountsDbContext>(), "Accounts", logger);
+        await MigrateModuleAsync(services.GetRequiredService<LedgerDbContext>(), "Ledger", logger);
+        await MigrateModuleAsync(services.GetRequiredService<BudgetingDbContext>(), "Budgeting", logger);
+        await MigrateModuleAsync(services.GetRequiredService<DebtsDbContext>(), "Debts", logger);
     }
 
     if (config.GetValue("Seed:Enabled", false))
@@ -158,6 +169,39 @@ static async Task MigrateAndSeedAsync(WebApplication app)
         await services.GetRequiredService<IdentitySeeder>().SeedAsync();
         await services.GetRequiredService<AccountsSeeder>().SeedAsync();
         await services.GetRequiredService<BudgetingSeeder>().SeedAsync();
+    }
+}
+
+/// <summary>
+/// Applies one module's pending migrations, naming them in the log first. A failure is rethrown so
+/// the container exits rather than serving traffic against a half-migrated schema.
+/// </summary>
+static async Task MigrateModuleAsync(DbContext db, string module, ILogger logger)
+{
+    var pending = (await db.Database.GetPendingMigrationsAsync()).ToList();
+    if (pending.Count == 0)
+    {
+        logger.LogInformation("{Module}: schema up to date", module);
+        return;
+    }
+
+    logger.LogWarning(
+        "{Module}: applying {Count} pending migration(s): {Migrations}",
+        module, pending.Count, string.Join(", ", pending));
+
+    try
+    {
+        await db.Database.MigrateAsync();
+        logger.LogInformation("{Module}: migrated successfully", module);
+    }
+    catch (Exception ex)
+    {
+        logger.LogCritical(
+            ex,
+            "{Module}: migration failed after reaching {Applied}. Restore from backup before retrying.",
+            module,
+            string.Join(", ", (await db.Database.GetAppliedMigrationsAsync()).TakeLast(1)));
+        throw;
     }
 }
 

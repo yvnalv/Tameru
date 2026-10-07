@@ -192,7 +192,7 @@ async function onSubmit(): Promise<void> {
             <button
               type="button"
               class="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-surface hover:bg-surface-2 transition-all hover:scale-105 active:scale-95 shadow-xs"
-              title="Sign in with Google"
+              :title="t('login.signInWith', { provider: 'Google' })"
               @click="quickFillDemo"
             >
               <svg class="h-4 w-4" viewBox="0 0 24 24">
@@ -207,7 +207,7 @@ async function onSubmit(): Promise<void> {
             <button
               type="button"
               class="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-surface hover:bg-surface-2 transition-all hover:scale-105 active:scale-95 shadow-xs text-text"
-              title="Sign in with Apple"
+              :title="t('login.signInWith', { provider: 'Apple' })"
               @click="quickFillDemo"
             >
               <svg class="h-4 w-4 fill-current" viewBox="0 0 24 24">
@@ -219,7 +219,7 @@ async function onSubmit(): Promise<void> {
             <button
               type="button"
               class="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-surface hover:bg-surface-2 transition-all hover:scale-105 active:scale-95 shadow-xs text-[#1877F2]"
-              title="Sign in with Facebook"
+              :title="t('login.signInWith', { provider: 'Facebook' })"
               @click="quickFillDemo"
             >
               <svg class="h-4 w-4 fill-current" viewBox="0 0 24 24">
@@ -231,7 +231,7 @@ async function onSubmit(): Promise<void> {
             <button
               type="button"
               class="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-surface hover:bg-surface-2 transition-all hover:scale-105 active:scale-95 shadow-xs text-text"
-              title="Sign in with X"
+              :title="t('login.signInWith', { provider: 'X' })"
               @click="quickFillDemo"
             >
               <svg class="h-3.5 w-3.5 fill-current" viewBox="0 0 24 24">

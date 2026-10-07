@@ -112,7 +112,7 @@ onMounted(() => {
         class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 rounded-xl bg-surface-2 border border-border"
       >
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
+          <div class="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center text-accent shrink-0">
             <Wallet :size="20" />
           </div>
           <div>
@@ -148,7 +148,7 @@ onMounted(() => {
               min="1"
               step="any"
               placeholder="0"
-              class="w-full pl-11 pr-4 py-2.5 rounded-xl bg-surface border border-border text-base font-bold text-text focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 tabular-nums transition-all"
+              class="w-full pl-11 pr-4 py-2.5 rounded-xl bg-surface border border-border text-base font-bold text-text focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 tabular-nums transition-all"
             />
           </div>
 
@@ -181,7 +181,7 @@ onMounted(() => {
             </label>
             <select
               v-model="categoryId"
-              class="w-full px-3 py-2 rounded-xl bg-surface border border-border text-sm text-text focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+              class="w-full px-3 py-2 rounded-xl bg-surface border border-border text-sm text-text focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all"
             >
               <option value="">{{ t('decision.anyOrGeneral') }}</option>
               <option
@@ -202,7 +202,7 @@ onMounted(() => {
               v-model="description"
               type="text"
               :placeholder="t('decision.itemNamePlaceholder')"
-              class="w-full px-3 py-2 rounded-xl bg-surface border border-border text-sm text-text focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+              class="w-full px-3 py-2 rounded-xl bg-surface border border-border text-sm text-text focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all"
             />
           </div>
         </div>
